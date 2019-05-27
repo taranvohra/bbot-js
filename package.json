@@ -4,14 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "babel src -d prod/",
-    "start": "npm run build && node prod/index.js"
+    "clean": "rm -rf prod && mkdir prod",
+    "build": "npm run clean && babel src -s -d prod",
+    "start": "npm run build && node -r source-map-support/register prod/index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "discord.js": "^11.5.0",
-    "redux": "^4.0.1"
+    "redux": "^4.0.1",
+    "source-map-support": "^0.5.12"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.4",

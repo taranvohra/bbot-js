@@ -4,5 +4,8 @@ var _discord = _interopRequireDefault(require("discord.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-var x = 22;
-console.log(22);
+var arr = undefined;
+arr.map(function (x) {
+  return x + 22;
+});
+//# sourceMappingURL=index.js.map
