@@ -1,6 +1,11 @@
-export const prefix = '.';
+export const prefix = '~';
 
 export const commands = [
+  {
+    key: 'registerServer',
+    description: '',
+    aliases: ['register'],
+  },
   {
     key: 'addQueryServer',
     description: '',

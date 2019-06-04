@@ -1,1 +1,0 @@
-{"version":3,"sources":["../src/index.js"],"names":["arr","undefined","map","x"],"mappings":";;AAAA;;;;AACA,IAAMA,GAAG,GAAGC,SAAZ;AACAD,GAAG,CAACE,GAAJ,CAAQ,UAAAC,CAAC;AAAA,SAAIA,CAAC,GAAG,EAAR;AAAA,CAAT","sourcesContent":["import Discord from 'discord.js';\nconst arr = undefined;\narr.map(x => x + 22);\n"],"file":"index.js"}

@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../src/commands/index.js"],"names":["genericHandlers","ut99Handlers"],"mappings":";;;;;;;AAAA;;AACA;;;;;;;;iCAGKA,e,EACAC,Y","sourcesContent":["import * as genericHandlers from './genericHandlers';\nimport * as ut99Handlers from './ut99Handlers';\n\nexport default {\n  ...genericHandlers,\n  ...ut99Handlers,\n};\n"],"file":"index.js"}
