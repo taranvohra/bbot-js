@@ -4,9 +4,9 @@ import rootReducer from './reducers';
 /*
  * THE STORE IS THE REAL TIME CACHE BOT USES
  * SHAPE OF STORE: {
- *      pugs: { byId: {} },
- *      blocks: { byId: {} },
- *      queryServers: { byId: {} },
+ *      pugs: { byDiscordServerId: {} },
+ *      blocks: { byDiscordServerId: {} },
+ *      queryServers: { byDiscordServerId: {} },
  * }
  */
 const store = createStore(rootReducer);

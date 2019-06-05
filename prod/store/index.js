@@ -14,9 +14,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 /*
  * THE STORE IS THE REAL TIME CACHE BOT USES
  * SHAPE OF STORE: {
- *      pugs: { byId: {} },
- *      blocks: { byId: {} },
- *      queryServers: { byId: {} },
+ *      pugs: { byDiscordServerId: {} },
+ *      blocks: { byDiscordServerId: {} },
+ *      queryServers: { byDiscordServerId: {} },
  * }
  */
 var store = (0, _redux.createStore)(_reducers["default"]);

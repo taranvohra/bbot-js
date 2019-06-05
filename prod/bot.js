@@ -64,26 +64,36 @@ function () {
             _message$author = message.author, id = _message$author.id, username = _message$author.username;
             roles = message.member.roles;
             serverId = message.channel.guild.id;
+
+            if (serverId) {
+              _context.next = 9;
+              break;
+            }
+
+            return _context.abrupt("return");
+
+          case 9:
             _message$content$subs = message.content.substring(_contants.prefix.length).split(' ').filter(Boolean), _message$content$subs2 = _toArray(_message$content$subs), first = _message$content$subs2[0], args = _message$content$subs2.slice(1);
             action = first && first.toLowerCase();
             foundCommand = _contants.commands.find(function (cmd) {
               return cmd.aliases.includes(action);
             });
 
-            if (foundCommand) {
-              console.log(_commands["default"]);
-              console.log(foundCommand.key);
-
-              _commands["default"][foundCommand.key](message, args, {
-                id: id,
-                username: username,
-                roles: roles
-              });
-            } else {
-              message.channel.send("Command not found");
+            if (!foundCommand) {
+              _context.next = 14;
+              break;
             }
 
-          case 11:
+            return _context.abrupt("return", _commands["default"][foundCommand.key](message, args, serverId, {
+              id: id,
+              username: username,
+              roles: roles
+            }));
+
+          case 14:
+            message.channel.send("Command not found");
+
+          case 15:
           case "end":
             return _context.stop();
         }
@@ -115,7 +125,8 @@ regeneratorRuntime.mark(function _callee2() {
           _context2.next = 3;
           return _mongoose["default"].connect('mongodb://localhost:27017/bBot', {
             useNewUrlParser: true,
-            poolSize: 5
+            poolSize: 5,
+            useFindAndModify: false
           });
 
         case 3:

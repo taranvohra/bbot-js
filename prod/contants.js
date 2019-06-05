@@ -4,12 +4,21 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.commands = exports.prefix = void 0;
-var prefix = '~';
+var prefix = '~'; //TODO: Add it to commands folder
+
 exports.prefix = prefix;
 var commands = [{
   key: 'registerServer',
   description: '',
   aliases: ['register']
+}, {
+  key: 'setQueryChannel',
+  description: '',
+  aliases: ['setquerychannel']
+}, {
+  key: 'setPugChannel',
+  description: '',
+  aliases: ['setpugchannel']
 }, {
   key: 'addQueryServer',
   description: '',

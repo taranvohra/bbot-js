@@ -23,6 +23,9 @@ bBot.on('message', async message => {
       guild: { id: serverId },
     },
   } = message;
+
+  if (!serverId) return;
+
   const [first, ...args] = message.content
     .substring(prefix.length)
     .split(' ')
@@ -32,12 +35,13 @@ bBot.on('message', async message => {
   const foundCommand = commands.find(cmd => cmd.aliases.includes(action));
 
   if (foundCommand) {
-    console.log(handlers);
-    console.log(foundCommand.key);
-    handlers[foundCommand.key](message, args, { id, username, roles });
-  } else {
-    message.channel.send(`Command not found`);
+    return handlers[foundCommand.key](message, args, serverId, {
+      id,
+      username,
+      roles,
+    });
   }
+  message.channel.send(`Command not found`);
 });
 
 /*
@@ -53,6 +57,7 @@ bBot.on('ready', () => {
     await mongoose.connect('mongodb://localhost:27017/bBot', {
       useNewUrlParser: true,
       poolSize: 5,
+      useFindAndModify: false,
     });
     bBot.login(process.env.DISCORD_BOT_TOKEN);
   } catch (error) {

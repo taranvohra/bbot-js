@@ -1,10 +1,21 @@
 export const prefix = '~';
 
+//TODO: Add it to commands folder
 export const commands = [
   {
     key: 'registerServer',
     description: '',
     aliases: ['register'],
+  },
+  {
+    key: 'setQueryChannel',
+    description: '',
+    aliases: ['setquerychannel'],
+  },
+  {
+    key: 'setPugChannel',
+    description: '',
+    aliases: ['setpugchannel'],
   },
   {
     key: 'addQueryServer',
