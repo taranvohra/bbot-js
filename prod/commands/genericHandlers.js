@@ -5,9 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.setPugChannel = exports.setQueryChannel = exports.registerServer = void 0;
 
+var _store = _interopRequireDefault(require("../store"));
+
 var _discordServers = _interopRequireDefault(require("../models/discordServers"));
 
-var _store = _interopRequireDefault(require("../store"));
+var _constants = require("../constants");
+
+var _utils = require("../utils");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -18,56 +22,68 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 var registerServer =
 /*#__PURE__*/
 function () {
-  var _ref = _asyncToGenerator(
+  var _ref2 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee(message, _, serverId, __) {
-    var res;
+  regeneratorRuntime.mark(function _callee(message, _, serverId, _ref) {
+    var roles, res;
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            _context.prev = 0;
-            _context.next = 3;
+            roles = _ref.roles;
+            _context.prev = 1;
+            console.log(roles);
+
+            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
+              _context.next = 5;
+              break;
+            }
+
+            return _context.abrupt("return");
+
+          case 5:
+            _context.next = 7;
             return _discordServers["default"].findOne({
               server_id: serverId
             }).exec();
 
-          case 3:
+          case 7:
             res = _context.sent;
 
             if (!res) {
-              _context.next = 6;
+              _context.next = 10;
               break;
             }
 
             return _context.abrupt("return", message.channel.send('Server is already registered with bBot :wink:'));
 
-          case 6:
-            _context.next = 8;
+          case 10:
+            _context.next = 12;
             return new _discordServers["default"]({
               server_id: serverId
             }).save();
 
-          case 8:
+          case 12:
             message.channel.send('Server registered with bBot!');
-            _context.next = 14;
+            _context.next = 19;
             break;
 
-          case 11:
-            _context.prev = 11;
-            _context.t0 = _context["catch"](0);
+          case 15:
+            _context.prev = 15;
+            _context.t0 = _context["catch"](1);
+            console.log(_context.t0);
             message.channel.send('Something went wrong. The developer of this bot has been notified ');
 
-          case 14:
+          case 19:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[0, 11]]);
+    }, _callee, null, [[1, 15]]);
   }));
 
   return function registerServer(_x, _x2, _x3, _x4) {
-    return _ref.apply(this, arguments);
+    return _ref2.apply(this, arguments);
   };
 }();
 
@@ -76,39 +92,49 @@ exports.registerServer = registerServer;
 var setQueryChannel =
 /*#__PURE__*/
 function () {
-  var _ref2 = _asyncToGenerator(
+  var _ref4 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee2(message, _, serverId, __) {
-    var res;
+  regeneratorRuntime.mark(function _callee2(message, _, serverId, _ref3) {
+    var roles, res;
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            _context2.prev = 0;
-            _context2.next = 3;
+            roles = _ref3.roles;
+            _context2.prev = 1;
+
+            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
+              _context2.next = 4;
+              break;
+            }
+
+            return _context2.abrupt("return");
+
+          case 4:
+            _context2.next = 6;
             return _discordServers["default"].findOne({
               server_id: serverId
             }).exec();
 
-          case 3:
+          case 6:
             res = _context2.sent;
 
             if (res) {
-              _context2.next = 6;
+              _context2.next = 9;
               break;
             }
 
             return _context2.abrupt("return", message.channel.send('Please register the server with the bot! Type .register'));
 
-          case 6:
-            _context2.next = 8;
+          case 9:
+            _context2.next = 11;
             return _discordServers["default"].findOneAndUpdate({
               server_id: serverId
             }, {
               query_channel: message.channel.id
             }).exec();
 
-          case 8:
+          case 11:
             _store["default"].dispatch({
               type: 'INIT',
               payload: {
@@ -117,27 +143,25 @@ function () {
               }
             });
 
-            console.log(_store["default"].getState());
             message.channel.send("<#".concat(message.channel.id, "> has been set as the query channel"));
-            _context2.next = 17;
+            _context2.next = 18;
             break;
 
-          case 13:
-            _context2.prev = 13;
-            _context2.t0 = _context2["catch"](0);
-            console.log(_context2.t0);
+          case 15:
+            _context2.prev = 15;
+            _context2.t0 = _context2["catch"](1);
             message.channel.send('Something went wrong. The developer of this bot has been notified ');
 
-          case 17:
+          case 18:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 13]]);
+    }, _callee2, null, [[1, 15]]);
   }));
 
   return function setQueryChannel(_x5, _x6, _x7, _x8) {
-    return _ref2.apply(this, arguments);
+    return _ref4.apply(this, arguments);
   };
 }();
 
@@ -146,7 +170,7 @@ exports.setQueryChannel = setQueryChannel;
 var setPugChannel =
 /*#__PURE__*/
 function () {
-  var _ref3 = _asyncToGenerator(
+  var _ref5 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee3(message, _, serverId, __) {
     var res;
@@ -155,30 +179,39 @@ function () {
         switch (_context3.prev = _context3.next) {
           case 0:
             _context3.prev = 0;
-            _context3.next = 3;
+
+            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
+              _context3.next = 3;
+              break;
+            }
+
+            return _context3.abrupt("return");
+
+          case 3:
+            _context3.next = 5;
             return _discordServers["default"].findOne({
               server_id: serverId
             }).exec();
 
-          case 3:
+          case 5:
             res = _context3.sent;
 
             if (res) {
-              _context3.next = 6;
+              _context3.next = 8;
               break;
             }
 
             return _context3.abrupt("return", message.channel.send('Please register the server with the bot! Type .register'));
 
-          case 6:
-            _context3.next = 8;
+          case 8:
+            _context3.next = 10;
             return _discordServers["default"].findOneAndUpdate({
               server_id: serverId
             }, {
               pug_channel: message.channel.id
             }).exec();
 
-          case 8:
+          case 10:
             _store["default"].dispatch({
               type: 'INIT',
               payload: {
@@ -187,15 +220,13 @@ function () {
               }
             });
 
-            console.log(_store["default"].getState());
             message.channel.send("<#".concat(message.channel.id, "> has been set as the pug channel"));
             _context3.next = 17;
             break;
 
-          case 13:
-            _context3.prev = 13;
+          case 14:
+            _context3.prev = 14;
             _context3.t0 = _context3["catch"](0);
-            console.log(_context3.t0);
             message.channel.send('Something went wrong. The developer of this bot has been notified ');
 
           case 17:
@@ -203,11 +234,11 @@ function () {
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[0, 13]]);
+    }, _callee3, null, [[0, 14]]);
   }));
 
   return function setPugChannel(_x9, _x10, _x11, _x12) {
-    return _ref3.apply(this, arguments);
+    return _ref5.apply(this, arguments);
   };
 }();
 

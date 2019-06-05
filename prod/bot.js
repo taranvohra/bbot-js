@@ -10,7 +10,7 @@ var _dotenv = _interopRequireDefault(require("dotenv"));
 
 var _store = _interopRequireDefault(require("./store"));
 
-var _contants = require("./contants");
+var _constants = require("./constants");
 
 var _commands = _interopRequireDefault(require("./commands"));
 
@@ -53,7 +53,7 @@ function () {
             return _context.abrupt("return");
 
           case 2:
-            if (message.content.startsWith(_contants.prefix)) {
+            if (message.content.startsWith(_constants.prefix)) {
               _context.next = 4;
               break;
             }
@@ -73,9 +73,9 @@ function () {
             return _context.abrupt("return");
 
           case 9:
-            _message$content$subs = message.content.substring(_contants.prefix.length).split(' ').filter(Boolean), _message$content$subs2 = _toArray(_message$content$subs), first = _message$content$subs2[0], args = _message$content$subs2.slice(1);
+            _message$content$subs = message.content.substring(_constants.prefix.length).split(' ').filter(Boolean), _message$content$subs2 = _toArray(_message$content$subs), first = _message$content$subs2[0], args = _message$content$subs2.slice(1);
             action = first && first.toLowerCase();
-            foundCommand = _contants.commands.find(function (cmd) {
+            foundCommand = _constants.commands.find(function (cmd) {
               return cmd.aliases.includes(action);
             });
 

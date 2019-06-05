@@ -1,8 +1,11 @@
-import DiscordServers from '../models/discordServers';
 import store from '../store';
+import DiscordServers from '../models/discordServers';
+import { privilegedRoles } from '../constants';
+import { hasPrivilegedRole } from '../utils';
 
-export const registerServer = async (message, _, serverId, __) => {
+export const registerServer = async (message, _, serverId, { roles }) => {
   try {
+    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     const res = await DiscordServers.findOne({
       server_id: serverId,
     }).exec();
@@ -21,8 +24,9 @@ export const registerServer = async (message, _, serverId, __) => {
   }
 };
 
-export const setQueryChannel = async (message, _, serverId, __) => {
+export const setQueryChannel = async (message, _, serverId, { roles }) => {
   try {
+    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     const res = await DiscordServers.findOne({
       server_id: serverId,
     }).exec();
@@ -42,12 +46,10 @@ export const setQueryChannel = async (message, _, serverId, __) => {
       payload: { serverId, queryChannel: message.channel.id },
     });
 
-    console.log(store.getState());
     message.channel.send(
       `<#${message.channel.id}> has been set as the query channel`
     );
-  } catch (error) {
-    console.log(error);
+  } catch (err) {
     message.channel.send(
       'Something went wrong. The developer of this bot has been notified '
     );
@@ -56,6 +58,7 @@ export const setQueryChannel = async (message, _, serverId, __) => {
 
 export const setPugChannel = async (message, _, serverId, __) => {
   try {
+    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     const res = await DiscordServers.findOne({
       server_id: serverId,
     }).exec();
@@ -75,12 +78,10 @@ export const setPugChannel = async (message, _, serverId, __) => {
       payload: { serverId, pugChannel: message.channel.id },
     });
 
-    console.log(store.getState());
     message.channel.send(
       `<#${message.channel.id}> has been set as the pug channel`
     );
-  } catch (error) {
-    console.log(error);
+  } catch (err) {
     message.channel.send(
       'Something went wrong. The developer of this bot has been notified '
     );

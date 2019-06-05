@@ -38,3 +38,5 @@ export const commands = [
     aliases: ['servers'],
   },
 ];
+
+export const privilegedRoles = ['Admins', 'Moderators'];

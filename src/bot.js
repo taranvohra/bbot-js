@@ -3,7 +3,7 @@ import { Client } from 'discord.js';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import store from './store';
-import { prefix, commands } from './contants';
+import { prefix, commands } from './constants';
 import handlers from './commands';
 
 dotenv.config();

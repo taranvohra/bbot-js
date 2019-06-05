@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.commands = exports.prefix = void 0;
+exports.privilegedRoles = exports.commands = exports.prefix = void 0;
 var prefix = '~'; //TODO: Add it to commands folder
 
 exports.prefix = prefix;
@@ -37,4 +37,6 @@ var commands = [{
   aliases: ['servers']
 }];
 exports.commands = commands;
-//# sourceMappingURL=contants.js.map
+var privilegedRoles = ['Admins', 'Moderators'];
+exports.privilegedRoles = privilegedRoles;
+//# sourceMappingURL=constants.js.map
