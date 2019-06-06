@@ -23,11 +23,11 @@ var commands = [{
   description: '',
   aliases: ['register']
 }, {
-  key: 'setQueryChannel',
+  key: 'registerQueryChannel',
   description: '',
   aliases: ['setquerychannel']
 }, {
-  key: 'setPugChannel',
+  key: 'registerPugChannel',
   description: '',
   aliases: ['setpugchannel']
 }, {

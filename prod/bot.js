@@ -12,11 +12,11 @@ var _store = _interopRequireDefault(require("./store"));
 
 var _actions = require("./store/actions");
 
-var _constants = require("./constants");
+var _models = require("./models");
 
 var _commands = require("./commands");
 
-var _discordServers = _interopRequireDefault(require("./models/discordServers"));
+var _constants = require("./constants");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -162,29 +162,38 @@ function () {
   var _ref3 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee3() {
-    var servers;
+    var dServers, qServers;
     return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
             _context3.next = 2;
-            return _discordServers["default"].find({}).exec();
+            return _models.DiscordServers.find({}).exec();
 
           case 2:
-            servers = _context3.sent;
-            servers.forEach(function (_ref4) {
+            dServers = _context3.sent;
+            _context3.next = 5;
+            return _models.UT99QueryServers.find({}).exec();
+
+          case 5:
+            qServers = _context3.sent;
+            dServers.forEach(function (_ref4) {
               var server_id = _ref4.server_id,
                   pug_channel = _ref4.pug_channel,
                   query_channel = _ref4.query_channel;
 
-              _store["default"].dispatch((0, _actions.initStore)({
+              _store["default"].dispatch((0, _actions.setPugChannel)({
                 serverId: server_id,
-                pugChannel: pug_channel,
+                pugChannel: pug_channel
+              }));
+
+              _store["default"].dispatch((0, _actions.setQueryChannel)({
+                serverId: server_id,
                 queryChannel: query_channel
               }));
             });
 
-          case 4:
+          case 7:
           case "end":
             return _context3.stop();
         }

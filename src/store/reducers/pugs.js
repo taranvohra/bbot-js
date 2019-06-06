@@ -1,12 +1,12 @@
 const pugs = (state = {}, { type, payload }) => {
   switch (type) {
-    case 'INIT': {
-      const current =
-        state[payload.serverId] && state[payload.serverId].pugChannel;
+    case 'SET_PUG_CHANNEL': {
+      console.log(payload.serverId);
       return {
         ...state,
         [payload.serverId]: {
-          pugChannel: payload.pugChannel || current,
+          ...state[payload.serverId],
+          pugChannel: payload.pugChannel,
         },
       };
     }

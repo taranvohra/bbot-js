@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 
 const schema = mongoose.Schema({
-  server_id: Number,
-  pug_channel: Number,
-  query_channel: Number,
+  server_id: String,
+  pug_channel: String,
+  query_channel: String,
 });
 
 export default mongoose.model('discord_servers', schema);

@@ -1,6 +1,6 @@
-import DiscordServers from '../models/discordServers';
+import { DiscordServers } from '../models';
 import store from '../store';
-import { initStore } from '../store/actions';
+import { setQueryChannel, setPugChannel } from '../store/actions';
 import { privilegedRoles } from '../constants';
 import { hasPrivilegedRole } from '../utils';
 
@@ -25,7 +25,7 @@ export const registerServer = async (message, _, serverId, { roles }) => {
   }
 };
 
-export const setQueryChannel = async (message, _, serverId, { roles }) => {
+export const registerQueryChannel = async (message, _, serverId, { roles }) => {
   try {
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     const res = await DiscordServers.findOne({
@@ -42,7 +42,9 @@ export const setQueryChannel = async (message, _, serverId, { roles }) => {
       { query_channel: message.channel.id }
     ).exec();
 
-    store.dispatch(initStore({ serverId, queryChannel: message.channel.id }));
+    store.dispatch(
+      setQueryChannel({ serverId, queryChannel: message.channel.id })
+    );
 
     message.channel.send(
       `<#${message.channel.id}> has been set as the query channel`
@@ -54,7 +56,7 @@ export const setQueryChannel = async (message, _, serverId, { roles }) => {
   }
 };
 
-export const setPugChannel = async (message, _, serverId, __) => {
+export const registerPugChannel = async (message, _, serverId, { roles }) => {
   try {
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     const res = await DiscordServers.findOne({
@@ -71,7 +73,7 @@ export const setPugChannel = async (message, _, serverId, __) => {
       { pug_channel: message.channel.id }
     ).exec();
 
-    store.dispatch(initStore({ serverId, pugChannel: message.channel.id }));
+    store.dispatch(setPugChannel({ serverId, pugChannel: message.channel.id }));
 
     message.channel.send(
       `<#${message.channel.id}> has been set as the pug channel`

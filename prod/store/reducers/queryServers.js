@@ -17,12 +17,12 @@ var queryServers = function queryServers() {
       payload = _ref.payload;
 
   switch (type) {
-    case 'INIT':
+    case 'SET_QUERY_CHANNEL':
       {
-        var current = state[payload.serverId] && state[payload.serverId].queryChannel;
-        return _objectSpread({}, state, _defineProperty({}, payload.serverId, {
-          queryChannel: payload.queryChannel || current
-        }));
+        console.log(payload.serverId);
+        return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
+          queryChannel: payload.queryChannel
+        })));
       }
 
     case 'ADD_QUERY_SERVER':

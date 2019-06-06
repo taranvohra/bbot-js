@@ -10,12 +10,17 @@ var _mongoose = _interopRequireDefault(require("mongoose"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var schema = _mongoose["default"].Schema({
-  server_id: String,
-  pug_channel: String,
-  query_channel: String
+  server_id: Number,
+  query_servers: [{
+    key: String,
+    name: String,
+    host: String,
+    port: Number,
+    timestamp: Number
+  }]
 });
 
-var _default = _mongoose["default"].model('discord_servers', schema);
+var _default = _mongoose["default"].model('ut99_query_servers', schema);
 
 exports["default"] = _default;
-//# sourceMappingURL=discordServers.js.map
+//# sourceMappingURL=ut99QueryServers.js.map

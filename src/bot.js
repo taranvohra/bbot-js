@@ -3,10 +3,10 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { Client } from 'discord.js';
 import store from './store';
-import { initStore } from './store/actions';
-import { prefix } from './constants';
+import { setQueryChannel, setPugChannel } from './store/actions';
+import { DiscordServers, UT99QueryServers } from './models';
 import { handlers, commands } from './commands';
-import DiscordServers from './models/discordServers';
+import { prefix } from './constants';
 
 dotenv.config();
 
@@ -63,20 +63,25 @@ bBot.on('ready', () => {
     });
     await hydrateStore();
     bBot.login(process.env.DISCORD_BOT_TOKEN);
+    console.log(store.getState());
   } catch (error) {
     console.log('error', error);
   }
 })();
 
 const hydrateStore = async () => {
-  const servers = await DiscordServers.find({}).exec();
-  servers.forEach(({ server_id, pug_channel, query_channel }) => {
+  const dServers = await DiscordServers.find({}).exec();
+  const qServers = await UT99QueryServers.find({}).exec();
+
+  dServers.forEach(({ server_id, pug_channel, query_channel }) => {
     store.dispatch(
-      initStore({
+      setPugChannel({
         serverId: server_id,
         pugChannel: pug_channel,
-        queryChannel: query_channel,
       })
+    );
+    store.dispatch(
+      setQueryChannel({ serverId: server_id, queryChannel: query_channel })
     );
   });
 };

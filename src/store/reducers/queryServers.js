@@ -1,12 +1,12 @@
 const queryServers = (state = {}, { type, payload }) => {
   switch (type) {
-    case 'INIT': {
-      const current =
-        state[payload.serverId] && state[payload.serverId].queryChannel;
+    case 'SET_QUERY_CHANNEL': {
+      console.log(payload.serverId);
       return {
         ...state,
         [payload.serverId]: {
-          queryChannel: payload.queryChannel || current,
+          ...state[payload.serverId],
+          queryChannel: payload.queryChannel,
         },
       };
     }

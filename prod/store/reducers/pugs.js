@@ -17,12 +17,12 @@ var pugs = function pugs() {
       payload = _ref.payload;
 
   switch (type) {
-    case 'INIT':
+    case 'SET_PUG_CHANNEL':
       {
-        var current = state[payload.serverId] && state[payload.serverId].pugChannel;
-        return _objectSpread({}, state, _defineProperty({}, payload.serverId, {
-          pugChannel: payload.pugChannel || current
-        }));
+        console.log(payload.serverId);
+        return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
+          pugChannel: payload.pugChannel
+        })));
       }
 
     default:
