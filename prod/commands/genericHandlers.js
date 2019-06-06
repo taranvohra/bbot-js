@@ -5,9 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.setPugChannel = exports.setQueryChannel = exports.registerServer = void 0;
 
+var _discordServers = _interopRequireDefault(require("../models/discordServers"));
+
 var _store = _interopRequireDefault(require("../store"));
 
-var _discordServers = _interopRequireDefault(require("../models/discordServers"));
+var _actions = require("../store/actions");
 
 var _constants = require("../constants");
 
@@ -32,54 +34,52 @@ function () {
           case 0:
             roles = _ref.roles;
             _context.prev = 1;
-            console.log(roles);
 
             if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
-              _context.next = 5;
+              _context.next = 4;
               break;
             }
 
             return _context.abrupt("return");
 
-          case 5:
-            _context.next = 7;
+          case 4:
+            _context.next = 6;
             return _discordServers["default"].findOne({
               server_id: serverId
             }).exec();
 
-          case 7:
+          case 6:
             res = _context.sent;
 
             if (!res) {
-              _context.next = 10;
+              _context.next = 9;
               break;
             }
 
             return _context.abrupt("return", message.channel.send('Server is already registered with bBot :wink:'));
 
-          case 10:
-            _context.next = 12;
+          case 9:
+            _context.next = 11;
             return new _discordServers["default"]({
               server_id: serverId
             }).save();
 
-          case 12:
+          case 11:
             message.channel.send('Server registered with bBot!');
-            _context.next = 19;
+            _context.next = 17;
             break;
 
-          case 15:
-            _context.prev = 15;
+          case 14:
+            _context.prev = 14;
             _context.t0 = _context["catch"](1);
-            console.log(_context.t0);
             message.channel.send('Something went wrong. The developer of this bot has been notified ');
 
-          case 19:
+          case 17:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[1, 15]]);
+    }, _callee, null, [[1, 14]]);
   }));
 
   return function registerServer(_x, _x2, _x3, _x4) {
@@ -135,13 +135,10 @@ function () {
             }).exec();
 
           case 11:
-            _store["default"].dispatch({
-              type: 'INIT',
-              payload: {
-                serverId: serverId,
-                queryChannel: message.channel.id
-              }
-            });
+            _store["default"].dispatch((0, _actions.initStore)({
+              serverId: serverId,
+              queryChannel: message.channel.id
+            }));
 
             message.channel.send("<#".concat(message.channel.id, "> has been set as the query channel"));
             _context2.next = 18;
@@ -212,13 +209,10 @@ function () {
             }).exec();
 
           case 10:
-            _store["default"].dispatch({
-              type: 'INIT',
-              payload: {
-                serverId: serverId,
-                pugChannel: message.channel.id
-              }
-            });
+            _store["default"].dispatch((0, _actions.initStore)({
+              serverId: serverId,
+              pugChannel: message.channel.id
+            }));
 
             message.channel.send("<#".concat(message.channel.id, "> has been set as the pug channel"));
             _context3.next = 17;

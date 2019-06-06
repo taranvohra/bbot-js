@@ -2,17 +2,21 @@
 
 require("@babel/polyfill");
 
-var _discord = require("discord.js");
+var _dotenv = _interopRequireDefault(require("dotenv"));
 
 var _mongoose = _interopRequireDefault(require("mongoose"));
 
-var _dotenv = _interopRequireDefault(require("dotenv"));
+var _discord = require("discord.js");
 
 var _store = _interopRequireDefault(require("./store"));
 
+var _actions = require("./store/actions");
+
 var _constants = require("./constants");
 
-var _commands = _interopRequireDefault(require("./commands"));
+var _commands = require("./commands");
+
+var _discordServers = _interopRequireDefault(require("./models/discordServers"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -75,7 +79,7 @@ function () {
           case 9:
             _message$content$subs = message.content.substring(_constants.prefix.length).split(' ').filter(Boolean), _message$content$subs2 = _toArray(_message$content$subs), first = _message$content$subs2[0], args = _message$content$subs2.slice(1);
             action = first && first.toLowerCase();
-            foundCommand = _constants.commands.find(function (cmd) {
+            foundCommand = _commands.commands.find(function (cmd) {
               return cmd.aliases.includes(action);
             });
 
@@ -84,7 +88,7 @@ function () {
               break;
             }
 
-            return _context.abrupt("return", _commands["default"][foundCommand.key](message, args, serverId, {
+            return _context.abrupt("return", _commands.handlers[foundCommand.key](message, args, serverId, {
               id: id,
               username: username,
               roles: roles
@@ -130,20 +134,66 @@ regeneratorRuntime.mark(function _callee2() {
           });
 
         case 3:
+          _context2.next = 5;
+          return hydrateStore();
+
+        case 5:
           bBot.login(process.env.DISCORD_BOT_TOKEN);
-          _context2.next = 9;
+          console.log(_store["default"].getState());
+          _context2.next = 12;
           break;
 
-        case 6:
-          _context2.prev = 6;
+        case 9:
+          _context2.prev = 9;
           _context2.t0 = _context2["catch"](0);
           console.log('error', _context2.t0);
 
-        case 9:
+        case 12:
         case "end":
           return _context2.stop();
       }
     }
-  }, _callee2, null, [[0, 6]]);
+  }, _callee2, null, [[0, 9]]);
 }))();
+
+var hydrateStore =
+/*#__PURE__*/
+function () {
+  var _ref3 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee3() {
+    var servers;
+    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.next = 2;
+            return _discordServers["default"].find({}).exec();
+
+          case 2:
+            servers = _context3.sent;
+            servers.forEach(function (_ref4) {
+              var server_id = _ref4.server_id,
+                  pug_channel = _ref4.pug_channel,
+                  query_channel = _ref4.query_channel;
+
+              _store["default"].dispatch((0, _actions.initStore)({
+                serverId: server_id,
+                pugChannel: pug_channel,
+                queryChannel: query_channel
+              }));
+            });
+
+          case 4:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3);
+  }));
+
+  return function hydrateStore() {
+    return _ref3.apply(this, arguments);
+  };
+}();
 //# sourceMappingURL=bot.js.map

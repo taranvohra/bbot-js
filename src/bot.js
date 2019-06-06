@@ -1,10 +1,12 @@
 import '@babel/polyfill';
-import { Client } from 'discord.js';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import { Client } from 'discord.js';
 import store from './store';
-import { prefix, commands } from './constants';
-import handlers from './commands';
+import { initStore } from './store/actions';
+import { prefix } from './constants';
+import { handlers, commands } from './commands';
+import DiscordServers from './models/discordServers';
 
 dotenv.config();
 
@@ -59,8 +61,22 @@ bBot.on('ready', () => {
       poolSize: 5,
       useFindAndModify: false,
     });
+    await hydrateStore();
     bBot.login(process.env.DISCORD_BOT_TOKEN);
   } catch (error) {
     console.log('error', error);
   }
 })();
+
+const hydrateStore = async () => {
+  const servers = await DiscordServers.find({}).exec();
+  servers.forEach(({ server_id, pug_channel, query_channel }) => {
+    store.dispatch(
+      initStore({
+        serverId: server_id,
+        pugChannel: pug_channel,
+        queryChannel: query_channel,
+      })
+    );
+  });
+};

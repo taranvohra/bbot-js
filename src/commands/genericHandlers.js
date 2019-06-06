@@ -1,5 +1,6 @@
-import store from '../store';
 import DiscordServers from '../models/discordServers';
+import store from '../store';
+import { initStore } from '../store/actions';
 import { privilegedRoles } from '../constants';
 import { hasPrivilegedRole } from '../utils';
 
@@ -41,10 +42,7 @@ export const setQueryChannel = async (message, _, serverId, { roles }) => {
       { query_channel: message.channel.id }
     ).exec();
 
-    store.dispatch({
-      type: 'INIT',
-      payload: { serverId, queryChannel: message.channel.id },
-    });
+    store.dispatch(initStore({ serverId, queryChannel: message.channel.id }));
 
     message.channel.send(
       `<#${message.channel.id}> has been set as the query channel`
@@ -73,10 +71,7 @@ export const setPugChannel = async (message, _, serverId, __) => {
       { pug_channel: message.channel.id }
     ).exec();
 
-    store.dispatch({
-      type: 'INIT',
-      payload: { serverId, pugChannel: message.channel.id },
-    });
+    store.dispatch(initStore({ serverId, pugChannel: message.channel.id }));
 
     message.channel.send(
       `<#${message.channel.id}> has been set as the pug channel`

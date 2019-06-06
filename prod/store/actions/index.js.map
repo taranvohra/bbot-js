@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../src/store/actions/index.js"],"names":["initStore","data","type","payload"],"mappings":";;;;;;;AAAO,SAASA,SAAT,CAAmBC,IAAnB,EAAyB;AAC9B,SAAO;AACLC,IAAAA,IAAI,EAAE,MADD;AAELC,IAAAA,OAAO,EAAEF;AAFJ,GAAP;AAID","sourcesContent":["export function initStore(data) {\n  return {\n    type: 'INIT',\n    payload: data,\n  };\n}\n"],"file":"index.js"}

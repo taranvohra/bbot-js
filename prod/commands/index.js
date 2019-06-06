@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports.handlers = exports.commands = void 0;
 
 var genericHandlers = _interopRequireWildcard(require("./genericHandlers"));
 
@@ -15,7 +15,37 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var _default = _objectSpread({}, genericHandlers, ut99Handlers);
+var handlers = _objectSpread({}, genericHandlers, ut99Handlers);
 
-exports["default"] = _default;
+exports.handlers = handlers;
+var commands = [{
+  key: 'registerServer',
+  description: '',
+  aliases: ['register']
+}, {
+  key: 'setQueryChannel',
+  description: '',
+  aliases: ['setquerychannel']
+}, {
+  key: 'setPugChannel',
+  description: '',
+  aliases: ['setpugchannel']
+}, {
+  key: 'addQueryServer',
+  description: '',
+  aliases: ['addqueryserver']
+}, {
+  key: 'delQueryServer',
+  description: '',
+  aliases: ['delqueryserver']
+}, {
+  key: 'queryUT99Server',
+  description: '',
+  aliases: ['q', 'query']
+}, {
+  key: 'servers',
+  description: '',
+  aliases: ['servers']
+}];
+exports.commands = commands;
 //# sourceMappingURL=index.js.map

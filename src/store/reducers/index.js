@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux';
-import queryServers from './queryServers';
 import pugs from './pugs';
+import queryServers from './queryServers';
+import blocks from './blocks';
 
-export default combineReducers({ queryServers, pugs });
+export default combineReducers({ queryServers, pugs, blocks });
