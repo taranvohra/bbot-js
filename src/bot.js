@@ -33,9 +33,9 @@ bBot.on('message', async message => {
     .split(' ')
     .filter(Boolean);
   const action = first && first.toLowerCase();
-
   const foundCommand = commands.find(cmd => cmd.aliases.includes(action));
 
+  console.log(args);
   if (foundCommand) {
     return handlers[foundCommand.key](message, args, serverId, {
       id,

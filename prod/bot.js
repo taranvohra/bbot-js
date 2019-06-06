@@ -82,9 +82,10 @@ function () {
             foundCommand = _commands.commands.find(function (cmd) {
               return cmd.aliases.includes(action);
             });
+            console.log(args);
 
             if (!foundCommand) {
-              _context.next = 14;
+              _context.next = 15;
               break;
             }
 
@@ -94,10 +95,10 @@ function () {
               roles: roles
             }));
 
-          case 14:
+          case 15:
             message.channel.send("Command not found");
 
-          case 15:
+          case 16:
           case "end":
             return _context.stop();
         }

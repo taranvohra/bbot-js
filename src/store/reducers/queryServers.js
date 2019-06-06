@@ -1,7 +1,6 @@
 const queryServers = (state = {}, { type, payload }) => {
   switch (type) {
     case 'SET_QUERY_CHANNEL': {
-      console.log(payload.serverId);
       return {
         ...state,
         [payload.serverId]: {

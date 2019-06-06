@@ -7,7 +7,7 @@ const schema = mongoose.Schema({
       key: String,
       name: String,
       host: String,
-      port: Number,
+      port: String,
       timestamp: Number,
     },
   ],

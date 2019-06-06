@@ -1,4 +1,4 @@
-import { DiscordServers } from '../models';
+import { DiscordServers, UT99QueryServers } from '../models';
 import store from '../store';
 import { setQueryChannel, setPugChannel } from '../store/actions';
 import { privilegedRoles } from '../constants';
@@ -16,7 +16,11 @@ export const registerServer = async (message, _, serverId, { roles }) => {
         'Server is already registered with bBot :wink:'
       );
 
-    await new DiscordServers({ server_id: serverId }).save();
+    await Promise.all([
+      new DiscordServers({ server_id: serverId }).save(),
+      new UT99QueryServers({ server_id: serverId }).save(),
+    ]);
+
     message.channel.send('Server registered with bBot!');
   } catch (err) {
     message.channel.send(
