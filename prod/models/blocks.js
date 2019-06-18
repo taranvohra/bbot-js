@@ -11,16 +11,15 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 
 var schema = _mongoose["default"].Schema({
   server_id: String,
-  query_servers: [{
-    key: String,
+  blocked_users: [{
+    id: String,
     name: String,
-    host: String,
-    port: String,
-    timestamp: Number
+    blocked_on: Number,
+    expires_at: Number
   }]
 });
 
-var _default = _mongoose["default"].model('ut99_query_servers', schema);
+var _default = _mongoose["default"].model('blocks', schema);
 
 exports["default"] = _default;
-//# sourceMappingURL=ut99QueryServers.js.map
+//# sourceMappingURL=blocks.js.map

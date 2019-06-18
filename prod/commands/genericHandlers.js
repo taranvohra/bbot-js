@@ -64,6 +64,8 @@ function () {
               server_id: serverId
             }).save(), new _models.UT99QueryServers({
               server_id: serverId
+            }).save(), new _models.Blocks({
+              server_id: serverId
             }).save()]);
 
           case 11:

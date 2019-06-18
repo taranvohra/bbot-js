@@ -82,10 +82,9 @@ function () {
             foundCommand = _commands.commands.find(function (cmd) {
               return cmd.aliases.includes(action);
             });
-            console.log(args);
 
             if (!foundCommand) {
-              _context.next = 15;
+              _context.next = 14;
               break;
             }
 
@@ -95,10 +94,10 @@ function () {
               roles: roles
             }));
 
-          case 15:
+          case 14:
             message.channel.send("Command not found");
 
-          case 16:
+          case 15:
           case "end":
             return _context.stop();
         }
@@ -140,21 +139,20 @@ regeneratorRuntime.mark(function _callee2() {
 
         case 5:
           bBot.login(process.env.DISCORD_BOT_TOKEN);
-          console.log(_store["default"].getState());
-          _context2.next = 12;
+          _context2.next = 11;
           break;
 
-        case 9:
-          _context2.prev = 9;
+        case 8:
+          _context2.prev = 8;
           _context2.t0 = _context2["catch"](0);
           console.log('error', _context2.t0);
 
-        case 12:
+        case 11:
         case "end":
           return _context2.stop();
       }
     }
-  }, _callee2, null, [[0, 9]]);
+  }, _callee2, null, [[0, 8]]);
 }))();
 
 var hydrateStore =
@@ -183,6 +181,10 @@ function () {
                   pug_channel = _ref4.pug_channel,
                   query_channel = _ref4.query_channel;
 
+              _store["default"].dispatch((0, _actions.INIT)({
+                serverId: server_id
+              }));
+
               _store["default"].dispatch((0, _actions.setPugChannel)({
                 serverId: server_id,
                 pugChannel: pug_channel
@@ -193,8 +195,17 @@ function () {
                 queryChannel: query_channel
               }));
             });
+            qServers.forEach(function (_ref5) {
+              var server_id = _ref5.server_id,
+                  query_servers = _ref5.query_servers;
 
-          case 7:
+              _store["default"].dispatch((0, _actions.assignQueryServers)({
+                serverId: server_id,
+                list: query_servers
+              }));
+            });
+
+          case 8:
           case "end":
             return _context3.stop();
         }

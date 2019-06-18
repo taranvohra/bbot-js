@@ -11,6 +11,12 @@ var _crypto = _interopRequireDefault(require("crypto"));
 
 var _models = require("../models");
 
+var _actions = require("../store/actions");
+
+var _utils = require("../utils");
+
+var _formats = require("../formats");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
@@ -25,10 +31,6 @@ function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
-
-function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
-
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
@@ -39,7 +41,7 @@ function () {
   var _ref2 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee(_ref, _, serverId, __) {
-    var channel, state, _state$queryServers$s, queryChannel, queryServers;
+    var channel, state, _state$queryServers$s, queryChannel, list, sortedList;
 
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
@@ -48,7 +50,7 @@ function () {
             channel = _ref.channel;
             _context.prev = 1;
             state = _store["default"].getState();
-            _state$queryServers$s = state.queryServers[serverId], queryChannel = _state$queryServers$s.queryChannel, queryServers = _objectWithoutProperties(_state$queryServers$s, ["queryChannel"]);
+            _state$queryServers$s = state.queryServers[serverId], queryChannel = _state$queryServers$s.queryChannel, list = _state$queryServers$s.list;
 
             if (!(queryChannel !== channel.id)) {
               _context.next = 6;
@@ -58,19 +60,25 @@ function () {
             return _context.abrupt("return", channel.send("Active channel for querying is <#".concat(queryChannel, ">")));
 
           case 6:
-            _context.next = 10;
+            sortedList = list.sort(function (a, b) {
+              return a.timestamp - b.timestamp;
+            });
+            channel.send((0, _formats.formatQueryServers)(sortedList));
+            _context.next = 14;
             break;
 
-          case 8:
-            _context.prev = 8;
-            _context.t0 = _context["catch"](1);
-
           case 10:
+            _context.prev = 10;
+            _context.t0 = _context["catch"](1);
+            console.log(_context.t0);
+            channel.send("Something went wrong!");
+
+          case 14:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[1, 8]]);
+    }, _callee, null, [[1, 10]]);
   }));
 
   return function servers(_x, _x2, _x3, _x4) {
@@ -83,54 +91,63 @@ exports.servers = servers;
 var addQueryServer =
 /*#__PURE__*/
 function () {
-  var _ref5 = _asyncToGenerator(
+  var _ref6 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee2(_ref3, _ref4, serverId, __) {
-    var channel, _ref6, hp, rest, state, _state$queryServers$s2, queryChannel, queryServers, _hp$split, _hp$split2, host, port, name, key, newServer;
+  regeneratorRuntime.mark(function _callee2(_ref3, _ref4, serverId, _ref5) {
+    var channel, _ref7, hp, rest, roles, state, _state$queryServers$s2, list, _hp$split, _hp$split2, host, port, name, key, newServer;
 
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
             channel = _ref3.channel;
-            _ref6 = _toArray(_ref4), hp = _ref6[0], rest = _ref6.slice(1);
-            _context2.prev = 2;
+            _ref7 = _toArray(_ref4), hp = _ref7[0], rest = _ref7.slice(1);
+            roles = _ref5.roles;
+            _context2.prev = 3;
+
+            if ((0, _utils.hasPrivilegedRole)(privilegedRoles, roles)) {
+              _context2.next = 6;
+              break;
+            }
+
+            return _context2.abrupt("return");
+
+          case 6:
             state = _store["default"].getState();
-            _state$queryServers$s2 = state.queryServers[serverId], queryChannel = _state$queryServers$s2.queryChannel, queryServers = _objectWithoutProperties(_state$queryServers$s2, ["queryChannel"]);
+            _state$queryServers$s2 = state.queryServers[serverId].list, list = _state$queryServers$s2 === void 0 ? [] : _state$queryServers$s2;
             _hp$split = hp.split(':'), _hp$split2 = _slicedToArray(_hp$split, 2), host = _hp$split2[0], port = _hp$split2[1];
             name = rest.reduce(function (acc, curr) {
               return acc += curr + ' ';
             }, '');
 
             if (!(!host || !port || !name)) {
-              _context2.next = 9;
+              _context2.next = 12;
               break;
             }
 
             return _context2.abrupt("return", channel.send('Invalid command'));
 
-          case 9:
+          case 12:
             key = _crypto["default"].createHash('sha256').update(hp).digest('hex');
 
-            if (!queryServers.some(function (s) {
+            if (!list.some(function (s) {
               return s.key === key;
             })) {
-              _context2.next = 12;
+              _context2.next = 15;
               break;
             }
 
             return _context2.abrupt("return", channel.send('Query Server already exists!'));
 
-          case 12:
+          case 15:
             newServer = {
-              server_id: serverId,
               key: key,
               name: name,
               host: host,
               port: port,
               timestamp: Date.now()
             };
-            _context2.next = 15;
+            _context2.next = 18;
             return _models.UT99QueryServers.findOneAndUpdate({
               server_id: serverId
             }, {
@@ -139,26 +156,31 @@ function () {
               }
             }).exec();
 
-          case 15:
+          case 18:
+            _store["default"].dispatch((0, _actions.pushQueryServer)({
+              serverId: serverId,
+              queryServer: newServer
+            }));
+
             channel.send('Query Server added');
-            _context2.next = 21;
+            _context2.next = 25;
             break;
 
-          case 18:
-            _context2.prev = 18;
-            _context2.t0 = _context2["catch"](2);
+          case 22:
+            _context2.prev = 22;
+            _context2.t0 = _context2["catch"](3);
             console.log(_context2.t0);
 
-          case 21:
+          case 25:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[2, 18]]);
+    }, _callee2, null, [[3, 22]]);
   }));
 
   return function addQueryServer(_x5, _x6, _x7, _x8) {
-    return _ref5.apply(this, arguments);
+    return _ref6.apply(this, arguments);
   };
 }();
 

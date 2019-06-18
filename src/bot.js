@@ -3,7 +3,12 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { Client } from 'discord.js';
 import store from './store';
-import { setQueryChannel, setPugChannel } from './store/actions';
+import {
+  INIT,
+  setQueryChannel,
+  setPugChannel,
+  assignQueryServers,
+} from './store/actions';
 import { DiscordServers, UT99QueryServers } from './models';
 import { handlers, commands } from './commands';
 import { prefix } from './constants';
@@ -35,7 +40,6 @@ bBot.on('message', async message => {
   const action = first && first.toLowerCase();
   const foundCommand = commands.find(cmd => cmd.aliases.includes(action));
 
-  console.log(args);
   if (foundCommand) {
     return handlers[foundCommand.key](message, args, serverId, {
       id,
@@ -63,7 +67,6 @@ bBot.on('ready', () => {
     });
     await hydrateStore();
     bBot.login(process.env.DISCORD_BOT_TOKEN);
-    console.log(store.getState());
   } catch (error) {
     console.log('error', error);
   }
@@ -74,6 +77,7 @@ const hydrateStore = async () => {
   const qServers = await UT99QueryServers.find({}).exec();
 
   dServers.forEach(({ server_id, pug_channel, query_channel }) => {
+    store.dispatch(INIT({ serverId: server_id }));
     store.dispatch(
       setPugChannel({
         serverId: server_id,
@@ -82,6 +86,12 @@ const hydrateStore = async () => {
     );
     store.dispatch(
       setQueryChannel({ serverId: server_id, queryChannel: query_channel })
+    );
+  });
+
+  qServers.forEach(({ server_id, query_servers }) => {
+    store.dispatch(
+      assignQueryServers({ serverId: server_id, list: query_servers })
     );
   });
 };

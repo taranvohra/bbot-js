@@ -17,9 +17,16 @@ var pugs = function pugs() {
       payload = _ref.payload;
 
   switch (type) {
+    case 'INIT':
+      {
+        return _defineProperty({}, payload.serverId, {
+          pugChannel: null,
+          list: []
+        });
+      }
+
     case 'SET_PUG_CHANNEL':
       {
-        console.log(payload.serverId);
         return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
           pugChannel: payload.pugChannel
         })));

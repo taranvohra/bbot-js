@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const schema = mongoose.Schema({
-  server_id: Number,
+  server_id: String,
   query_servers: [
     {
       key: String,
