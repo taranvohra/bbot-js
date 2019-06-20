@@ -3,9 +3,13 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.formatQueryServers = void 0;
+exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
 
 var _discord = _interopRequireDefault(require("discord.js"));
+
+var _utils = require("./utils");
+
+var _constants = require("./constants");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -25,4 +29,46 @@ var formatQueryServers = function formatQueryServers(list) {
 };
 
 exports.formatQueryServers = formatQueryServers;
+
+var formatQueryServerStatus = function formatQueryServerStatus(info, players) {
+  var richEmbed = new _discord["default"].RichEmbed();
+  var xServerQueryProps = {
+    remainingTime: null,
+    teamScores: {}
+  };
+  var playerList = (0, _utils.getPlayerList)(players, parseInt(info.numplayers) || 0, !!info.maxteams);
+
+  if (info.xserverquery) {
+    var _getMinutesAndSeconds = (0, _utils.getMinutesAndSeconds)(parseInt(info.remainingtime)),
+        minutes = _getMinutesAndSeconds.minutes,
+        seconds = _getMinutesAndSeconds.seconds;
+
+    var teamScores = (0, _utils.getTeamScores)(info, info.maxteams);
+    xServerQueryProps.remainingTime = "".concat(minutes === parseInt(info.timelimit) && seconds === 0 || minutes < parseInt(info.timelimit) ? '**Remaining Time:**' : '**Overtime**:', " ").concat((0, _utils.padNumberWithZeros)(minutes), ":").concat((0, _utils.padNumberWithZeros)(seconds), " \n");
+    xServerQueryProps.teamScores = Object.keys(teamScores).reduce(function (acc, curr) {
+      var index = (0, _utils.getTeamIndex)(curr);
+      acc[index] = " \u2022 ".concat(teamScores[curr]);
+      return acc;
+    }, []);
+  }
+
+  Object.keys(playerList).forEach(function (team) {
+    var teamIndex = (0, _utils.getTeamIndex)(team);
+    var p = playerList[team];
+    var teamPlayers = p.reduce(function (acc, curr) {
+      if (team == _constants.teams.spec) acc += curr + ' • ';else acc += curr + ' ' + '\n';
+      return acc;
+    }, '');
+    p.length > 0 ? richEmbed.addField(team + (xServerQueryProps.teamScores[teamIndex] || ""), teamPlayers, team !== _constants.teams.spec) : '';
+  });
+  var description = "**Map:** ".concat(info.mapname, "\n**Players:** ").concat(info.numplayers, "/").concat(info.maxplayers, "\n").concat(xServerQueryProps.remainingTime || '');
+  var footerText = "unreal://".concat(info.host, ":").concat(info.port);
+  richEmbed.setTitle(info.hostname);
+  richEmbed.setColor(embedColor);
+  richEmbed.setDescription(description);
+  richEmbed.setFooter(footerText);
+  return richEmbed;
+};
+
+exports.formatQueryServerStatus = formatQueryServerStatus;
 //# sourceMappingURL=formats.js.map

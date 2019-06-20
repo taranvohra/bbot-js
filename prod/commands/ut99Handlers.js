@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.delQueryServer = exports.addQueryServer = exports.servers = void 0;
+exports.queryUT99Server = exports.delQueryServer = exports.addQueryServer = exports.servers = void 0;
 
 var _store = _interopRequireDefault(require("../store"));
 
@@ -19,7 +19,19 @@ var _utils = require("../utils");
 
 var _formats = require("../formats");
 
+var _API = _interopRequireDefault(require("../services/API"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
@@ -66,16 +78,15 @@ function () {
               return a.timestamp - b.timestamp;
             });
             channel.send((0, _formats.formatQueryServers)(sortedList));
-            _context.next = 14;
+            _context.next = 13;
             break;
 
           case 10:
             _context.prev = 10;
             _context.t0 = _context["catch"](1);
             console.log(_context.t0);
-            channel.send("Something went wrong!");
 
-          case 14:
+          case 13:
           case "end":
             return _context.stop();
         }
@@ -215,51 +226,50 @@ function () {
           case 6:
             state = _store["default"].getState();
             _state$queryServers$s3 = state.queryServers[serverId].list, list = _state$queryServers$s3 === void 0 ? [] : _state$queryServers$s3;
-            index = parseInt(which);
+            index = parseInt(which) - 1;
             sortedList = list.sort(function (a, b) {
               return a.timestamp - b.timestamp;
             });
-            console.log(sortedList);
 
             if (sortedList[index]) {
-              _context3.next = 13;
+              _context3.next = 12;
               break;
             }
 
             return _context3.abrupt("return", channel.send('Query Server not found!'));
 
-          case 13:
+          case 12:
             updatedList = sortedList.filter(function (_, i) {
-              return i !== parseInt(index);
+              return i !== index;
             });
-            _context3.next = 16;
+            _context3.next = 15;
             return _models.UT99QueryServers.findOneAndUpdate({
               server_id: serverId
             }, {
               query_servers: updatedList
             }).exec();
 
-          case 16:
+          case 15:
             _store["default"].dispatch((0, _actions.removeQueryServer)({
               serverId: serverId,
-              index: parseInt(index)
+              index: index
             }));
 
             channel.send('Query Server removed');
-            _context3.next = 23;
+            _context3.next = 22;
             break;
 
-          case 20:
-            _context3.prev = 20;
+          case 19:
+            _context3.prev = 19;
             _context3.t0 = _context3["catch"](3);
             console.log(_context3.t0);
 
-          case 23:
+          case 22:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[3, 20]]);
+    }, _callee3, null, [[3, 19]]);
   }));
 
   return function delQueryServer(_x9, _x10, _x11, _x12) {
@@ -268,4 +278,95 @@ function () {
 }();
 
 exports.delQueryServer = delQueryServer;
+
+var queryUT99Server =
+/*#__PURE__*/
+function () {
+  var _ref14 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee4(_ref13, args, serverId, _) {
+    var channel, state, _state$queryServers$s4, queryChannel, _state$queryServers$s5, list, sortedList, _ref15, host, _ref15$port, port, response, splitted, _final, _final$reduce, info, players, formattedResponse;
+
+    return regeneratorRuntime.wrap(function _callee4$(_context4) {
+      while (1) {
+        switch (_context4.prev = _context4.next) {
+          case 0:
+            channel = _ref13.channel;
+            _context4.prev = 1;
+            state = _store["default"].getState();
+            _state$queryServers$s4 = state.queryServers[serverId], queryChannel = _state$queryServers$s4.queryChannel, _state$queryServers$s5 = _state$queryServers$s4.list, list = _state$queryServers$s5 === void 0 ? [] : _state$queryServers$s5;
+
+            if (!(queryChannel !== channel.id)) {
+              _context4.next = 6;
+              break;
+            }
+
+            return _context4.abrupt("return", channel.send("Active channel for querying is <#".concat(queryChannel, ">")));
+
+          case 6:
+            sortedList = list.sort(function (a, b) {
+              return a.timestamp - b.timestamp;
+            });
+            _ref15 = sortedList[parseInt(args) - 1] || args.split(':').reduce(function (acc, curr, i) {
+              i === 0 ? acc['host'] = curr : acc['port'] = curr;
+              return acc;
+            }, {}), host = _ref15.host, _ref15$port = _ref15.port, port = _ref15$port === void 0 ? 7777 : _ref15$port;
+
+            if (host) {
+              _context4.next = 10;
+              break;
+            }
+
+            return _context4.abrupt("return", channel.send('Invalid query'));
+
+          case 10:
+            _context4.next = 12;
+            return _API["default"].queryUT99Server(host, parseInt(port) + 1);
+
+          case 12:
+            response = _context4.sent;
+            // UDP port is +1
+            splitted = response.split('\\');
+            _final = _toConsumableArray(splitted);
+
+            _final.shift();
+
+            _final.unshift();
+
+            _final$reduce = _final.reduce(function (acc, curr) {
+              if (curr === 'player_0' || curr === 'Player_0') acc.hasPlayersNow = true;
+              acc.hasPlayersNow ? acc.players.push(curr) : acc.info.push(curr);
+              return acc;
+            }, {
+              info: [],
+              players: [],
+              hasPlayersNow: false
+            }), info = _final$reduce.info, players = _final$reduce.players;
+            formattedResponse = (0, _formats.formatQueryServerStatus)(_objectSpread({}, (0, _utils.createAlternatingObject)(info), {
+              host: host,
+              port: port
+            }), (0, _utils.createAlternatingObject)(players));
+            channel.send(formattedResponse);
+            _context4.next = 25;
+            break;
+
+          case 22:
+            _context4.prev = 22;
+            _context4.t0 = _context4["catch"](1);
+            console.log(_context4.t0);
+
+          case 25:
+          case "end":
+            return _context4.stop();
+        }
+      }
+    }, _callee4, null, [[1, 22]]);
+  }));
+
+  return function queryUT99Server(_x13, _x14, _x15, _x16) {
+    return _ref14.apply(this, arguments);
+  };
+}();
+
+exports.queryUT99Server = queryUT99Server;
 //# sourceMappingURL=ut99Handlers.js.map

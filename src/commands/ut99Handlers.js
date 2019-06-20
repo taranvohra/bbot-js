@@ -3,8 +3,9 @@ import crypto from 'crypto';
 import { UT99QueryServers } from '../models';
 import { pushQueryServer, removeQueryServer } from '../store/actions';
 import { privilegedRoles } from '../constants';
-import { hasPrivilegedRole } from '../utils';
-import { formatQueryServers } from '../formats';
+import { hasPrivilegedRole, createAlternatingObject } from '../utils';
+import { formatQueryServers, formatQueryServerStatus } from '../formats';
+import API from '../services/API';
 
 export const servers = async ({ channel }, _, serverId, __) => {
   try {
@@ -18,7 +19,6 @@ export const servers = async ({ channel }, _, serverId, __) => {
     channel.send(formatQueryServers(sortedList));
   } catch (error) {
     console.log(error);
-    channel.send(`Something went wrong!`);
   }
 };
 
@@ -77,21 +77,70 @@ export const delQueryServer = async (
     const state = store.getState();
     const { list = [] } = state.queryServers[serverId];
 
-    const index = parseInt(which);
+    const index = parseInt(which) - 1;
     const sortedList = list.sort((a, b) => a.timestamp - b.timestamp);
-    console.log(sortedList);
 
     if (!sortedList[index]) return channel.send('Query Server not found!');
 
-    const updatedList = sortedList.filter((_, i) => i !== parseInt(index));
+    const updatedList = sortedList.filter((_, i) => i !== index);
 
     await UT99QueryServers.findOneAndUpdate(
       { server_id: serverId },
       { query_servers: updatedList }
     ).exec();
 
-    store.dispatch(removeQueryServer({ serverId, index: parseInt(index) }));
+    store.dispatch(removeQueryServer({ serverId, index: index }));
     channel.send('Query Server removed');
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const queryUT99Server = async ({ channel }, args, serverId, _) => {
+  try {
+    const state = store.getState();
+    const { queryChannel, list = [] } = state.queryServers[serverId];
+
+    if (queryChannel !== channel.id)
+      return channel.send(`Active channel for querying is <#${queryChannel}>`);
+
+    const sortedList = list.sort((a, b) => a.timestamp - b.timestamp);
+    const { host, port = 7777 } =
+      sortedList[parseInt(args) - 1] ||
+      args.split(':').reduce((acc, curr, i) => {
+        i === 0 ? (acc['host'] = curr) : (acc['port'] = curr);
+        return acc;
+      }, {});
+
+    if (!host) return channel.send('Invalid query');
+
+    const response = await API.queryUT99Server(host, parseInt(port) + 1); // UDP port is +1
+    const splitted = response.split('\\');
+    const final = [...splitted];
+    final.shift();
+    final.unshift();
+
+    const { info, players } = final.reduce(
+      (acc, curr) => {
+        if (curr === 'player_0' || curr === 'Player_0')
+          acc.hasPlayersNow = true;
+
+        acc.hasPlayersNow ? acc.players.push(curr) : acc.info.push(curr);
+        return acc;
+      },
+      {
+        info: [],
+        players: [],
+        hasPlayersNow: false,
+      }
+    );
+
+    const formattedResponse = formatQueryServerStatus(
+      { ...createAlternatingObject(info), host, port },
+      createAlternatingObject(players)
+    );
+
+    channel.send(formattedResponse);
   } catch (error) {
     console.log(error);
   }
