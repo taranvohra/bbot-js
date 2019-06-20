@@ -91,7 +91,10 @@ const hydrateStore = async () => {
 
   qServers.forEach(({ server_id, query_servers }) => {
     store.dispatch(
-      assignQueryServers({ serverId: server_id, list: query_servers })
+      assignQueryServers({
+        serverId: server_id,
+        list: Array.from(query_servers),
+      })
     );
   });
 };

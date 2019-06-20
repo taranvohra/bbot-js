@@ -6,7 +6,7 @@ export const formatQueryServers = list => {
   const richEmbed = new Discord.RichEmbed();
 
   const description = list.reduce((acc, curr, index) => {
-    acc += `\`${index + 1}\` \u00A0\u00A0\u00A0${curr.name}\n`;
+    acc += `\`${index + 1}\`\u00A0\u00A0\u00A0${curr.name}\n`;
     return acc;
   }, '');
 

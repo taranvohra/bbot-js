@@ -18,6 +18,11 @@ export const pushQueryServer = data => ({
   payload: data,
 });
 
+export const removeQueryServer = data => ({
+  type: 'REMOVE_QUERY_SERVER',
+  payload: data,
+});
+
 export const assignQueryServers = data => ({
   type: 'ASSIGN_QUERY_SERVERS',
   payload: data,

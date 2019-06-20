@@ -14,7 +14,7 @@ var embedColor = '#11806A';
 var formatQueryServers = function formatQueryServers(list) {
   var richEmbed = new _discord["default"].RichEmbed();
   var description = list.reduce(function (acc, curr, index) {
-    acc += "`".concat(index + 1, "` \xA0\xA0\xA0").concat(curr.name, "\n");
+    acc += "`".concat(index + 1, "`\xA0\xA0\xA0").concat(curr.name, "\n");
     return acc;
   }, '');
   richEmbed.setTitle("IP\xA0\xA0\xA0Name");

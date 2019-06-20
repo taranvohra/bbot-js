@@ -31,7 +31,16 @@ const queryServers = (state = {}, { type, payload }) => {
     }
 
     case 'REMOVE_QUERY_SERVER': {
-      return;
+      const { list } = state[payload.serverId];
+      const sortedList = list.sort((a, b) => a.timestamp - b.timestamp);
+      const updatedList = sortedList.filter((_, i) => i !== payload.index);
+      return {
+        ...state,
+        [payload.serverId]: {
+          ...state[payload.serverId],
+          list: updatedList,
+        },
+      };
     }
 
     case 'ASSIGN_QUERY_SERVERS': {

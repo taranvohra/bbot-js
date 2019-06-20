@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.addQueryServer = exports.servers = void 0;
+exports.delQueryServer = exports.addQueryServer = exports.servers = void 0;
 
 var _store = _interopRequireDefault(require("../store"));
 
@@ -12,6 +12,8 @@ var _crypto = _interopRequireDefault(require("crypto"));
 var _models = require("../models");
 
 var _actions = require("../store/actions");
+
+var _constants = require("../constants");
 
 var _utils = require("../utils");
 
@@ -105,7 +107,7 @@ function () {
             roles = _ref5.roles;
             _context2.prev = 3;
 
-            if ((0, _utils.hasPrivilegedRole)(privilegedRoles, roles)) {
+            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
               _context2.next = 6;
               break;
             }
@@ -185,4 +187,85 @@ function () {
 }();
 
 exports.addQueryServer = addQueryServer;
+
+var delQueryServer =
+/*#__PURE__*/
+function () {
+  var _ref11 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee3(_ref8, _ref9, serverId, _ref10) {
+    var channel, _ref12, which, rest, roles, state, _state$queryServers$s3, list, index, sortedList, updatedList;
+
+    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            channel = _ref8.channel;
+            _ref12 = _toArray(_ref9), which = _ref12[0], rest = _ref12.slice(1);
+            roles = _ref10.roles;
+            _context3.prev = 3;
+
+            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
+              _context3.next = 6;
+              break;
+            }
+
+            return _context3.abrupt("return");
+
+          case 6:
+            state = _store["default"].getState();
+            _state$queryServers$s3 = state.queryServers[serverId].list, list = _state$queryServers$s3 === void 0 ? [] : _state$queryServers$s3;
+            index = parseInt(which);
+            sortedList = list.sort(function (a, b) {
+              return a.timestamp - b.timestamp;
+            });
+            console.log(sortedList);
+
+            if (sortedList[index]) {
+              _context3.next = 13;
+              break;
+            }
+
+            return _context3.abrupt("return", channel.send('Query Server not found!'));
+
+          case 13:
+            updatedList = sortedList.filter(function (_, i) {
+              return i !== parseInt(index);
+            });
+            _context3.next = 16;
+            return _models.UT99QueryServers.findOneAndUpdate({
+              server_id: serverId
+            }, {
+              query_servers: updatedList
+            }).exec();
+
+          case 16:
+            _store["default"].dispatch((0, _actions.removeQueryServer)({
+              serverId: serverId,
+              index: parseInt(index)
+            }));
+
+            channel.send('Query Server removed');
+            _context3.next = 23;
+            break;
+
+          case 20:
+            _context3.prev = 20;
+            _context3.t0 = _context3["catch"](3);
+            console.log(_context3.t0);
+
+          case 23:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3, null, [[3, 20]]);
+  }));
+
+  return function delQueryServer(_x9, _x10, _x11, _x12) {
+    return _ref11.apply(this, arguments);
+  };
+}();
+
+exports.delQueryServer = delQueryServer;
 //# sourceMappingURL=ut99Handlers.js.map

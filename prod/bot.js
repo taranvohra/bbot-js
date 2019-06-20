@@ -201,7 +201,7 @@ function () {
 
               _store["default"].dispatch((0, _actions.assignQueryServers)({
                 serverId: server_id,
-                list: query_servers
+                list: Array.from(query_servers)
               }));
             });
 

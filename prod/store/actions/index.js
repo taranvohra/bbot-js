@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.assignQueryServers = exports.pushQueryServer = exports.setPugChannel = exports.setQueryChannel = exports.INIT = void 0;
+exports.assignQueryServers = exports.removeQueryServer = exports.pushQueryServer = exports.setPugChannel = exports.setQueryChannel = exports.INIT = void 0;
 
 var INIT = function INIT(data) {
   return {
@@ -40,6 +40,15 @@ var pushQueryServer = function pushQueryServer(data) {
 };
 
 exports.pushQueryServer = pushQueryServer;
+
+var removeQueryServer = function removeQueryServer(data) {
+  return {
+    type: 'REMOVE_QUERY_SERVER',
+    payload: data
+  };
+};
+
+exports.removeQueryServer = removeQueryServer;
 
 var assignQueryServers = function assignQueryServers(data) {
   return {

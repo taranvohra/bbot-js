@@ -50,7 +50,18 @@ var queryServers = function queryServers() {
 
     case 'REMOVE_QUERY_SERVER':
       {
-        return;
+        var _list = state[payload.serverId].list;
+
+        var sortedList = _list.sort(function (a, b) {
+          return a.timestamp - b.timestamp;
+        });
+
+        var updatedList = sortedList.filter(function (_, i) {
+          return i !== payload.index;
+        });
+        return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
+          list: updatedList
+        })));
       }
 
     case 'ASSIGN_QUERY_SERVERS':
