@@ -5,6 +5,7 @@ const pugs = (state = {}, { type, payload }) => {
         [payload.serverId]: {
           pugChannel: null,
           list: [],
+          gameTypes: [],
         },
       };
     }
@@ -14,6 +15,16 @@ const pugs = (state = {}, { type, payload }) => {
         [payload.serverId]: {
           ...state[payload.serverId],
           pugChannel: payload.pugChannel,
+        },
+      };
+    }
+
+    case 'ASSIGN_GAME_TYPES': {
+      return {
+        ...state,
+        [payload.serverId]: {
+          ...state[payload.serverId],
+          gameTypes: payload.gameTypes,
         },
       };
     }

@@ -85,3 +85,17 @@ export const formatQueryServerStatus = (info, players) => {
   richEmbed.setFooter(footerText);
   return richEmbed;
 };
+
+export const formatListGameTypes = (guildName, list) => {
+  const title = `Pugs available at **${guildName}**`;
+  const sortedList = list.sort((a, b) => b.players - a.players); // by number of joined players
+
+  const body = sortedList.reduce((acc, curr, i) => {
+    acc += `**${curr.name}** (${curr.players}/${curr.maxPlayers}) ${
+      i === list.length - 1 ? '' : ':small_blue_diamond:'
+    }`;
+    return acc;
+  }, ``);
+
+  return `${title}\n${body}`;
+};

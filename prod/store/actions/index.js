@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.assignQueryServers = exports.removeQueryServer = exports.pushQueryServer = exports.setPugChannel = exports.setQueryChannel = exports.INIT = void 0;
+exports.assignGameTypes = exports.assignQueryServers = exports.removeQueryServer = exports.pushQueryServer = exports.setPugChannel = exports.setQueryChannel = exports.INIT = void 0;
 
 var INIT = function INIT(data) {
   return {
@@ -58,4 +58,13 @@ var assignQueryServers = function assignQueryServers(data) {
 };
 
 exports.assignQueryServers = assignQueryServers;
+
+var assignGameTypes = function assignGameTypes(data) {
+  return {
+    type: 'ASSIGN_GAME_TYPES',
+    payload: data
+  };
+};
+
+exports.assignGameTypes = assignGameTypes;
 //# sourceMappingURL=index.js.map

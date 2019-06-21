@@ -43,7 +43,7 @@ function () {
   var _ref = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee(message) {
-    var _message$author, id, username, roles, serverId, _message$content$subs, _message$content$subs2, first, args, action, foundCommand;
+    var _message$author, id, username, roles, serverId, _message$content$subs, _message$content$subs2, first, args, action, isSolo, foundCommand;
 
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
@@ -79,12 +79,13 @@ function () {
           case 9:
             _message$content$subs = message.content.substring(_constants.prefix.length).split(' ').filter(Boolean), _message$content$subs2 = _toArray(_message$content$subs), first = _message$content$subs2[0], args = _message$content$subs2.slice(1);
             action = first && first.toLowerCase();
+            isSolo = args.length === 0;
             foundCommand = _commands.commands.find(function (cmd) {
-              return cmd.aliases.includes(action);
+              return cmd.solo === isSolo && cmd.aliases.includes(action);
             });
 
             if (!foundCommand) {
-              _context.next = 14;
+              _context.next = 15;
               break;
             }
 
@@ -94,10 +95,10 @@ function () {
               roles: roles
             }));
 
-          case 14:
+          case 15:
             message.channel.send("Command not found");
 
-          case 15:
+          case 16:
           case "end":
             return _context.stop();
         }
@@ -161,7 +162,7 @@ function () {
   var _ref3 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee3() {
-    var dServers, qServers;
+    var dServers, qServers, gameTypes;
     return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
@@ -176,6 +177,11 @@ function () {
 
           case 5:
             qServers = _context3.sent;
+            _context3.next = 8;
+            return _models.GameTypes.find({}).exec();
+
+          case 8:
+            gameTypes = _context3.sent;
             dServers.forEach(function (_ref4) {
               var server_id = _ref4.server_id,
                   pug_channel = _ref4.pug_channel,
@@ -204,8 +210,17 @@ function () {
                 list: Array.from(query_servers)
               }));
             });
+            gameTypes.forEach(function (_ref6) {
+              var server_id = _ref6.server_id,
+                  game_types = _ref6.game_types;
 
-          case 8:
+              _store["default"].dispatch((0, _actions.assignGameTypes)({
+                serverId: server_id,
+                gameTypes: Array.from(game_types)
+              }));
+            });
+
+          case 12:
           case "end":
             return _context3.stop();
         }

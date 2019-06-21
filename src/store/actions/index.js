@@ -27,3 +27,8 @@ export const assignQueryServers = data => ({
   type: 'ASSIGN_QUERY_SERVERS',
   payload: data,
 });
+
+export const assignGameTypes = data => ({
+  type: 'ASSIGN_GAME_TYPES',
+  payload: data,
+});

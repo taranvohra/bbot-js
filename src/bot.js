@@ -8,8 +8,9 @@ import {
   setQueryChannel,
   setPugChannel,
   assignQueryServers,
+  assignGameTypes,
 } from './store/actions';
-import { DiscordServers, UT99QueryServers } from './models';
+import { DiscordServers, UT99QueryServers, GameTypes } from './models';
 import { handlers, commands } from './commands';
 import { prefix } from './constants';
 
@@ -38,7 +39,11 @@ bBot.on('message', async message => {
     .split(' ')
     .filter(Boolean);
   const action = first && first.toLowerCase();
-  const foundCommand = commands.find(cmd => cmd.aliases.includes(action));
+  const isSolo = args.length === 0;
+
+  const foundCommand = commands.find(
+    cmd => cmd.solo === isSolo && cmd.aliases.includes(action)
+  );
 
   if (foundCommand) {
     return handlers[foundCommand.key](message, args, serverId, {
@@ -75,6 +80,7 @@ bBot.on('ready', () => {
 const hydrateStore = async () => {
   const dServers = await DiscordServers.find({}).exec();
   const qServers = await UT99QueryServers.find({}).exec();
+  const gameTypes = await GameTypes.find({}).exec();
 
   dServers.forEach(({ server_id, pug_channel, query_channel }) => {
     store.dispatch(INIT({ serverId: server_id }));
@@ -94,6 +100,15 @@ const hydrateStore = async () => {
       assignQueryServers({
         serverId: server_id,
         list: Array.from(query_servers),
+      })
+    );
+  });
+
+  gameTypes.forEach(({ server_id, game_types }) => {
+    store.dispatch(
+      assignGameTypes({
+        serverId: server_id,
+        gameTypes: Array.from(game_types),
       })
     );
   });

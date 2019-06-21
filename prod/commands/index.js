@@ -23,39 +23,58 @@ exports.handlers = handlers;
 var commands = [{
   key: 'registerServer',
   description: '',
-  aliases: ['register']
+  aliases: ['register'],
+  solo: true
 }, {
   key: 'registerQueryChannel',
   description: '',
-  aliases: ['setquerychannel']
+  aliases: ['setquerychannel'],
+  solo: true
 }, {
   key: 'registerPugChannel',
   description: '',
-  aliases: ['setpugchannel']
+  aliases: ['setpugchannel'],
+  solo: true
 }, {
   key: 'addQueryServer',
   description: '',
-  aliases: ['addqueryserver']
+  aliases: ['addqueryserver'],
+  solo: false
 }, {
   key: 'delQueryServer',
   description: '',
-  aliases: ['delqueryserver']
+  aliases: ['delqueryserver'],
+  solo: false
 }, {
   key: 'queryUT99Server',
   description: '',
-  aliases: ['q', 'query']
+  aliases: ['q', 'query'],
+  solo: false
 }, {
   key: 'servers',
   description: '',
-  aliases: ['servers']
+  aliases: ['servers'],
+  solo: true
 }, {
   key: 'addGameType',
   description: '',
-  aliases: ['addgametype', 'agm']
+  aliases: ['addgametype', 'agm'],
+  solo: false
 }, {
   key: 'delGameType',
   description: '',
-  aliases: ['delgametype', 'dgm']
+  aliases: ['delgametype', 'dgm'],
+  solo: false
+}, {
+  key: 'listGameTypes',
+  description: '',
+  aliases: ['list', 'ls'],
+  solo: true
+}, {
+  key: 'joinGameTypes',
+  description: '',
+  aliases: ['j', 'join'],
+  solo: false
 }];
 exports.commands = commands;
 //# sourceMappingURL=index.js.map

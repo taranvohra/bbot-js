@@ -21,7 +21,8 @@ var pugs = function pugs() {
       {
         return _defineProperty({}, payload.serverId, {
           pugChannel: null,
-          list: []
+          list: [],
+          gameTypes: []
         });
       }
 
@@ -29,6 +30,13 @@ var pugs = function pugs() {
       {
         return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
           pugChannel: payload.pugChannel
+        })));
+      }
+
+    case 'ASSIGN_GAME_TYPES':
+      {
+        return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
+          gameTypes: payload.gameTypes
         })));
       }
 

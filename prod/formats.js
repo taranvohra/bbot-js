@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
+exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
 
 var _discord = _interopRequireDefault(require("discord.js"));
 
@@ -71,4 +71,19 @@ var formatQueryServerStatus = function formatQueryServerStatus(info, players) {
 };
 
 exports.formatQueryServerStatus = formatQueryServerStatus;
+
+var formatListGameTypes = function formatListGameTypes(guildName, list) {
+  var title = "Pugs available at **".concat(guildName, "**");
+  var sortedList = list.sort(function (a, b) {
+    return b.players - a.players;
+  }); // by number of joined players
+
+  var body = sortedList.reduce(function (acc, curr, i) {
+    acc += "**".concat(curr.name, "** (").concat(curr.players, "/").concat(curr.maxPlayers, ") ").concat(i === list.length - 1 ? '' : ':small_blue_diamond:');
+    return acc;
+  }, "");
+  return "".concat(title, "\n").concat(body);
+};
+
+exports.formatListGameTypes = formatListGameTypes;
 //# sourceMappingURL=formats.js.map
