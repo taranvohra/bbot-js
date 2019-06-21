@@ -142,17 +142,18 @@ function () {
 
           case 12:
             key = _crypto["default"].createHash('sha256').update(hp).digest('hex');
+            console.log(key, list);
 
             if (!list.some(function (s) {
               return s.key === key;
             })) {
-              _context2.next = 15;
+              _context2.next = 16;
               break;
             }
 
             return _context2.abrupt("return", channel.send('Query Server already exists!'));
 
-          case 15:
+          case 16:
             newServer = {
               key: key,
               name: name,
@@ -160,7 +161,7 @@ function () {
               port: port,
               timestamp: Date.now()
             };
-            _context2.next = 18;
+            _context2.next = 19;
             return _models.UT99QueryServers.findOneAndUpdate({
               server_id: serverId
             }, {
@@ -169,27 +170,27 @@ function () {
               }
             }).exec();
 
-          case 18:
+          case 19:
             _store["default"].dispatch((0, _actions.pushQueryServer)({
               serverId: serverId,
               queryServer: newServer
             }));
 
             channel.send('Query Server added');
-            _context2.next = 25;
+            _context2.next = 26;
             break;
 
-          case 22:
-            _context2.prev = 22;
+          case 23:
+            _context2.prev = 23;
             _context2.t0 = _context2["catch"](3);
             console.log(_context2.t0);
 
-          case 25:
+          case 26:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[3, 22]]);
+    }, _callee2, null, [[3, 23]]);
   }));
 
   return function addQueryServer(_x5, _x6, _x7, _x8) {
@@ -282,48 +283,49 @@ exports.delQueryServer = delQueryServer;
 var queryUT99Server =
 /*#__PURE__*/
 function () {
-  var _ref14 = _asyncToGenerator(
+  var _ref15 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee4(_ref13, args, serverId, _) {
-    var channel, state, _state$queryServers$s4, queryChannel, _state$queryServers$s5, list, sortedList, _ref15, host, _ref15$port, port, response, splitted, _final, _final$reduce, info, players, formattedResponse;
+  regeneratorRuntime.mark(function _callee4(_ref13, _ref14, serverId, _) {
+    var channel, _ref16, arg, rest, state, _state$queryServers$s4, queryChannel, _state$queryServers$s5, list, sortedList, _ref17, host, _ref17$port, port, response, splitted, _final, _final$reduce, info, players, formattedResponse;
 
     return regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
             channel = _ref13.channel;
-            _context4.prev = 1;
+            _ref16 = _toArray(_ref14), arg = _ref16[0], rest = _ref16.slice(1);
+            _context4.prev = 2;
             state = _store["default"].getState();
             _state$queryServers$s4 = state.queryServers[serverId], queryChannel = _state$queryServers$s4.queryChannel, _state$queryServers$s5 = _state$queryServers$s4.list, list = _state$queryServers$s5 === void 0 ? [] : _state$queryServers$s5;
 
             if (!(queryChannel !== channel.id)) {
-              _context4.next = 6;
+              _context4.next = 7;
               break;
             }
 
             return _context4.abrupt("return", channel.send("Active channel for querying is <#".concat(queryChannel, ">")));
 
-          case 6:
+          case 7:
             sortedList = list.sort(function (a, b) {
               return a.timestamp - b.timestamp;
             });
-            _ref15 = sortedList[parseInt(args) - 1] || args.split(':').reduce(function (acc, curr, i) {
+            _ref17 = sortedList[parseInt(arg) - 1] || arg.split(':').reduce(function (acc, curr, i) {
               i === 0 ? acc['host'] = curr : acc['port'] = curr;
               return acc;
-            }, {}), host = _ref15.host, _ref15$port = _ref15.port, port = _ref15$port === void 0 ? 7777 : _ref15$port;
+            }, {}), host = _ref17.host, _ref17$port = _ref17.port, port = _ref17$port === void 0 ? 7777 : _ref17$port;
 
             if (host) {
-              _context4.next = 10;
+              _context4.next = 11;
               break;
             }
 
             return _context4.abrupt("return", channel.send('Invalid query'));
 
-          case 10:
-            _context4.next = 12;
+          case 11:
+            _context4.next = 13;
             return _API["default"].queryUT99Server(host, parseInt(port) + 1);
 
-          case 12:
+          case 13:
             response = _context4.sent;
             // UDP port is +1
             splitted = response.split('\\');
@@ -347,24 +349,24 @@ function () {
               port: port
             }), (0, _utils.createAlternatingObject)(players));
             channel.send(formattedResponse);
-            _context4.next = 25;
+            _context4.next = 26;
             break;
 
-          case 22:
-            _context4.prev = 22;
-            _context4.t0 = _context4["catch"](1);
+          case 23:
+            _context4.prev = 23;
+            _context4.t0 = _context4["catch"](2);
             console.log(_context4.t0);
 
-          case 25:
+          case 26:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[1, 22]]);
+    }, _callee4, null, [[2, 23]]);
   }));
 
   return function queryUT99Server(_x13, _x14, _x15, _x16) {
-    return _ref14.apply(this, arguments);
+    return _ref15.apply(this, arguments);
   };
 }();
 

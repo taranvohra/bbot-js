@@ -43,6 +43,7 @@ export const addQueryServer = async (
       .update(hp)
       .digest('hex');
 
+    console.log(key, list);
     if (list.some(s => s.key === key))
       return channel.send('Query Server already exists!');
 
@@ -96,7 +97,12 @@ export const delQueryServer = async (
   }
 };
 
-export const queryUT99Server = async ({ channel }, args, serverId, _) => {
+export const queryUT99Server = async (
+  { channel },
+  [arg, ...rest],
+  serverId,
+  _
+) => {
   try {
     const state = store.getState();
     const { queryChannel, list = [] } = state.queryServers[serverId];
@@ -106,8 +112,8 @@ export const queryUT99Server = async ({ channel }, args, serverId, _) => {
 
     const sortedList = list.sort((a, b) => a.timestamp - b.timestamp);
     const { host, port = 7777 } =
-      sortedList[parseInt(args) - 1] ||
-      args.split(':').reduce((acc, curr, i) => {
+      sortedList[parseInt(arg) - 1] ||
+      arg.split(':').reduce((acc, curr, i) => {
         i === 0 ? (acc['host'] = curr) : (acc['port'] = curr);
         return acc;
       }, {});

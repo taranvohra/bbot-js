@@ -104,3 +104,32 @@ export const getTeamScores = (info, maxTeams) => {
  */
 export const getTeamIndex = teamName =>
   Object.values(teams).findIndex(t => t === teamName);
+
+/**
+ * @param {Number} noOfPlayers
+ * @param {Number} noOfTeams
+ * @description Computes the picking order for the pug. Returns [] if invalid and [-1] for duels
+ * @returns {Array}
+ */
+export const computePickingOrder = (noOfPlayers, noOfTeams) => {
+  if (noOfPlayers < noOfTeams || noOfPlayers % noOfTeams !== 0) return [];
+  let idx = 0;
+  let pickingOrder = [];
+  let remainingPlayers = noOfPlayers - noOfTeams; // because captains
+  let wholeRound = [];
+
+  while (remainingPlayers > 0) {
+    pickingOrder.push(idx);
+    wholeRound.push(idx);
+    if (wholeRound.length === noOfTeams) {
+      pickingOrder = [...pickingOrder, ...wholeRound.reverse()];
+      wholeRound = [];
+      idx = 0;
+      remainingPlayers = remainingPlayers - noOfTeams - 1;
+    } else {
+      idx++;
+      remainingPlayers--;
+    }
+  }
+  return pickingOrder.length > 0 ? pickingOrder : [-1];
+};

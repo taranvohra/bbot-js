@@ -42,7 +42,8 @@ var queryServers = function queryServers() {
 
     case 'ADD_QUERY_SERVER':
       {
-        var list = state[payload.serverId].list;
+        var _state$payload$server = state[payload.serverId].list,
+            list = _state$payload$server === void 0 ? [] : _state$payload$server;
         return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
           list: [].concat(_toConsumableArray(list), [payload.queryServer])
         })));
@@ -50,7 +51,8 @@ var queryServers = function queryServers() {
 
     case 'REMOVE_QUERY_SERVER':
       {
-        var _list = state[payload.serverId].list;
+        var _state$payload$server2 = state[payload.serverId].list,
+            _list = _state$payload$server2 === void 0 ? [] : _state$payload$server2;
 
         var sortedList = _list.sort(function (a, b) {
           return a.timestamp - b.timestamp;

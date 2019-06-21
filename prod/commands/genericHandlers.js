@@ -66,6 +66,8 @@ function () {
               server_id: serverId
             }).save(), new _models.Blocks({
               server_id: serverId
+            }).save(), new _models.GameTypes({
+              server_id: serverId
             }).save()]);
 
           case 11:

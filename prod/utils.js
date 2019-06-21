@@ -3,9 +3,17 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getTeamIndex = exports.getTeamScores = exports.padNumberWithZeros = exports.getMinutesAndSeconds = exports.sanitizeName = exports.createAlternatingObject = exports.getPlayerList = exports.hasPrivilegedRole = void 0;
+exports.computePickingOrder = exports.getTeamIndex = exports.getTeamScores = exports.padNumberWithZeros = exports.getMinutesAndSeconds = exports.sanitizeName = exports.createAlternatingObject = exports.getPlayerList = exports.hasPrivilegedRole = void 0;
 
 var _constants = require("./constants");
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -144,6 +152,41 @@ var getTeamIndex = function getTeamIndex(teamName) {
     return t === teamName;
   });
 };
+/**
+ * @param {Number} noOfPlayers
+ * @param {Number} noOfTeams
+ * @description Computes the picking order for the pug. Returns [] if invalid and [-1] for duels
+ * @returns {Array}
+ */
+
 
 exports.getTeamIndex = getTeamIndex;
+
+var computePickingOrder = function computePickingOrder(noOfPlayers, noOfTeams) {
+  if (noOfPlayers < noOfTeams || noOfPlayers % noOfTeams !== 0) return [];
+  var idx = 0;
+  var pickingOrder = [];
+  var remainingPlayers = noOfPlayers - noOfTeams; // because captains
+
+  var wholeRound = [];
+
+  while (remainingPlayers > 0) {
+    pickingOrder.push(idx);
+    wholeRound.push(idx);
+
+    if (wholeRound.length === noOfTeams) {
+      pickingOrder = [].concat(_toConsumableArray(pickingOrder), _toConsumableArray(wholeRound.reverse()));
+      wholeRound = [];
+      idx = 0;
+      remainingPlayers = remainingPlayers - noOfTeams - 1;
+    } else {
+      idx++;
+      remainingPlayers--;
+    }
+  }
+
+  return pickingOrder.length > 0 ? pickingOrder : [-1];
+};
+
+exports.computePickingOrder = computePickingOrder;
 //# sourceMappingURL=utils.js.map

@@ -1,9 +1,11 @@
 import * as genericHandlers from './genericHandlers';
 import * as ut99Handlers from './ut99Handlers';
+import * as pugHandlers from './pugHandlers';
 
 const handlers = {
   ...genericHandlers,
   ...ut99Handlers,
+  ...pugHandlers,
 };
 
 const commands = [
@@ -41,6 +43,16 @@ const commands = [
     key: 'servers',
     description: '',
     aliases: ['servers'],
+  },
+  {
+    key: 'addGameType',
+    description: '',
+    aliases: ['addgametype', 'agm'],
+  },
+  {
+    key: 'delGameType',
+    description: '',
+    aliases: ['delgametype', 'dgm'],
   },
 ];
 
