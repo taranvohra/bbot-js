@@ -133,3 +133,6 @@ export const computePickingOrder = (noOfPlayers, noOfTeams) => {
   }
   return pickingOrder.length > 0 ? pickingOrder : [-1];
 };
+
+export const shuffle = array =>
+  Array.from(array).sort(() => Math.random() - 0.5);

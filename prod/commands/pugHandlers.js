@@ -41,21 +41,113 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var Pug =
+/*#__PURE__*/
+function () {
+  function Pug(_ref) {
+    var name = _ref.name,
+        noOfPlayers = _ref.noOfPlayers,
+        noOfTeams = _ref.noOfTeams,
+        pickingOrder = _ref.pickingOrder;
+
+    _classCallCheck(this, Pug);
+
+    this.name = name;
+    this.noOfPlayers = noOfPlayers;
+    this.noOfTeams = noOfTeams;
+    this.pickingOrder = pickingOrder;
+    this.turn = 0;
+    this.picking = false;
+    this.players = [];
+    this.captains = [];
+    this.timer = null;
+  } // 0 if couldn't join, 1 if joined, 2 if already in
+
+
+  _createClass(Pug, [{
+    key: "addPlayer",
+    value: function addPlayer(user) {
+      if (!this.picking) {
+        if (this.findPlayer(user)) return 2;
+        this.players.push(_objectSpread({
+          team: null,
+          captain: null,
+          pick: null,
+          tag: null,
+          rating: null
+        }, user));
+        this.players.length === this.noOfPlayers ? this.fillPug() : null;
+        return 1;
+      }
+
+      return 0;
+    }
+  }, {
+    key: "removePlayer",
+    value: function removePlayer(user) {}
+  }, {
+    key: "fillPug",
+    value: function fillPug() {
+      var _this = this;
+
+      this.picking = true;
+      this.timer = setTimeout(function () {
+        var present = _this.captains.reduce(function (acc, _, i) {
+          _this.captains[i] ? acc[i] = true : null;
+          return acc;
+        }, {});
+
+        for (var i = 0; i < _this.noOfTeams; i++) {
+          if (present[i]) continue;
+        }
+      }, _constants.captainTimeout);
+    }
+  }, {
+    key: "findPlayer",
+    value: function findPlayer(user) {
+      return this.players.find(function (u) {
+        return u.id === user.id;
+      });
+    }
+  }, {
+    key: "stopPug",
+    value: function stopPug() {
+      this.cleanup();
+    }
+  }, {
+    key: "cleanup",
+    value: function cleanup() {//  TODO
+    }
+  }]);
+
+  return Pug;
+}();
+
 var addGameType =
 /*#__PURE__*/
 function () {
-  var _ref4 = _asyncToGenerator(
+  var _ref5 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee(_ref, _ref2, serverId, _ref3) {
-    var channel, _ref5, gameName, noOfPlayers, noOfTeams, roles, state, gameTypes, pickingOrder, newGameType;
+  regeneratorRuntime.mark(function _callee(_ref2, _ref3, serverId, _ref4) {
+    var channel, _ref6, gameName, noOfPlayers, noOfTeams, roles, state, gameTypes, pickingOrder, newGameType;
 
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            channel = _ref.channel;
-            _ref5 = _slicedToArray(_ref2, 3), gameName = _ref5[0], noOfPlayers = _ref5[1], noOfTeams = _ref5[2];
-            roles = _ref3.roles;
+            channel = _ref2.channel;
+            _ref6 = _slicedToArray(_ref3, 3), gameName = _ref6[0], noOfPlayers = _ref6[1], noOfTeams = _ref6[2];
+            roles = _ref4.roles;
             _context.prev = 3;
 
             if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
@@ -88,13 +180,22 @@ function () {
 
           case 12:
             pickingOrder = (0, _utils.computePickingOrder)(parseInt(noOfPlayers), parseInt(noOfTeams));
+
+            if (pickingOrder) {
+              _context.next = 15;
+              break;
+            }
+
+            return _context.abrupt("return", channel.send('Invalid No. of players/teams. Picking order cannot be computed'));
+
+          case 15:
             newGameType = {
               name: gameName.toLowerCase(),
               pickingOrder: pickingOrder,
               noOfPlayers: parseInt(noOfPlayers),
               noOfTeams: parseInt(noOfTeams)
             };
-            _context.next = 16;
+            _context.next = 18;
             return _models.GameTypes.findOneAndUpdate({
               server_id: serverId
             }, {
@@ -103,32 +204,32 @@ function () {
               }
             }).exec();
 
-          case 16:
+          case 18:
             _store["default"].dispatch((0, _actions.assignGameTypes)({
               serverId: serverId,
               gameTypes: [].concat(_toConsumableArray(game_types), [newGameType])
             }));
 
             channel.send("**".concat(gameName, "** has been added"));
-            _context.next = 24;
+            _context.next = 26;
             break;
 
-          case 20:
-            _context.prev = 20;
+          case 22:
+            _context.prev = 22;
             _context.t0 = _context["catch"](3);
             channel.send('Something went wrong');
             console.log(_context.t0);
 
-          case 24:
+          case 26:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[3, 20]]);
+    }, _callee, null, [[3, 22]]);
   }));
 
   return function addGameType(_x, _x2, _x3, _x4) {
-    return _ref4.apply(this, arguments);
+    return _ref5.apply(this, arguments);
   };
 }();
 
@@ -137,18 +238,18 @@ exports.addGameType = addGameType;
 var delGameType =
 /*#__PURE__*/
 function () {
-  var _ref9 = _asyncToGenerator(
+  var _ref10 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee2(_ref6, _ref7, serverId, _ref8) {
-    var channel, _ref10, gameName, rest, roles, state, gameTypes, updatedGameTypes;
+  regeneratorRuntime.mark(function _callee2(_ref7, _ref8, serverId, _ref9) {
+    var channel, _ref11, gameName, rest, roles, state, gameTypes, updatedGameTypes;
 
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            channel = _ref6.channel;
-            _ref10 = _toArray(_ref7), gameName = _ref10[0], rest = _ref10.slice(1);
-            roles = _ref8.roles;
+            channel = _ref7.channel;
+            _ref11 = _toArray(_ref8), gameName = _ref11[0], rest = _ref11.slice(1);
+            roles = _ref9.roles;
             _context2.prev = 3;
 
             if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
@@ -207,7 +308,7 @@ function () {
   }));
 
   return function delGameType(_x5, _x6, _x7, _x8) {
-    return _ref9.apply(this, arguments);
+    return _ref10.apply(this, arguments);
   };
 }();
 
@@ -216,19 +317,19 @@ exports.delGameType = delGameType;
 var listGameTypes =
 /*#__PURE__*/
 function () {
-  var _ref12 = _asyncToGenerator(
+  var _ref13 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee3(_ref11, _, serverId, __) {
-    var channel, state, _state$pugs$serverId, pugChannel, gameTypes, gamesList;
+  regeneratorRuntime.mark(function _callee3(_ref12, _, serverId, __) {
+    var channel, state, _state$pugs$serverId, pugChannel, gameTypes, list, tempList, gamesList;
 
     return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            channel = _ref11.channel;
+            channel = _ref12.channel;
             _context3.prev = 1;
             state = _store["default"].getState();
-            _state$pugs$serverId = state.pugs[serverId], pugChannel = _state$pugs$serverId.pugChannel, gameTypes = _state$pugs$serverId.gameTypes;
+            _state$pugs$serverId = state.pugs[serverId], pugChannel = _state$pugs$serverId.pugChannel, gameTypes = _state$pugs$serverId.gameTypes, list = _state$pugs$serverId.list;
 
             if (!(pugChannel !== channel.id)) {
               _context3.next = 6;
@@ -238,33 +339,48 @@ function () {
             return _context3.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
 
           case 6:
-            gamesList = gameTypes.map(function (g) {
+            tempList = gameTypes.map(function (g) {
               return {
-                name: g.name.toUpperCase(),
+                name: g.name,
                 players: 0,
                 maxPlayers: g.noOfPlayers
               };
             });
+            gamesList = tempList.reduce(function (acc, curr) {
+              var existingPug = list.find(function (p) {
+                return p.name === curr.name;
+              });
+
+              if (existingPug) {
+                acc.push({
+                  name: existingPug.name,
+                  maxPlayers: existingPug.noOfPlayers,
+                  players: existingPug.players.length
+                });
+              } else {
+                acc.push(curr);
+              }
+            }, []);
             channel.send((0, _formats.formatListGameTypes)(channel.guild.name, gamesList));
-            _context3.next = 14;
+            _context3.next = 15;
             break;
 
-          case 10:
-            _context3.prev = 10;
+          case 11:
+            _context3.prev = 11;
             _context3.t0 = _context3["catch"](1);
             channel.send('Something went wrong');
             console.log(_context3.t0);
 
-          case 14:
+          case 15:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[1, 10]]);
+    }, _callee3, null, [[1, 11]]);
   }));
 
   return function listGameTypes(_x9, _x10, _x11, _x12) {
-    return _ref12.apply(this, arguments);
+    return _ref13.apply(this, arguments);
   };
 }();
 
@@ -273,19 +389,19 @@ exports.listGameTypes = listGameTypes;
 var joinGameTypes =
 /*#__PURE__*/
 function () {
-  var _ref15 = _asyncToGenerator(
+  var _ref16 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee4(_ref13, args, serverId, _ref14) {
-    var channel, id, username, roles, state, _state$pugs$serverId2, pugChannel, list, isPartOfFilledPug, _ref16, _ref16$game_types, game_types, results, i, game;
+  regeneratorRuntime.mark(function _callee4(_ref14, args, serverId, _ref15) {
+    var channel, id, username, roles, state, _state$pugs$serverId2, pugChannel, list, gameTypes, isPartOfFilledPug, user, results;
 
     return regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            channel = _ref13.channel;
-            id = _ref14.id, username = _ref14.username, roles = _ref14.roles;
+            channel = _ref14.channel;
+            id = _ref15.id, username = _ref15.username, roles = _ref15.roles;
             state = _store["default"].getState();
-            _state$pugs$serverId2 = state.pugs[serverId], pugChannel = _state$pugs$serverId2.pugChannel, list = _state$pugs$serverId2.list;
+            _state$pugs$serverId2 = state.pugs[serverId], pugChannel = _state$pugs$serverId2.pugChannel, list = _state$pugs$serverId2.list, gameTypes = _state$pugs$serverId2.gameTypes;
 
             if (!(pugChannel !== channel.id)) {
               _context4.next = 6;
@@ -317,22 +433,36 @@ function () {
             return _context4.abrupt("return", channel.send("Please leave **".concat(isPartOfFilledPug.name.toUpperCase(), "** first to join other pugs")));
 
           case 11:
-            _context4.next = 13;
-            return _models.GameTypes.findOne({
-              server_id: serverId
-            }).exec();
+            user = {
+              id: id,
+              username: username,
+              roles: roles
+            };
+            results = args.map(function (a) {
+              var game = a.toLowerCase();
+              var gameType = gameTypes.some(function (g) {
+                return g.name === game;
+              });
+              if (!gameType) return {
+                user: user,
+                name: game,
+                joined: -1
+              }; // -1 is for NOT FOUND
+
+              var pug = list.find(function (p) {
+                return p.name === game;
+              }) || new Pug(gameType);
+              var joined = pug.addPlayer(user);
+              return {
+                user: user,
+                joined: joined,
+                name: game,
+                activeCount: pug.players.length,
+                maxPlayers: pug.noOfPlayers
+              };
+            });
 
           case 13:
-            _ref16 = _context4.sent;
-            _ref16$game_types = _ref16.game_types;
-            game_types = _ref16$game_types === void 0 ? [] : _ref16$game_types;
-            results = [];
-
-            for (i = 0; i < args.length; i++) {
-              game = args[i].toLowerCase();
-            }
-
-          case 18:
           case "end":
             return _context4.stop();
         }
@@ -341,7 +471,7 @@ function () {
   }));
 
   return function joinGameTypes(_x13, _x14, _x15, _x16) {
-    return _ref15.apply(this, arguments);
+    return _ref16.apply(this, arguments);
   };
 }();
 

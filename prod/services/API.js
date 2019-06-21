@@ -46,6 +46,7 @@ function () {
           socket.on('message', function (message) {
             var unicodeValues = message.toJSON().data;
             var unicodeString = String.fromCharCode.apply(String, _toConsumableArray(unicodeValues));
+            console.log(unicodeString);
             status += unicodeString;
 
             if (unicodeString.split('\\').some(function (s) {

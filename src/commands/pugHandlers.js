@@ -1,7 +1,7 @@
 import store from '../store';
 import { GameTypes } from '../models';
-import { computePickingOrder, hasPrivilegedRole } from '../utils';
-import { privilegedRoles } from '../constants';
+import { computePickingOrder, hasPrivilegedRole, shuffle } from '../utils';
+import { privilegedRoles, captainTimeout } from '../constants';
 import { formatListGameTypes } from '../formats';
 import { assignGameTypes } from '../store/actions';
 
@@ -27,7 +27,7 @@ class Pug {
         captain: null,
         pick: null,
         tag: null,
-        rating: null,
+        rating: 0,
         ...user,
       });
       this.players.length === this.noOfPlayers ? this.fillPug() : null;
@@ -39,7 +39,18 @@ class Pug {
   removePlayer(user) {}
 
   fillPug() {
-    //  TODO
+    this.picking = true;
+    this.timer = setTimeout(() => {
+      const remaining = this.noOfPlayers - this.captains.length;
+      const playersWithoutCaptain = this.noOfPlayers.filter(
+        p => p.captain === null
+      );
+      const poolForCaptains = shuffle(playersWithoutCaptain)
+        .slice(0, remaining * 0.8)
+        .sort((a, b) => a.rating - b.rating);
+
+      //  TODO
+    }, captainTimeout);
   }
 
   findPlayer(user) {

@@ -10,3 +10,5 @@ export const teams = {
   team_255: 'Players',
   spec: 'Spectators',
 };
+
+export const captainTimeout = 15000;

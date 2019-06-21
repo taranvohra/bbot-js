@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.teams = exports.privilegedRoles = exports.prefix = void 0;
+exports.captainTimeout = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
 var prefix = '~';
 exports.prefix = prefix;
 var privilegedRoles = ['Admins', 'Moderators'];
@@ -17,4 +17,6 @@ var teams = {
   spec: 'Spectators'
 };
 exports.teams = teams;
+var captainTimeout = 15000;
+exports.captainTimeout = captainTimeout;
 //# sourceMappingURL=constants.js.map
