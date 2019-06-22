@@ -38,6 +38,20 @@ const pugs = (state = {}, { type, payload }) => {
         },
       };
     }
+
+    case 'REMOVE_PUG': {
+      const updatedList = state[payload.serverId].list.filter(
+        p => p.name !== payload.name
+      );
+      return {
+        ...state,
+        [payload.serverId]: {
+          ...state[payload.serverId],
+          list: updatedList,
+        },
+      };
+    }
+
     default:
       return state;
   }

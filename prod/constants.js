@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.captainTimeout = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
+exports.offline = exports.captainTimeout = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
 var prefix = '~';
 exports.prefix = prefix;
 var privilegedRoles = ['Admins', 'Moderators'];
@@ -19,4 +19,6 @@ var teams = {
 exports.teams = teams;
 var captainTimeout = 15000;
 exports.captainTimeout = captainTimeout;
+var offline = 'unplugged';
+exports.offline = offline;
 //# sourceMappingURL=constants.js.map

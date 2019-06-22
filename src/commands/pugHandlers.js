@@ -6,8 +6,9 @@ import {
   formatListGameTypes,
   formatJoinStatus,
   formatLeaveStatus,
+  formatBroadcastPug,
 } from '../formats';
-import { assignGameTypes, addNewPug } from '../store/actions';
+import { assignGameTypes, addNewPug, removePug } from '../store/actions';
 
 class Pug {
   constructor({ name, noOfPlayers, noOfTeams, pickingOrder }) {
@@ -41,7 +42,7 @@ class Pug {
   }
 
   removePlayer(user) {
-    const playerIndex = this.list.players.findIndex(p => p.id === user.id);
+    const playerIndex = this.players.findIndex(p => p.id === user.id);
     this.players.splice(playerIndex, 1);
     if (this.picking) this.stopPug();
   }
@@ -69,8 +70,17 @@ class Pug {
     return this.players.find(u => u.id === user.id);
   }
 
+  isEmpty() {
+    return Boolean(this.players.length);
+  }
+
   cleanup() {
     //  TODO
+    this.picking = false;
+    this.turn = 0;
+    this.captains = [];
+    this.players.forEach(user => (user.captain = user.team = user.pick = null));
+    clearTimeout(this.timer);
   }
 }
 
@@ -218,28 +228,62 @@ export const joinGameTypes = async (
         `Please leave **${isPartOfFilledPug.name.toUpperCase()}** first to join other pugs`
       );
 
+    let toBroadcast = null;
     const user = { id, username, roles };
     const statuses = args.map(a => {
-      const game = a.toLowerCase();
-      const gameType = gameTypes.find(g => g.name === game);
+      if (!toBroadcast) {
+        const game = a.toLowerCase();
+        const gameType = gameTypes.find(g => g.name === game);
 
-      if (!gameType) return { user, name: game, joined: -1 }; // -1 is for NOT FOUND
+        if (!gameType) return { user, name: game, joined: -1 }; // -1 is for NOT FOUND
 
-      const existingPug = list.find(p => p.name === game);
-      const pug = existingPug || new Pug(gameType);
-      const joined = pug.addPlayer(user);
-      if (!existingPug && joined) {
-        store.dispatch(addNewPug({ serverId, newPug: pug }));
+        const existingPug = list.find(p => p.name === game);
+        const pug = existingPug || new Pug(gameType);
+
+        const hasFilledBeforeJoining = pug.picking;
+        const joined = pug.addPlayer(user);
+        const hasFilledAfterJoining = pug.picking;
+
+        if (!hasFilledBeforeJoining && hasFilledAfterJoining) {
+          toBroadcast = pug;
+        }
+
+        if (!existingPug && joined) {
+          store.dispatch(addNewPug({ serverId, newPug: pug }));
+        }
+
+        return {
+          user,
+          joined,
+          name: game,
+          activeCount: pug.players.length,
+          maxPlayers: pug.noOfPlayers,
+        };
       }
-      return {
-        user,
-        joined,
-        name: game,
-        activeCount: pug.players.length,
-        maxPlayers: pug.noOfPlayers,
-      };
     });
-    channel.send(formatJoinStatus(statuses));
+    channel.send(formatJoinStatus(statuses.filter(Boolean)));
+    const allLeaveMsgs = list.reduce((acc, op) => {
+      if (op.name !== toBroadcast.name) {
+        const allPugLeaveMsgs = toBroadcast.players.reduce((prev, player) => {
+          if (op.findPlayer(player)) {
+            const msg = leaveGameTypes(
+              { channel },
+              [op.name],
+              serverId,
+              user,
+              null,
+              true
+            );
+            prev += `${msg} `;
+          }
+          return prev;
+        }, ``);
+        acc += `${allPugLeaveMsgs} \n`;
+      }
+      return acc;
+    }, ``);
+    allLeaveMsgs && channel.send(allLeaveMsgs);
+    channel.send(formatBroadcastPug(toBroadcast));
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);
@@ -251,7 +295,8 @@ export const leaveGameTypes = async (
   args,
   serverId,
   { id, username, roles },
-  isOffline
+  isOffline,
+  returnStatus
 ) => {
   try {
     const state = store.getState();
@@ -286,8 +331,25 @@ export const leaveGameTypes = async (
       }
       return { user, name: game, left: 0 };
     });
-    channel.send(formatLeaveStatus(statuses, isOffline));
     // TODO Compute deadpugs
+    const deadPugs = statuses.reduce(
+      (acc, { user, pug, name, activeCount, maxPlayers }) => {
+        if (activeCount === maxPlayers - 1) {
+          acc.push({ pug, user });
+        }
+        if (pug.isEmpty()) {
+          store.dispatch(removePug({ serverId, name }));
+        }
+        return acc;
+      },
+      []
+    );
+
+    const leaveStatus = formatLeaveStatus(statuses, isOffline);
+    if (returnStatus) return leaveStatus;
+
+    channel.send(leaveStatus);
+    deadPugs.length > 0 ? channel.send(formatDeadPugs(deadPugs)) : null;
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);
@@ -299,8 +361,10 @@ export const leaveAllGameTypes = async (message, args, serverId, user) => {
     const state = store.getState();
     const { pugChannel, list } = state.pugs[serverId];
 
-    if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+    if (pugChannel !== message.channel.id)
+      return message.channel.send(
+        `Active channel for pugs is <#${pugChannel}>`
+      );
 
     const hasGoneOffline = args[0] === offline;
     const listToLeave = list.reduce((acc, pug) => {
@@ -312,7 +376,7 @@ export const leaveAllGameTypes = async (message, args, serverId, user) => {
     }, []);
     leaveGameTypes(message, listToLeave, serverId, user, hasGoneOffline);
   } catch (error) {
-    channel.send('Something went wrong');
+    message.channel.send('Something went wrong');
     console.log(error);
   }
 };

@@ -6,7 +6,7 @@ import {
   padNumberWithZeros,
   getTeamIndex,
 } from './utils';
-import { teams } from './constants';
+import { teams, prefix, captainTimeout } from './constants';
 
 const embedColor = '#11806A';
 
@@ -173,4 +173,28 @@ export const formatLeaveStatus = (statuses, isOffline) => {
       : ``
   }${nj.length > 0 ? `\n${nj}` : ``}${nf.length > 0 ? `\n${nf}` : ``}`;
   return body;
+};
+
+export const formatDeadPugs = deadPugs => {
+  const body = deadPugs.reduce((acc, curr, i) => {
+    acc += `${
+      i > 0 ? `\n` : ``
+    } :joy_cat: **${curr.name.toUpperCase()}** was stopped because **${
+      curr.user.username
+    }** left :joy_cat: `;
+    return acc;
+  }, ``);
+  return body;
+};
+
+export const formatBroadcastPug = toBroadcast => {
+  const title = `**${toBroadcast.name.toUpperCase()}** has been filled!`;
+  const body = toBroadcast.players.reduce((acc, player) => {
+    acc += `<@${player.id}> `;
+    return acc;
+  }, ``);
+  const footer = `Type **${prefix}captain** to become a captain for this pug. Random captains will be picked in ${captainTimeout /
+    1000} seconds`;
+
+  return `${title}\n${body}${footer}\n`;
 };

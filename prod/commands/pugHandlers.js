@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.leaveGameTypes = exports.joinGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = void 0;
+exports.leaveAllGameTypes = exports.leaveGameTypes = exports.joinGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = void 0;
 
 var _store = _interopRequireDefault(require("../store"));
 
@@ -94,7 +94,13 @@ function () {
     }
   }, {
     key: "removePlayer",
-    value: function removePlayer(user) {}
+    value: function removePlayer(user) {
+      var playerIndex = this.players.findIndex(function (p) {
+        return p.id === user.id;
+      });
+      this.players.splice(playerIndex, 1);
+      if (this.picking) this.stopPug();
+    }
   }, {
     key: "fillPug",
     value: function fillPug() {
@@ -114,16 +120,16 @@ function () {
       }, _constants.captainTimeout);
     }
   }, {
+    key: "stopPug",
+    value: function stopPug() {
+      this.cleanup();
+    }
+  }, {
     key: "findPlayer",
     value: function findPlayer(user) {
       return this.players.find(function (u) {
         return u.id === user.id;
       });
-    }
-  }, {
-    key: "stopPug",
-    value: function stopPug() {
-      this.cleanup();
     }
   }, {
     key: "cleanup",
@@ -504,8 +510,8 @@ var leaveGameTypes =
 function () {
   var _ref19 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee5(_ref17, args, serverId, _ref18) {
-    var channel, id, username, roles, state, _state$pugs$serverId3, pugChannel, list, gameTypes, isPartOfFilledPug, user, statuses;
+  regeneratorRuntime.mark(function _callee5(_ref17, args, serverId, _ref18, isOffline) {
+    var channel, id, username, roles, state, _state$pugs$serverId3, pugChannel, list, gameTypes, user, statuses;
 
     return regeneratorRuntime.wrap(function _callee5$(_context5) {
       while (1) {
@@ -533,20 +539,14 @@ function () {
             return _context5.abrupt("return", channel.send('No user was mentioned'));
 
           case 9:
-            isPartOfFilledPug = list.find(function (p) {
-              return p.picking && p.players.some(function (u) {
-                return u.id === id;
-              });
-            });
-
-            if (!isPartOfFilledPug) {
-              _context5.next = 12;
+            if (!(args.length === 0)) {
+              _context5.next = 11;
               break;
             }
 
-            return _context5.abrupt("return", channel.send("Please leave **".concat(isPartOfFilledPug.name.toUpperCase(), "** first to join other pugs")));
+            return _context5.abrupt("return", channel.send('Invalid, No pugs were mentioned'));
 
-          case 12:
+          case 11:
             user = {
               id: id,
               username: username,
@@ -560,52 +560,115 @@ function () {
               if (!gameType) return {
                 user: user,
                 name: game,
-                joined: -1
+                left: -1
               }; // -1 is for NOT FOUND
 
-              var existingPug = list.find(function (p) {
+              var pug = list.find(function (p) {
                 return p.name === game;
               });
-              var pug = existingPug || new Pug(gameType);
-              var joined = pug.addPlayer(user);
+              var isInPug = pug.findPlayer(user);
 
-              if (!existingPug && joined) {
-                _store["default"].dispatch((0, _actions.addNewPug)({
-                  serverId: serverId,
-                  newPug: pug
-                }));
+              if (isInPug) {
+                pug.removePlayer(user);
+                return {
+                  user: user,
+                  pug: pug,
+                  name: game,
+                  left: 1,
+                  activeCount: pug.players.length,
+                  maxPlayers: pug.noOfPlayers
+                };
               }
 
               return {
                 user: user,
-                joined: joined,
                 name: game,
-                activeCount: pug.players.length,
-                maxPlayers: pug.noOfPlayers
+                left: 0
               };
             });
-            channel.send((0, _formats.formatJoinStatus)(statuses));
-            _context5.next = 21;
+            channel.send((0, _formats.formatLeaveStatus)(statuses, isOffline)); // TODO Compute deadpugs
+
+            _context5.next = 20;
             break;
 
-          case 17:
-            _context5.prev = 17;
+          case 16:
+            _context5.prev = 16;
             _context5.t0 = _context5["catch"](2);
             channel.send('Something went wrong');
             console.log(_context5.t0);
 
-          case 21:
+          case 20:
           case "end":
             return _context5.stop();
         }
       }
-    }, _callee5, null, [[2, 17]]);
+    }, _callee5, null, [[2, 16]]);
   }));
 
-  return function leaveGameTypes(_x17, _x18, _x19, _x20) {
+  return function leaveGameTypes(_x17, _x18, _x19, _x20, _x21) {
     return _ref19.apply(this, arguments);
   };
 }();
 
 exports.leaveGameTypes = leaveGameTypes;
+
+var leaveAllGameTypes =
+/*#__PURE__*/
+function () {
+  var _ref20 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee6(message, args, serverId, user) {
+    var state, _state$pugs$serverId4, pugChannel, list, hasGoneOffline, listToLeave;
+
+    return regeneratorRuntime.wrap(function _callee6$(_context6) {
+      while (1) {
+        switch (_context6.prev = _context6.next) {
+          case 0:
+            _context6.prev = 0;
+            state = _store["default"].getState();
+            _state$pugs$serverId4 = state.pugs[serverId], pugChannel = _state$pugs$serverId4.pugChannel, list = _state$pugs$serverId4.list;
+            console.log(message);
+
+            if (!(pugChannel !== message.channel.id)) {
+              _context6.next = 6;
+              break;
+            }
+
+            return _context6.abrupt("return", message.channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+
+          case 6:
+            hasGoneOffline = args[0] === _constants.offline;
+            listToLeave = list.reduce(function (acc, pug) {
+              var isInPug = pug.findPlayer(user);
+
+              if (isInPug) {
+                acc.push(pug.name);
+              }
+
+              return acc;
+            }, []);
+            leaveGameTypes(message, listToLeave, serverId, user, hasGoneOffline);
+            _context6.next = 15;
+            break;
+
+          case 11:
+            _context6.prev = 11;
+            _context6.t0 = _context6["catch"](0);
+            message.channel.send('Something went wrong');
+            console.log(_context6.t0);
+
+          case 15:
+          case "end":
+            return _context6.stop();
+        }
+      }
+    }, _callee6, null, [[0, 11]]);
+  }));
+
+  return function leaveAllGameTypes(_x22, _x23, _x24, _x25) {
+    return _ref20.apply(this, arguments);
+  };
+}();
+
+exports.leaveAllGameTypes = leaveAllGameTypes;
 //# sourceMappingURL=pugHandlers.js.map

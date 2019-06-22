@@ -39,59 +39,67 @@ _dotenv["default"].config();
 var bBot = new _discord.Client({
   disabledEvents: ['TYPING_START', 'CHANNEL_UPDATE', 'USER_UPDATE']
 });
-bBot.on('message',
-/*#__PURE__*/
-function () {
-  var _ref = _asyncToGenerator(
+
+function onMessage(_x) {
+  return _onMessage.apply(this, arguments);
+}
+/*
+ * BOT
+ *  EVENTS
+ */
+
+
+function _onMessage() {
+  _onMessage = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee(message) {
+  regeneratorRuntime.mark(function _callee3(message) {
     var _message$author, id, username, roles, serverId, _message$content$subs, _message$content$subs2, first, args, action, isSolo, foundCommand;
 
-    return regeneratorRuntime.wrap(function _callee$(_context) {
+    return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
-        switch (_context.prev = _context.next) {
+        switch (_context3.prev = _context3.next) {
           case 0:
             if (!message.author.equals(bBot.user)) {
-              _context.next = 2;
+              _context3.next = 2;
               break;
             }
 
-            return _context.abrupt("return");
+            return _context3.abrupt("return");
 
           case 2:
             if (message.content.startsWith(_constants.prefix)) {
-              _context.next = 4;
+              _context3.next = 4;
               break;
             }
 
-            return _context.abrupt("return");
+            return _context3.abrupt("return");
 
           case 4:
             _message$author = message.author, id = _message$author.id, username = _message$author.username;
-            roles = message.member.roles;
-            serverId = message.channel.guild.id;
+            roles = message.member ? message.member.roles : null;
+            serverId = message.guild.id;
 
             if (serverId) {
-              _context.next = 9;
+              _context3.next = 9;
               break;
             }
 
-            return _context.abrupt("return");
+            return _context3.abrupt("return");
 
           case 9:
             _message$content$subs = message.content.substring(_constants.prefix.length).split(' ').filter(Boolean), _message$content$subs2 = _toArray(_message$content$subs), first = _message$content$subs2[0], args = _message$content$subs2.slice(1);
             action = first && first.toLowerCase();
-            isSolo = args.length === 0;
+            isSolo = args[0] === _constants.offline || args.length === 0;
             foundCommand = _commands.commands.find(function (cmd) {
               return cmd.solo === isSolo && cmd.aliases.includes(action);
             });
 
             if (!foundCommand) {
-              _context.next = 15;
+              _context3.next = 15;
               break;
             }
 
-            return _context.abrupt("return", _commands.handlers[foundCommand.key](message, args, serverId, {
+            return _context3.abrupt("return", _commands.handlers[foundCommand.key](message, args, serverId, {
               id: id,
               roles: roles,
               username: (0, _utils.sanitizeName)(username)
@@ -102,34 +110,68 @@ function () {
 
           case 16:
           case "end":
-            return _context.stop();
+            return _context3.stop();
         }
       }
-    }, _callee);
+    }, _callee3);
   }));
-
-  return function (_x) {
-    return _ref.apply(this, arguments);
-  };
-}());
-/*
- * BOT
- *  INITIALIZATION
- */
+  return _onMessage.apply(this, arguments);
+}
 
 bBot.on('ready', function () {
   console.log("Bot started running at ".concat(new Date().toUTCString()));
 });
+bBot.on('message', onMessage);
+bBot.on('presenceUpdate', function (_, _ref) {
+  var user = _ref.user,
+      guild = _ref.guild,
+      status = _ref.presence.status;
+
+  if (status === 'offline') {
+    var state = _store["default"].getState();
+
+    var _state$pugs$guild$id = state.pugs[guild.id],
+        _state$pugs$guild$id$ = _state$pugs$guild$id.list,
+        list = _state$pugs$guild$id$ === void 0 ? [] : _state$pugs$guild$id$,
+        pugChannel = _state$pugs$guild$id.pugChannel;
+
+    for (var i = 0; i < list.length; i++) {
+      var pug = list[i];
+      var isInPug = pug.findPlayer(user);
+
+      if (isInPug) {
+        var channel = guild.channels.get(pugChannel);
+        var message = new _discord.Message(channel, {
+          author: new _discord.User(bBot, {
+            bot: false,
+            id: user.id,
+            username: user.username
+          }),
+          attachments: new Map(),
+          embeds: [],
+          content: 'lva'
+        }, bBot);
+
+        _commands.handlers['leaveAllGameTypes'](message, [_constants.offline], guild.id, {
+          id: user.id,
+          username: (0, _utils.sanitizeName)(user.username)
+        });
+
+        break;
+      }
+    }
+  }
+});
 
 _asyncToGenerator(
 /*#__PURE__*/
-regeneratorRuntime.mark(function _callee2() {
-  return regeneratorRuntime.wrap(function _callee2$(_context2) {
+regeneratorRuntime.mark(function _callee() {
+  return regeneratorRuntime.wrap(function _callee$(_context) {
     while (1) {
-      switch (_context2.prev = _context2.next) {
+      switch (_context.prev = _context.next) {
         case 0:
-          _context2.prev = 0;
-          _context2.next = 3;
+          _context.prev = 0;
+          _context.next = 3;
           return _mongoose["default"].connect('mongodb://localhost:27017/bBot', {
             useNewUrlParser: true,
             poolSize: 5,
@@ -137,25 +179,25 @@ regeneratorRuntime.mark(function _callee2() {
           });
 
         case 3:
-          _context2.next = 5;
+          _context.next = 5;
           return hydrateStore();
 
         case 5:
           bBot.login(process.env.DISCORD_BOT_TOKEN);
-          _context2.next = 11;
+          _context.next = 11;
           break;
 
         case 8:
-          _context2.prev = 8;
-          _context2.t0 = _context2["catch"](0);
-          console.log('error', _context2.t0);
+          _context.prev = 8;
+          _context.t0 = _context["catch"](0);
+          console.log('error', _context.t0);
 
         case 11:
         case "end":
-          return _context2.stop();
+          return _context.stop();
       }
     }
-  }, _callee2, null, [[0, 8]]);
+  }, _callee, null, [[0, 8]]);
 }))();
 
 var hydrateStore =
@@ -163,27 +205,27 @@ var hydrateStore =
 function () {
   var _ref3 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee3() {
+  regeneratorRuntime.mark(function _callee2() {
     var dServers, qServers, gameTypes;
-    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+    return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
-        switch (_context3.prev = _context3.next) {
+        switch (_context2.prev = _context2.next) {
           case 0:
-            _context3.next = 2;
+            _context2.next = 2;
             return _models.DiscordServers.find({}).exec();
 
           case 2:
-            dServers = _context3.sent;
-            _context3.next = 5;
+            dServers = _context2.sent;
+            _context2.next = 5;
             return _models.UT99QueryServers.find({}).exec();
 
           case 5:
-            qServers = _context3.sent;
-            _context3.next = 8;
+            qServers = _context2.sent;
+            _context2.next = 8;
             return _models.GameTypes.find({}).exec();
 
           case 8:
-            gameTypes = _context3.sent;
+            gameTypes = _context2.sent;
             dServers.forEach(function (_ref4) {
               var server_id = _ref4.server_id,
                   pug_channel = _ref4.pug_channel,
@@ -224,10 +266,10 @@ function () {
 
           case 12:
           case "end":
-            return _context3.stop();
+            return _context2.stop();
         }
       }
-    }, _callee3);
+    }, _callee2);
   }));
 
   return function hydrateStore() {

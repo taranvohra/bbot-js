@@ -1,7 +1,7 @@
 import '@babel/polyfill';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import { Client, User, Message } from 'discord.js';
+import { Client, User, Message, GuildMember } from 'discord.js';
 import store from './store';
 import {
   INIT,
@@ -26,11 +26,10 @@ async function onMessage(message) {
   if (!message.content.startsWith(prefix)) return;
 
   const { id, username } = message.author;
-  const { roles } = message.member;
+  const roles = message.member ? message.member.roles : null;
+
   const {
-    channel: {
-      guild: { id: serverId },
-    },
+    guild: { id: serverId },
   } = message;
 
   if (!serverId) return;
@@ -67,36 +66,39 @@ bBot.on('ready', () => {
 
 bBot.on('message', onMessage);
 
-bBot.on(
-  'presenceUpdate',
-  (_, { user, guild: { channels }, presence: { status } }) => {
-    if (status === 'offline') {
-      const state = store.getState();
-      const allDiscordsPugs = Object.values(state.pugs);
-      allDiscordsPugs.map(({ list = [], pugChannel }) => {
-        if (list.some(u => u.id === user.id)) {
-          const cUser = new User(bBot, {
-            bot: false,
-            id: user.id,
-            username: user.username,
-          });
+bBot.on('presenceUpdate', (_, { user, guild, presence: { status } }) => {
+  if (status === 'offline') {
+    const state = store.getState();
+    const { list = [], pugChannel } = state.pugs[guild.id];
+    for (let i = 0; i < list.length; i++) {
+      const pug = list[i];
+      const isInPug = pug.findPlayer(user);
 
-          const cMessage = new Message(
-            pugChannel,
-            {
-              author: cUser,
-              attachments: new Map(),
-              embed: [],
-              content: `${prefix}lva ${offline}`,
-            },
-            bBot
-          );
-          onMessage(cMessage);
-        }
-      });
+      if (isInPug) {
+        const channel = guild.channels.get(pugChannel);
+        const message = new Message(
+          channel,
+          {
+            author: new User(bBot, {
+              bot: false,
+              id: user.id,
+              username: user.username,
+            }),
+            attachments: new Map(),
+            embeds: [],
+            content: 'lva',
+          },
+          bBot
+        );
+        handlers['leaveAllGameTypes'](message, [offline], guild.id, {
+          id: user.id,
+          username: sanitizeName(user.username),
+        });
+        break;
+      }
     }
   }
-);
+});
 
 (async () => {
   try {

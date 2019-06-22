@@ -80,6 +80,11 @@ var commands = [{
   description: '',
   aliases: ['l', 'leave'],
   solo: false
+}, {
+  key: 'leaveAllGameTypes',
+  description: '',
+  aliases: ['lva'],
+  solo: true
 }];
 exports.commands = commands;
 //# sourceMappingURL=index.js.map

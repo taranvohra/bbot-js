@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
+exports.formatLeaveStatus = exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
 
 var _discord = _interopRequireDefault(require("discord.js"));
 
@@ -135,4 +135,48 @@ var formatJoinStatus = function formatJoinStatus(statuses) {
 };
 
 exports.formatJoinStatus = formatJoinStatus;
+
+var formatLeaveStatus = function formatLeaveStatus(statuses, isOffline) {
+  var _statuses$reduce2 = statuses.reduce(function (acc, _ref2) {
+    var left = _ref2.left,
+        name = _ref2.name,
+        user = _ref2.user,
+        activeCount = _ref2.activeCount,
+        maxPlayers = _ref2.maxPlayers;
+
+    switch (left) {
+      case 1:
+        acc.left += "".concat(acc.left.length > 0 ? ", " : "", "**").concat(name.toUpperCase(), "** (").concat(activeCount, "/").concat(maxPlayers, ")");
+        acc.user = user;
+        break;
+
+      case 0:
+        acc.nj = "Cannot leave pug(s) if you haven't joined :head_bandage:";
+        break;
+
+      case -1:
+        acc.nf += "No pug found : **".concat(name.toUpperCase(), "**\n");
+        break;
+
+      default:
+        null;
+    }
+
+    return acc;
+  }, {
+    user: null,
+    left: "",
+    nj: "",
+    nf: ""
+  }),
+      left = _statuses$reduce2.left,
+      nj = _statuses$reduce2.nj,
+      nf = _statuses$reduce2.nf,
+      user = _statuses$reduce2.user;
+
+  var body = "".concat(left.length > 0 ? "".concat(user.username, " left  ").concat(left, " ").concat(isOffline ? "because the person went offline" : "") : "").concat(nj.length > 0 ? "\n".concat(nj) : "").concat(nf.length > 0 ? "\n".concat(nf) : "");
+  return body;
+};
+
+exports.formatLeaveStatus = formatLeaveStatus;
 //# sourceMappingURL=formats.js.map
