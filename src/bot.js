@@ -12,6 +12,7 @@ import {
 } from './store/actions';
 import { DiscordServers, UT99QueryServers, GameTypes } from './models';
 import { handlers, commands } from './commands';
+import { sanitizeName } from './utils';
 import { prefix } from './constants';
 
 dotenv.config();
@@ -48,8 +49,8 @@ bBot.on('message', async message => {
   if (foundCommand) {
     return handlers[foundCommand.key](message, args, serverId, {
       id,
-      username,
       roles,
+      username: sanitizeName(username),
     });
   }
   message.channel.send(`Command not found`);

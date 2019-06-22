@@ -28,6 +28,16 @@ const pugs = (state = {}, { type, payload }) => {
         },
       };
     }
+
+    case 'ADD_NEW_PUG': {
+      return {
+        ...state,
+        [payload.serverId]: {
+          ...state[payload.serverId],
+          list: [...state[payload.serverId].list, payload.newPug],
+        },
+      };
+    }
     default:
       return state;
   }

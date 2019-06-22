@@ -3,7 +3,7 @@ import { GameTypes } from '../models';
 import { computePickingOrder, hasPrivilegedRole, shuffle } from '../utils';
 import { privilegedRoles, captainTimeout } from '../constants';
 import { formatListGameTypes } from '../formats';
-import { assignGameTypes } from '../store/actions';
+import { assignGameTypes, addNewPug } from '../store/actions';
 
 class Pug {
   constructor({ name, noOfPlayers, noOfTeams, pickingOrder }) {
@@ -211,12 +211,16 @@ export const joinGameTypes = async (
   const user = { id, username, roles };
   const results = args.map(a => {
     const game = a.toLowerCase();
-    const gameType = gameTypes.some(g => g.name === game);
+    const gameType = gameTypes.find(g => g.name === game);
 
     if (!gameType) return { user, name: game, joined: -1 }; // -1 is for NOT FOUND
 
-    const pug = list.find(p => p.name === game) || new Pug(gameType);
+    const existingPug = list.find(p => p.name === game);
+    const pug = existingPug || new Pug(gameType);
     const joined = pug.addPlayer(user);
+    if (!existingPug && joined) {
+      store.dispatch(addNewPug({ serverId, newPug: pug }));
+    }
     return {
       user,
       joined,

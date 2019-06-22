@@ -99,3 +99,42 @@ export const formatListGameTypes = (guildName, list) => {
 
   return `${title}\n${body}`;
 };
+
+export const formatJoinStatus = statuses => {
+  const { joined, missed, nf, aj, user } = statuses.reduce(
+    (acc, { joined, user, name, activeCount, maxPlayers }) => {
+      switch (joined) {
+        case -1:
+          acc.nf += `No pug found : **${name.toUpperCase()}**\n`;
+          break;
+        case 0:
+          acc.missed += `Sorry, **${name.toUpperCase()}** is already filled\n`;
+        case 1:
+          acc.joined += `**${name.toUpperCase()}** (${activeCount}/${maxPlayers}) :small_orange_diamond: `;
+          break;
+        case 2:
+          acc.aj += `**${name.toUpperCase()}** `;
+          break;
+        default:
+          null;
+      }
+      acc.user = user;
+      return acc;
+    },
+    {
+      joined: ``,
+      missed: ``,
+      nf: ``,
+      aj: ``,
+      user: null,
+    }
+  );
+
+  const body = `${
+    joined.length > 0
+      ? `${user.username} joined :small_orange_diamond: ${joined}`
+      : ``
+  } ${missed.length > 0 ? `\n${missed}` : ``} ${
+    aj.length > 0 ? `\n${user.username}, you have already joined ${aj}` : ``
+  } ${nf.length > 0 ? `\n${nf}` : ``}`;
+};

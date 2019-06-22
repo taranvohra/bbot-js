@@ -56,7 +56,8 @@ export const createAlternatingObject = array =>
  * @description Escapes special characters in the name
  * @returns {String}
  */
-export const sanitizeName = name => name.replace(/(\*|`|:)/g, c => `\\` + c);
+export const sanitizeName = name =>
+  name.replace(/(\*|`|:|_|~)/g, c => `\\` + c);
 
 /**
  * @param {Number} time

@@ -32,3 +32,13 @@ export const assignGameTypes = data => ({
   type: 'ASSIGN_GAME_TYPES',
   payload: data,
 });
+
+export const addNewPug = data => ({
+  type: 'ADD_NEW_PUG',
+  payload: data,
+});
+
+export const removePug = data => ({
+  type: 'REMOVE_PUG',
+  payload: data,
+});
