@@ -1,7 +1,7 @@
 import '@babel/polyfill';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import { Client } from 'discord.js';
+import { Client, User, Message } from 'discord.js';
 import store from './store';
 import {
   INIT,
@@ -21,7 +21,7 @@ const bBot = new Client({
   disabledEvents: ['TYPING_START', 'CHANNEL_UPDATE', 'USER_UPDATE'],
 });
 
-bBot.on('message', async message => {
+async function onMessage(message) {
   if (message.author.equals(bBot.user)) return;
   if (!message.content.startsWith(prefix)) return;
 
@@ -54,15 +54,49 @@ bBot.on('message', async message => {
     });
   }
   message.channel.send(`Command not found`);
-});
+}
 
 /*
  * BOT
- *  INITIALIZATION
+ *  EVENTS
  */
+
 bBot.on('ready', () => {
   console.log(`Bot started running at ${new Date().toUTCString()}`);
 });
+
+bBot.on('message', onMessage);
+
+bBot.on(
+  'presenceUpdate',
+  (_, { user, guild: { channels }, presence: { status } }) => {
+    if (status === 'offline') {
+      const state = store.getState();
+      const allDiscordsPugs = Object.values(state.pugs);
+      allDiscordsPugs.map(({ list = [], pugChannel }) => {
+        if (list.some(u => u.id === user.id)) {
+          const cUser = new User(bBot, {
+            bot: false,
+            id: user.id,
+            username: user.username,
+          });
+
+          const cMessage = new Message(
+            pugChannel,
+            {
+              author: cUser,
+              attachments: new Map(),
+              embed: [],
+              content: `${prefix}lva ${offline}`,
+            },
+            bBot
+          );
+          onMessage(cMessage);
+        }
+      });
+    }
+  }
+);
 
 (async () => {
   try {

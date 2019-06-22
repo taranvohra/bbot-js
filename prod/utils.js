@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.computePickingOrder = exports.getTeamIndex = exports.getTeamScores = exports.padNumberWithZeros = exports.getMinutesAndSeconds = exports.sanitizeName = exports.createAlternatingObject = exports.getPlayerList = exports.hasPrivilegedRole = void 0;
+exports.shuffle = exports.computePickingOrder = exports.getTeamIndex = exports.getTeamScores = exports.padNumberWithZeros = exports.getMinutesAndSeconds = exports.sanitizeName = exports.createAlternatingObject = exports.getPlayerList = exports.hasPrivilegedRole = void 0;
 
 var _constants = require("./constants");
 
@@ -84,7 +84,7 @@ var createAlternatingObject = function createAlternatingObject(array) {
 exports.createAlternatingObject = createAlternatingObject;
 
 var sanitizeName = function sanitizeName(name) {
-  return name.replace(/(\*|`|:)/g, function (c) {
+  return name.replace(/(\*|`|:|_|~)/g, function (c) {
     return "\\" + c;
   });
 };
@@ -189,4 +189,12 @@ var computePickingOrder = function computePickingOrder(noOfPlayers, noOfTeams) {
 };
 
 exports.computePickingOrder = computePickingOrder;
+
+var shuffle = function shuffle(array) {
+  return Array.from(array).sort(function () {
+    return Math.random() - 0.5;
+  });
+};
+
+exports.shuffle = shuffle;
 //# sourceMappingURL=utils.js.map

@@ -75,6 +75,12 @@ const commands = [
     aliases: ['j', 'join'],
     solo: false,
   },
+  {
+    key: 'leaveGameTypes',
+    description: '',
+    aliases: ['l', 'leave'],
+    solo: false,
+  },
 ];
 
 export { commands, handlers };

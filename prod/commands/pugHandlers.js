@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.joinGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = void 0;
+exports.leaveGameTypes = exports.joinGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = void 0;
 
 var _store = _interopRequireDefault(require("../store"));
 
@@ -84,7 +84,7 @@ function () {
           captain: null,
           pick: null,
           tag: null,
-          rating: null
+          rating: 0
         }, user));
         this.players.length === this.noOfPlayers ? this.fillPug() : null;
         return 1;
@@ -102,14 +102,15 @@ function () {
 
       this.picking = true;
       this.timer = setTimeout(function () {
-        var present = _this.captains.reduce(function (acc, _, i) {
-          _this.captains[i] ? acc[i] = true : null;
-          return acc;
-        }, {});
+        var remaining = _this.noOfPlayers - _this.captains.length;
 
-        for (var i = 0; i < _this.noOfTeams; i++) {
-          if (present[i]) continue;
-        }
+        var playersWithoutCaptain = _this.noOfPlayers.filter(function (p) {
+          return p.captain === null;
+        });
+
+        var poolForCaptains = (0, _utils.shuffle)(playersWithoutCaptain).slice(0, remaining * 0.8).sort(function (a, b) {
+          return a.rating - b.rating;
+        }); //  TODO
       }, _constants.captainTimeout);
     }
   }, {
@@ -360,6 +361,8 @@ function () {
               } else {
                 acc.push(curr);
               }
+
+              return acc;
             }, []);
             channel.send((0, _formats.formatListGameTypes)(channel.guild.name, gamesList));
             _context3.next = 15;
@@ -392,7 +395,7 @@ function () {
   var _ref16 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee4(_ref14, args, serverId, _ref15) {
-    var channel, id, username, roles, state, _state$pugs$serverId2, pugChannel, list, gameTypes, isPartOfFilledPug, user, results;
+    var channel, id, username, roles, state, _state$pugs$serverId2, pugChannel, list, gameTypes, isPartOfFilledPug, user, statuses;
 
     return regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
@@ -400,25 +403,26 @@ function () {
           case 0:
             channel = _ref14.channel;
             id = _ref15.id, username = _ref15.username, roles = _ref15.roles;
+            _context4.prev = 2;
             state = _store["default"].getState();
             _state$pugs$serverId2 = state.pugs[serverId], pugChannel = _state$pugs$serverId2.pugChannel, list = _state$pugs$serverId2.list, gameTypes = _state$pugs$serverId2.gameTypes;
 
             if (!(pugChannel !== channel.id)) {
-              _context4.next = 6;
+              _context4.next = 7;
               break;
             }
 
             return _context4.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
 
-          case 6:
+          case 7:
             if (id) {
-              _context4.next = 8;
+              _context4.next = 9;
               break;
             }
 
             return _context4.abrupt("return", channel.send('No user was mentioned'));
 
-          case 8:
+          case 9:
             isPartOfFilledPug = list.find(function (p) {
               return p.picking && p.players.some(function (u) {
                 return u.id === id;
@@ -426,21 +430,21 @@ function () {
             });
 
             if (!isPartOfFilledPug) {
-              _context4.next = 11;
+              _context4.next = 12;
               break;
             }
 
             return _context4.abrupt("return", channel.send("Please leave **".concat(isPartOfFilledPug.name.toUpperCase(), "** first to join other pugs")));
 
-          case 11:
+          case 12:
             user = {
               id: id,
               username: username,
               roles: roles
             };
-            results = args.map(function (a) {
+            statuses = args.map(function (a) {
               var game = a.toLowerCase();
-              var gameType = gameTypes.some(function (g) {
+              var gameType = gameTypes.find(function (g) {
                 return g.name === game;
               });
               if (!gameType) return {
@@ -449,10 +453,19 @@ function () {
                 joined: -1
               }; // -1 is for NOT FOUND
 
-              var pug = list.find(function (p) {
+              var existingPug = list.find(function (p) {
                 return p.name === game;
-              }) || new Pug(gameType);
+              });
+              var pug = existingPug || new Pug(gameType);
               var joined = pug.addPlayer(user);
+
+              if (!existingPug && joined) {
+                _store["default"].dispatch((0, _actions.addNewPug)({
+                  serverId: serverId,
+                  newPug: pug
+                }));
+              }
+
               return {
                 user: user,
                 joined: joined,
@@ -461,13 +474,22 @@ function () {
                 maxPlayers: pug.noOfPlayers
               };
             });
+            channel.send((0, _formats.formatJoinStatus)(statuses));
+            _context4.next = 21;
+            break;
 
-          case 13:
+          case 17:
+            _context4.prev = 17;
+            _context4.t0 = _context4["catch"](2);
+            channel.send('Something went wrong');
+            console.log(_context4.t0);
+
+          case 21:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4);
+    }, _callee4, null, [[2, 17]]);
   }));
 
   return function joinGameTypes(_x13, _x14, _x15, _x16) {
@@ -476,4 +498,114 @@ function () {
 }();
 
 exports.joinGameTypes = joinGameTypes;
+
+var leaveGameTypes =
+/*#__PURE__*/
+function () {
+  var _ref19 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee5(_ref17, args, serverId, _ref18) {
+    var channel, id, username, roles, state, _state$pugs$serverId3, pugChannel, list, gameTypes, isPartOfFilledPug, user, statuses;
+
+    return regeneratorRuntime.wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            channel = _ref17.channel;
+            id = _ref18.id, username = _ref18.username, roles = _ref18.roles;
+            _context5.prev = 2;
+            state = _store["default"].getState();
+            _state$pugs$serverId3 = state.pugs[serverId], pugChannel = _state$pugs$serverId3.pugChannel, list = _state$pugs$serverId3.list, gameTypes = _state$pugs$serverId3.gameTypes;
+
+            if (!(pugChannel !== channel.id)) {
+              _context5.next = 7;
+              break;
+            }
+
+            return _context5.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+
+          case 7:
+            if (id) {
+              _context5.next = 9;
+              break;
+            }
+
+            return _context5.abrupt("return", channel.send('No user was mentioned'));
+
+          case 9:
+            isPartOfFilledPug = list.find(function (p) {
+              return p.picking && p.players.some(function (u) {
+                return u.id === id;
+              });
+            });
+
+            if (!isPartOfFilledPug) {
+              _context5.next = 12;
+              break;
+            }
+
+            return _context5.abrupt("return", channel.send("Please leave **".concat(isPartOfFilledPug.name.toUpperCase(), "** first to join other pugs")));
+
+          case 12:
+            user = {
+              id: id,
+              username: username,
+              roles: roles
+            };
+            statuses = args.map(function (a) {
+              var game = a.toLowerCase();
+              var gameType = gameTypes.find(function (g) {
+                return g.name === game;
+              });
+              if (!gameType) return {
+                user: user,
+                name: game,
+                joined: -1
+              }; // -1 is for NOT FOUND
+
+              var existingPug = list.find(function (p) {
+                return p.name === game;
+              });
+              var pug = existingPug || new Pug(gameType);
+              var joined = pug.addPlayer(user);
+
+              if (!existingPug && joined) {
+                _store["default"].dispatch((0, _actions.addNewPug)({
+                  serverId: serverId,
+                  newPug: pug
+                }));
+              }
+
+              return {
+                user: user,
+                joined: joined,
+                name: game,
+                activeCount: pug.players.length,
+                maxPlayers: pug.noOfPlayers
+              };
+            });
+            channel.send((0, _formats.formatJoinStatus)(statuses));
+            _context5.next = 21;
+            break;
+
+          case 17:
+            _context5.prev = 17;
+            _context5.t0 = _context5["catch"](2);
+            channel.send('Something went wrong');
+            console.log(_context5.t0);
+
+          case 21:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5, null, [[2, 17]]);
+  }));
+
+  return function leaveGameTypes(_x17, _x18, _x19, _x20) {
+    return _ref19.apply(this, arguments);
+  };
+}();
+
+exports.leaveGameTypes = leaveGameTypes;
 //# sourceMappingURL=pugHandlers.js.map

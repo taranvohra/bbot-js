@@ -16,6 +16,8 @@ var _models = require("./models");
 
 var _commands = require("./commands");
 
+var _utils = require("./utils");
+
 var _constants = require("./constants");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -91,8 +93,8 @@ function () {
 
             return _context.abrupt("return", _commands.handlers[foundCommand.key](message, args, serverId, {
               id: id,
-              username: username,
-              roles: roles
+              roles: roles,
+              username: (0, _utils.sanitizeName)(username)
             }));
 
           case 15:

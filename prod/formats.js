@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
+exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
 
 var _discord = _interopRequireDefault(require("discord.js"));
 
@@ -79,11 +79,60 @@ var formatListGameTypes = function formatListGameTypes(guildName, list) {
   }); // by number of joined players
 
   var body = sortedList.reduce(function (acc, curr, i) {
-    acc += "**".concat(curr.name, "** (").concat(curr.players, "/").concat(curr.maxPlayers, ") ").concat(i === list.length - 1 ? '' : ':small_blue_diamond:');
+    acc += "**".concat(curr.name.toUpperCase(), "** (").concat(curr.players, "/").concat(curr.maxPlayers, ") ").concat(i === list.length - 1 ? '' : ':small_blue_diamond:');
     return acc;
   }, "");
   return "".concat(title, "\n").concat(body);
 };
 
 exports.formatListGameTypes = formatListGameTypes;
+
+var formatJoinStatus = function formatJoinStatus(statuses) {
+  var _statuses$reduce = statuses.reduce(function (acc, _ref) {
+    var joined = _ref.joined,
+        user = _ref.user,
+        name = _ref.name,
+        activeCount = _ref.activeCount,
+        maxPlayers = _ref.maxPlayers;
+
+    switch (joined) {
+      case -1:
+        acc.nf += "No pug found : **".concat(name.toUpperCase(), "**\n");
+        break;
+
+      case 0:
+        acc.missed += "Sorry, **".concat(name.toUpperCase(), "** is already filled\n");
+
+      case 1:
+        acc.joined += "**".concat(name.toUpperCase(), "** (").concat(activeCount, "/").concat(maxPlayers, ") :small_blue_diamond: ");
+        break;
+
+      case 2:
+        acc.aj += "**".concat(name.toUpperCase(), "** ");
+        break;
+
+      default:
+        null;
+    }
+
+    acc.user = user;
+    return acc;
+  }, {
+    joined: "",
+    missed: "",
+    nf: "",
+    aj: "",
+    user: null
+  }),
+      joined = _statuses$reduce.joined,
+      missed = _statuses$reduce.missed,
+      nf = _statuses$reduce.nf,
+      aj = _statuses$reduce.aj,
+      user = _statuses$reduce.user;
+
+  var body = "".concat(joined.length > 0 ? "".concat(user.username, " joined :small_blue_diamond: ").concat(joined) : "", " ").concat(missed.length > 0 ? "\n".concat(missed) : "", " ").concat(aj.length > 0 ? "\n".concat(user.username, ", you have already joined ").concat(aj) : "", " ").concat(nf.length > 0 ? "\n".concat(nf) : "");
+  return body;
+};
+
+exports.formatJoinStatus = formatJoinStatus;
 //# sourceMappingURL=formats.js.map

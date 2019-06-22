@@ -2,7 +2,11 @@ import store from '../store';
 import { GameTypes } from '../models';
 import { computePickingOrder, hasPrivilegedRole, shuffle } from '../utils';
 import { privilegedRoles, captainTimeout } from '../constants';
-import { formatListGameTypes } from '../formats';
+import {
+  formatListGameTypes,
+  formatJoinStatus,
+  formatLeaveStatus,
+} from '../formats';
 import { assignGameTypes, addNewPug } from '../store/actions';
 
 class Pug {
@@ -36,7 +40,11 @@ class Pug {
     return 0;
   }
 
-  removePlayer(user) {}
+  removePlayer(user) {
+    const playerIndex = this.list.players.findIndex(p => p.id === user.id);
+    this.players.splice(playerIndex, 1);
+    if (this.picking) this.stopPug();
+  }
 
   fillPug() {
     this.picking = true;
@@ -53,12 +61,12 @@ class Pug {
     }, captainTimeout);
   }
 
-  findPlayer(user) {
-    return this.players.find(u => u.id === user.id);
-  }
-
   stopPug() {
     this.cleanup();
+  }
+
+  findPlayer(user) {
+    return this.players.find(u => u.id === user.id);
   }
 
   cleanup() {
@@ -174,6 +182,7 @@ export const listGameTypes = async ({ channel }, _, serverId, __) => {
       } else {
         acc.push(curr);
       }
+      return acc;
     }, []);
 
     channel.send(formatListGameTypes(channel.guild.name, gamesList));
@@ -189,44 +198,95 @@ export const joinGameTypes = async (
   serverId,
   { id, username, roles }
 ) => {
-  const state = store.getState();
-  const { pugChannel, list, gameTypes } = state.pugs[serverId];
+  try {
+    const state = store.getState();
+    const { pugChannel, list, gameTypes } = state.pugs[serverId];
 
-  if (pugChannel !== channel.id)
-    return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+    if (pugChannel !== channel.id)
+      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
 
-  // TODO args length 0 (default join with .j)
+    // TODO args length 0 (default join with .j)
 
-  if (!id) return channel.send('No user was mentioned');
+    if (!id) return channel.send('No user was mentioned');
 
-  const isPartOfFilledPug = list.find(
-    p => p.picking && p.players.some(u => u.id === id)
-  );
-
-  if (isPartOfFilledPug)
-    return channel.send(
-      `Please leave **${isPartOfFilledPug.name.toUpperCase()}** first to join other pugs`
+    const isPartOfFilledPug = list.find(
+      p => p.picking && p.players.some(u => u.id === id)
     );
 
-  const user = { id, username, roles };
-  const results = args.map(a => {
-    const game = a.toLowerCase();
-    const gameType = gameTypes.find(g => g.name === game);
+    if (isPartOfFilledPug)
+      return channel.send(
+        `Please leave **${isPartOfFilledPug.name.toUpperCase()}** first to join other pugs`
+      );
 
-    if (!gameType) return { user, name: game, joined: -1 }; // -1 is for NOT FOUND
+    const user = { id, username, roles };
+    const statuses = args.map(a => {
+      const game = a.toLowerCase();
+      const gameType = gameTypes.find(g => g.name === game);
 
-    const existingPug = list.find(p => p.name === game);
-    const pug = existingPug || new Pug(gameType);
-    const joined = pug.addPlayer(user);
-    if (!existingPug && joined) {
-      store.dispatch(addNewPug({ serverId, newPug: pug }));
-    }
-    return {
-      user,
-      joined,
-      name: game,
-      activeCount: pug.players.length,
-      maxPlayers: pug.noOfPlayers,
-    };
-  });
+      if (!gameType) return { user, name: game, joined: -1 }; // -1 is for NOT FOUND
+
+      const existingPug = list.find(p => p.name === game);
+      const pug = existingPug || new Pug(gameType);
+      const joined = pug.addPlayer(user);
+      if (!existingPug && joined) {
+        store.dispatch(addNewPug({ serverId, newPug: pug }));
+      }
+      return {
+        user,
+        joined,
+        name: game,
+        activeCount: pug.players.length,
+        maxPlayers: pug.noOfPlayers,
+      };
+    });
+    channel.send(formatJoinStatus(statuses));
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const leaveGameTypes = async (
+  { channel },
+  args,
+  serverId,
+  { id, username, roles }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, list, gameTypes } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+
+    if (!id) return channel.send('No user was mentioned');
+    if (args.length === 0)
+      return channel.send('Invalid, No pugs were mentioned');
+
+    const user = { id, username, roles };
+    const statuses = args.map(a => {
+      const game = a.toLowerCase();
+      const gameType = gameTypes.find(g => g.name === game);
+
+      if (!gameType) return { user, name: game, left: -1 }; // -1 is for NOT FOUND
+
+      const pug = list.find(p => p.name === game);
+      const isInPug = pug.findPlayer(user);
+      if (isInPug) {
+        pug.removePlayer(user);
+        return {
+          user,
+          name: game,
+          left: 1,
+          activeCount: pug.players.length,
+          maxPlayers: pug.noOfPlayers,
+        };
+      }
+      return { user, name: game, left: 0 };
+    });
+    channel.send(formatLeaveStatus(statuses));
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
 };

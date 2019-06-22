@@ -91,9 +91,9 @@ export const formatListGameTypes = (guildName, list) => {
   const sortedList = list.sort((a, b) => b.players - a.players); // by number of joined players
 
   const body = sortedList.reduce((acc, curr, i) => {
-    acc += `**${curr.name}** (${curr.players}/${curr.maxPlayers}) ${
-      i === list.length - 1 ? '' : ':small_blue_diamond:'
-    }`;
+    acc += `**${curr.name.toUpperCase()}** (${curr.players}/${
+      curr.maxPlayers
+    }) ${i === list.length - 1 ? '' : ':small_blue_diamond:'}`;
     return acc;
   }, ``);
 
@@ -110,7 +110,7 @@ export const formatJoinStatus = statuses => {
         case 0:
           acc.missed += `Sorry, **${name.toUpperCase()}** is already filled\n`;
         case 1:
-          acc.joined += `**${name.toUpperCase()}** (${activeCount}/${maxPlayers}) :small_orange_diamond: `;
+          acc.joined += `**${name.toUpperCase()}** (${activeCount}/${maxPlayers}) :small_blue_diamond: `;
           break;
         case 2:
           acc.aj += `**${name.toUpperCase()}** `;
@@ -132,9 +132,45 @@ export const formatJoinStatus = statuses => {
 
   const body = `${
     joined.length > 0
-      ? `${user.username} joined :small_orange_diamond: ${joined}`
+      ? `${user.username} joined :small_blue_diamond: ${joined}`
       : ``
   } ${missed.length > 0 ? `\n${missed}` : ``} ${
     aj.length > 0 ? `\n${user.username}, you have already joined ${aj}` : ``
   } ${nf.length > 0 ? `\n${nf}` : ``}`;
+
+  return body;
+};
+
+export const formatLeaveStatus = (statuses, isOffline) => {
+  const { left, nj, nf, user } = statuses.reduce(
+    (acc, { left, name, user, activeCount, maxPlayers }) => {
+      switch (left) {
+        case 1:
+          acc.left += `${
+            acc.left.length > 0 ? `, ` : ``
+          }**${name.toUpperCase()}** (${activeCount}/${maxPlayers})`;
+          acc.user = user;
+          break;
+        case 0:
+          acc.nj = `Cannot leave pug(s) you haven't joined :head_bandage:`;
+          break;
+        case -1:
+          acc.nf += `No pug found : **${name.toUpperCase()}**\n`;
+          break;
+        default:
+          null;
+      }
+      return acc;
+    },
+    { user: null, left: ``, nj: ``, nf: `` }
+  );
+
+  const body = `${
+    left.length > 0
+      ? `${user.username} left  ${left} ${
+          isOffline ? `because the person went offline` : ``
+        }`
+      : ``
+  }${nj.length > 0 ? `\n${nj}` : ``}${nf.length > 0 ? `\n${nf}` : ``}`;
+  return body;
 };
