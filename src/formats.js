@@ -152,7 +152,7 @@ export const formatLeaveStatus = (statuses, isOffline) => {
           acc.user = user;
           break;
         case 0:
-          acc.nj = `Cannot leave pug(s) you haven't joined :head_bandage:`;
+          acc.nj = `Cannot leave pug(s) if you haven't joined :head_bandage:`;
           break;
         case -1:
           acc.nf += `No pug found : **${name.toUpperCase()}**\n`;

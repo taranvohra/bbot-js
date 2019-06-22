@@ -13,7 +13,7 @@ import {
 import { DiscordServers, UT99QueryServers, GameTypes } from './models';
 import { handlers, commands } from './commands';
 import { sanitizeName } from './utils';
-import { prefix } from './constants';
+import { prefix, offline } from './constants';
 
 dotenv.config();
 
@@ -40,7 +40,7 @@ async function onMessage(message) {
     .split(' ')
     .filter(Boolean);
   const action = first && first.toLowerCase();
-  const isSolo = args.length === 0;
+  const isSolo = args[0] === offline || args.length === 0;
 
   const foundCommand = commands.find(
     cmd => cmd.solo === isSolo && cmd.aliases.includes(action)

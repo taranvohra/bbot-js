@@ -1,7 +1,7 @@
 import store from '../store';
 import { GameTypes } from '../models';
 import { computePickingOrder, hasPrivilegedRole, shuffle } from '../utils';
-import { privilegedRoles, captainTimeout } from '../constants';
+import { privilegedRoles, captainTimeout, offline } from '../constants';
 import {
   formatListGameTypes,
   formatJoinStatus,
@@ -250,7 +250,8 @@ export const leaveGameTypes = async (
   { channel },
   args,
   serverId,
-  { id, username, roles }
+  { id, username, roles },
+  isOffline
 ) => {
   try {
     const state = store.getState();
@@ -276,6 +277,7 @@ export const leaveGameTypes = async (
         pug.removePlayer(user);
         return {
           user,
+          pug,
           name: game,
           left: 1,
           activeCount: pug.players.length,
@@ -284,7 +286,31 @@ export const leaveGameTypes = async (
       }
       return { user, name: game, left: 0 };
     });
-    channel.send(formatLeaveStatus(statuses));
+    channel.send(formatLeaveStatus(statuses, isOffline));
+    // TODO Compute deadpugs
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const leaveAllGameTypes = async (message, args, serverId, user) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, list } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+
+    const hasGoneOffline = args[0] === offline;
+    const listToLeave = list.reduce((acc, pug) => {
+      const isInPug = pug.findPlayer(user);
+      if (isInPug) {
+        acc.push(pug.name);
+      }
+      return acc;
+    }, []);
+    leaveGameTypes(message, listToLeave, serverId, user, hasGoneOffline);
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);

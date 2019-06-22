@@ -81,6 +81,12 @@ const commands = [
     aliases: ['l', 'leave'],
     solo: false,
   },
+  {
+    key: 'leaveAllGameTypes',
+    description: '',
+    aliases: ['lva'],
+    solo: true,
+  },
 ];
 
 export { commands, handlers };
