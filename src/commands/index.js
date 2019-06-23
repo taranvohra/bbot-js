@@ -70,6 +70,12 @@ const commands = [
     solo: true,
   },
   {
+    key: 'listAllCurrentGameTypes',
+    description: '',
+    aliases: ['lsa'],
+    solo: true,
+  },
+  {
     key: 'joinGameTypes',
     description: '',
     aliases: ['j', 'join'],

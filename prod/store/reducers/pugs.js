@@ -55,6 +55,16 @@ var pugs = function pugs() {
         })));
       }
 
+    case 'REMOVE_PUG':
+      {
+        var updatedList = state[payload.serverId].list.filter(function (p) {
+          return p.name !== payload.name;
+        });
+        return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
+          list: updatedList
+        })));
+      }
+
     default:
       return state;
   }

@@ -7,6 +7,7 @@ import {
   formatJoinStatus,
   formatLeaveStatus,
   formatBroadcastPug,
+  formatListAllCurrentGameTypes,
 } from '../formats';
 import { assignGameTypes, addNewPug, removePug } from '../store/actions';
 
@@ -71,7 +72,7 @@ class Pug {
   }
 
   isEmpty() {
-    return Boolean(this.players.length);
+    return this.players.length === 0 ? true : false;
   }
 
   cleanup() {
@@ -202,6 +203,21 @@ export const listGameTypes = async ({ channel }, _, serverId, __) => {
   }
 };
 
+export const listAllCurrentGameTypes = async ({ channel }, _, serverId, __) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, list } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+
+    channel.send(formatListAllCurrentGameTypes(list, channel.guild.name));
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
 export const joinGameTypes = async (
   { channel },
   args,
@@ -262,28 +278,30 @@ export const joinGameTypes = async (
       }
     });
     channel.send(formatJoinStatus(statuses.filter(Boolean)));
-    const allLeaveMsgs = list.reduce((acc, op) => {
-      if (op.name !== toBroadcast.name) {
-        const allPugLeaveMsgs = toBroadcast.players.reduce((prev, player) => {
-          if (op.findPlayer(player)) {
-            const msg = leaveGameTypes(
-              { channel },
-              [op.name],
-              serverId,
-              user,
-              null,
-              true
-            );
-            prev += `${msg} `;
-          }
-          return prev;
-        }, ``);
-        acc += `${allPugLeaveMsgs} \n`;
-      }
-      return acc;
-    }, ``);
-    allLeaveMsgs && channel.send(allLeaveMsgs);
-    channel.send(formatBroadcastPug(toBroadcast));
+    if (toBroadcast) {
+      const allLeaveMsgs = list.reduce((acc, op) => {
+        if (op.name !== toBroadcast.name) {
+          const allPugLeaveMsgs = toBroadcast.players.reduce((prev, player) => {
+            if (op.findPlayer(player)) {
+              const msg = leaveGameTypes(
+                { channel },
+                [op.name],
+                serverId,
+                user,
+                null,
+                true
+              );
+              prev += `${msg} `;
+            }
+            return prev;
+          }, ``);
+          acc += `${allPugLeaveMsgs} \n`;
+        }
+        return acc;
+      }, ``);
+      allLeaveMsgs && channel.send(allLeaveMsgs);
+      channel.send(formatBroadcastPug(toBroadcast));
+    }
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);

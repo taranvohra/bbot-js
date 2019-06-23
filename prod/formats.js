@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.formatLeaveStatus = exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
+exports.formatListAllCurrentGameTypes = exports.formatBroadcastPug = exports.formatDeadPugs = exports.formatLeaveStatus = exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
 
 var _discord = _interopRequireDefault(require("discord.js"));
 
@@ -179,4 +179,41 @@ var formatLeaveStatus = function formatLeaveStatus(statuses, isOffline) {
 };
 
 exports.formatLeaveStatus = formatLeaveStatus;
+
+var formatDeadPugs = function formatDeadPugs(deadPugs) {
+  var body = deadPugs.reduce(function (acc, curr, i) {
+    acc += "".concat(i > 0 ? "\n" : "", " :joy_cat: **").concat(curr.name.toUpperCase(), "** was stopped because **").concat(curr.user.username, "** left :joy_cat: ");
+    return acc;
+  }, "");
+  return body;
+};
+
+exports.formatDeadPugs = formatDeadPugs;
+
+var formatBroadcastPug = function formatBroadcastPug(toBroadcast) {
+  var title = "**".concat(toBroadcast.name.toUpperCase(), "** has been filled!");
+  var body = toBroadcast.players.reduce(function (acc, player) {
+    acc += "<@".concat(player.id, "> ");
+    return acc;
+  }, "");
+  var footer = "Type **".concat(_constants.prefix, "captain** to become a captain for this pug. Random captains will be picked in ").concat(_constants.captainTimeout / 1000, " seconds");
+  return "".concat(title, "\n").concat(body).concat(footer, "\n");
+};
+
+exports.formatBroadcastPug = formatBroadcastPug;
+
+var formatListAllCurrentGameTypes = function formatListAllCurrentGameTypes(list, guildName) {
+  var body = list.reduce(function (prev, curr) {
+    var base = "**".concat(curr.name.toUpperCase(), "** (").concat(curr.players.length, "/").concat(curr.noOfPlayers, ") ");
+    var players = curr.players.reduce(function (acc, u) {
+      acc += ":small_blue_diamond: ".concat(u.username, " ");
+      return acc;
+    }, "");
+    prev += "".concat(base, " ").concat(players, "\n");
+    return prev;
+  }, "");
+  return body ? "Listing active pugs at **".concat(guildName, "**\n").concat(body) : "There are currently no active pugs, try joining one!";
+};
+
+exports.formatListAllCurrentGameTypes = formatListAllCurrentGameTypes;
 //# sourceMappingURL=formats.js.map

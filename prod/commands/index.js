@@ -71,6 +71,11 @@ var commands = [{
   aliases: ['list', 'ls'],
   solo: true
 }, {
+  key: 'listAllCurrentGameTypes',
+  description: '',
+  aliases: ['lsa'],
+  solo: true
+}, {
   key: 'joinGameTypes',
   description: '',
   aliases: ['j', 'join'],
