@@ -342,3 +342,13 @@ export const formatBroadcastCaptainsReady = ({ players, captains }) => {
 
   return `${pugCaptains}\n${turn}\n${pugPlayers}`;
 };
+
+export const formatPromoteAvailablePugs = (pugs, guildName) => {
+  const title = `@here in **${guildName}**`;
+  const body = pugs.reduce((acc, curr) => {
+    acc += `**${curr.noOfPlayers -
+      curr.players.length}** more needed for **${curr.name.toUpperCase()}**`;
+    return acc;
+  }, ``);
+  return `${title}\n${body}`;
+};

@@ -128,7 +128,6 @@ class Pug {
           }
 
           const otherCaptain = poolForCaptains[otherCaptainIndex];
-
           const otherCaptainTeam = Math.abs((firstCaptain.team % 2) - 1);
           this.fillCaptainSpot(otherCaptain, otherCaptainTeam);
         }
@@ -680,6 +679,23 @@ export const pugPicking = async ({ channel }, _, serverId, __) => {
     }
 
     channel.send(formatPugsInPicking(pugsInPicking));
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const promoteAvailablePugs = ({ channel }, args, serverId, _) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, list } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+
+    list.length > 0
+      ? channel.send(formatPromoteAvailablePugs(list, channel.guild.name))
+      : channel.send('There are no active pugs to promote. Try joining one!');
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);
