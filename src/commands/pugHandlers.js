@@ -544,7 +544,7 @@ export const pickPlayer = async (
     const { team } = forWhichPug.players.find(
       u => (u.id === id) & (u.captain !== null)
     );
-    const { pickingOrder, turn } = forWhichPug;
+    const { pickingOrder, turn, name } = forWhichPug;
 
     if (team !== pickingOrder[turn])
       return channel.send('Please wait for your turn :pouting_cat: ');
@@ -561,6 +561,7 @@ export const pickPlayer = async (
     channel.send(formatPickPlayerStatus({ ...result, pug: forWhichPug }));
 
     // TODO If finished, save stats to DB and remove from redux
+    store.dispatch(removePug({ serverId, name }));
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);
