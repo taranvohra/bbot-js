@@ -347,7 +347,7 @@ export const formatPromoteAvailablePugs = (pugs, guildName) => {
   const title = `@here in **${guildName}**`;
   const body = pugs.reduce((acc, curr) => {
     acc += `**${curr.noOfPlayers -
-      curr.players.length}** more needed for **${curr.name.toUpperCase()}**`;
+      curr.players.length}** more needed for **${curr.name.toUpperCase()}**\n`;
     return acc;
   }, ``);
   return `${title}\n${body}`;

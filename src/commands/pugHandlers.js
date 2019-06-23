@@ -22,6 +22,7 @@ import {
   formatPugsInPicking,
   formatDeadPugs,
   formatPickPlayerStatus,
+  formatPromoteAvailablePugs,
 } from '../formats';
 import { assignGameTypes, addNewPug, removePug } from '../store/actions';
 import events from 'events';

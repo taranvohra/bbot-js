@@ -101,6 +101,11 @@ var commands = [{
   aliases: ['captain', 'capt'],
   solo: true
 }, {
+  key: 'promoteAvailablePugs',
+  description: '',
+  aliases: ['p', 'promote'],
+  solo: true
+}, {
   key: 'pickPlayer',
   description: '',
   aliases: ['p', 'pick'],
