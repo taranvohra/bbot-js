@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.formatListAllCurrentGameTypes = exports.formatBroadcastPug = exports.formatDeadPugs = exports.formatLeaveStatus = exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
+exports.formatBroadcastCaptainsReady = exports.formatPugsInPicking = exports.formatPickPlayerStatus = exports.formatAddCaptainStatus = exports.formatListAllCurrentGameTypes = exports.formatBroadcastPug = exports.formatDeadPugs = exports.formatLeaveStatus = exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
 
 var _discord = _interopRequireDefault(require("discord.js"));
 
@@ -12,6 +12,14 @@ var _utils = require("./utils");
 var _constants = require("./constants");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 var embedColor = '#11806A';
 
@@ -151,7 +159,7 @@ var formatLeaveStatus = function formatLeaveStatus(statuses, isOffline) {
         break;
 
       case 0:
-        acc.nj = "Cannot leave pug(s) if you haven't joined :head_bandage:";
+        acc.nj = "Cannot leave pug(s) you haven't joined :head_bandage:";
         break;
 
       case -1:
@@ -181,8 +189,10 @@ var formatLeaveStatus = function formatLeaveStatus(statuses, isOffline) {
 exports.formatLeaveStatus = formatLeaveStatus;
 
 var formatDeadPugs = function formatDeadPugs(deadPugs) {
-  var body = deadPugs.reduce(function (acc, curr, i) {
-    acc += "".concat(i > 0 ? "\n" : "", " :joy_cat: **").concat(curr.name.toUpperCase(), "** was stopped because **").concat(curr.user.username, "** left :joy_cat: ");
+  var body = deadPugs.reduce(function (acc, _ref3, i) {
+    var pug = _ref3.pug,
+        user = _ref3.user;
+    acc += "".concat(i > 0 ? "\n" : "", " :joy_cat: **").concat(pug.name.toUpperCase(), "** was stopped because **").concat(user.username, "** left :joy_cat: ");
     return acc;
   }, "");
   return body;
@@ -209,11 +219,124 @@ var formatListAllCurrentGameTypes = function formatListAllCurrentGameTypes(list,
       acc += ":small_blue_diamond: ".concat(u.username, " ");
       return acc;
     }, "");
-    prev += "".concat(base, " ").concat(players, "\n");
+    prev += "".concat(base).concat(players, "\n");
     return prev;
   }, "");
   return body ? "Listing active pugs at **".concat(guildName, "**\n").concat(body) : "There are currently no active pugs, try joining one!";
 };
 
 exports.formatListAllCurrentGameTypes = formatListAllCurrentGameTypes;
+
+var formatAddCaptainStatus = function formatAddCaptainStatus(user, _ref4) {
+  var team = _ref4.team;
+  var body = "**".concat(user.username, "** became captain for **").concat(_constants.teams["team_".concat(team)].toUpperCase(), "**");
+  return body;
+};
+
+exports.formatAddCaptainStatus = formatAddCaptainStatus;
+
+var formatPickPlayerStatus = function formatPickPlayerStatus(_ref5) {
+  var pickedPlayers = _ref5.pickedPlayers,
+      finished = _ref5.finished,
+      pug = _ref5.pug;
+  var picked = pickedPlayers.reduce(function (acc, curr) {
+    acc += "<@".concat(curr.player.id, "> was picked for **").concat(_constants.teams["team_".concat(curr.team)], "**\n");
+    return acc;
+  }, "");
+  var count = 0;
+  var next = pug.captains[pug.pickingOrder[pug.turn]];
+
+  if (!finished) {
+    for (var i = pug.turn;; i++) {
+      if (pug.pickingOrder[i] !== next.team) break;
+      count++;
+    }
+  }
+
+  var turn = finished ? ":fire: Picking has finished :fire:" : "<@".concat(next.id, "> pick ").concat(count, " players for **").concat(_constants.teams["team_".concat(next.team)], "**");
+  var pugTeams = Array(pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
+    acc[i] = "**".concat(_constants.teams["team_".concat(i)], "**: ");
+    return acc;
+  }, {});
+  var players = pug.players.reduce(function (acc, curr, index) {
+    if (curr.team === null) acc += ":small_blue_diamond: **".concat(index + 1, "**) *").concat(curr.username, "* ");
+    return acc;
+  }, "Players: ");
+
+  var currTeams = _toConsumableArray(pug.players).sort(function (a, b) {
+    return a.pick - b.pick;
+  }).reduce(function (acc, curr) {
+    if (curr.team !== null) acc[curr.team] += "*".concat(curr.username, "*  ");
+    return acc;
+  }, pugTeams);
+
+  var activeTeams = Object.values(currTeams).reduce(function (acc, curr) {
+    acc += "".concat(curr, "\n");
+    return acc;
+  }, "");
+  return "".concat(picked, "\n").concat(turn, "\n\n").concat(finished ? "" : "".concat(players, "\n"), "\n").concat(activeTeams);
+};
+
+exports.formatPickPlayerStatus = formatPickPlayerStatus;
+
+var formatPugsInPicking = function formatPugsInPicking(pugsInPicking) {
+  var body = pugsInPicking.reduce(function (acc, pug) {
+    var count = 0;
+    var next = pug.captains[pug.pickingOrder[pug.turn]];
+
+    for (var i = pug.turn;; i++) {
+      if (pug.pickingOrder[i] !== next.team) break;
+      count++;
+    }
+
+    var turn = "<@".concat(next.id, "> pick ").concat(count, " players for **").concat(_constants.teams["team_".concat(next.team)], "**");
+    var pugTeams = Array(pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
+      acc[i] = "**".concat(_constants.teams["team_".concat(i)], "**: ");
+      return acc;
+    }, {});
+    var players = pug.players.reduce(function (acc, curr, index) {
+      if (curr.team === null) acc += ":small_blue_diamond: **".concat(index + 1, "**) *").concat(curr.username, "* ");
+      return acc;
+    }, "Players: ");
+
+    var currTeams = _toConsumableArray(pug.players).sort(function (a, b) {
+      return a.pick - b.pick;
+    }).reduce(function (acc, curr) {
+      if (curr.team !== null) acc[curr.team] += "*".concat(curr.username, "*  ");
+      return acc;
+    }, pugTeams);
+
+    var activeTeams = Object.values(currTeams).reduce(function (acc, curr) {
+      acc += "".concat(curr, "\n");
+      return acc;
+    }, "");
+    acc += "".concat(turn, "\n\n").concat(players, "\n\n").concat(activeTeams, "\n\n");
+    return acc;
+  }, "");
+  return body;
+};
+
+exports.formatPugsInPicking = formatPugsInPicking;
+
+var formatBroadcastCaptainsReady = function formatBroadcastCaptainsReady(_ref6) {
+  var players = _ref6.players,
+      captains = _ref6.captains;
+  var pugCaptains = captains.reduce(function (acc, curr, index) {
+    acc += "<@".concat(curr.id, "> is the captain for **").concat(_constants.teams["team_".concat(index)], "**\n");
+    return acc;
+  }, "");
+  var turn = "<@".concat(captains[0].id, "> pick 1 player for **").concat(_constants.teams["team_0"], "**");
+
+  var _players$reduce = players.reduce(function (acc, curr, index) {
+    if (curr.captain === null) acc.pugPlayers += "**".concat(index + 1, "**) *").concat(curr.username, "*  ");
+    return acc;
+  }, {
+    pugPlayers: "Players: "
+  }),
+      pugPlayers = _players$reduce.pugPlayers;
+
+  return "".concat(pugCaptains, "\n").concat(turn, "\n").concat(pugPlayers);
+};
+
+exports.formatBroadcastCaptainsReady = formatBroadcastCaptainsReady;
 //# sourceMappingURL=formats.js.map

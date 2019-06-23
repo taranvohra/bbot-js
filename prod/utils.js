@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getRandomInt = getRandomInt;
 exports.shuffle = exports.computePickingOrder = exports.getTeamIndex = exports.getTeamScores = exports.padNumberWithZeros = exports.getMinutesAndSeconds = exports.sanitizeName = exports.createAlternatingObject = exports.getPlayerList = exports.hasPrivilegedRole = void 0;
 
 var _constants = require("./constants");
@@ -197,4 +198,10 @@ var shuffle = function shuffle(array) {
 };
 
 exports.shuffle = shuffle;
+
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 //# sourceMappingURL=utils.js.map

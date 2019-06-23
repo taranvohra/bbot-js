@@ -20,6 +20,8 @@ var _utils = require("./utils");
 
 var _constants = require("./constants");
 
+var _formats = require("./formats");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toArray(arr) { return _arrayWithHoles(arr) || _iterableToArray(arr) || _nonIterableRest(); }
@@ -53,7 +55,7 @@ function _onMessage() {
   _onMessage = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee3(message) {
-    var _message$author, id, username, roles, serverId, _message$content$subs, _message$content$subs2, first, args, action, isSolo, foundCommand;
+    var _message$author, id, username, roles, serverId, hasUserMention, mentionedUser, _message$content$subs, _message$content$subs2, first, args, action, isSolo, foundCommand;
 
     return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
@@ -87,6 +89,11 @@ function _onMessage() {
             return _context3.abrupt("return");
 
           case 9:
+            hasUserMention = message.mentions.users.first();
+            mentionedUser = hasUserMention ? {
+              id: hasUserMention.id,
+              username: (0, _utils.sanitizeName)(hasUserMention.username)
+            } : null;
             _message$content$subs = message.content.substring(_constants.prefix.length).split(' ').filter(Boolean), _message$content$subs2 = _toArray(_message$content$subs), first = _message$content$subs2[0], args = _message$content$subs2.slice(1);
             action = first && first.toLowerCase();
             isSolo = args[0] === _constants.offline || args.length === 0;
@@ -95,20 +102,21 @@ function _onMessage() {
             });
 
             if (!foundCommand) {
-              _context3.next = 15;
+              _context3.next = 17;
               break;
             }
 
             return _context3.abrupt("return", _commands.handlers[foundCommand.key](message, args, serverId, {
               id: id,
               roles: roles,
-              username: (0, _utils.sanitizeName)(username)
+              username: (0, _utils.sanitizeName)(username),
+              mentionedUser: mentionedUser
             }));
 
-          case 15:
+          case 17:
             message.channel.send("Command not found");
 
-          case 16:
+          case 18:
           case "end":
             return _context3.stop();
         }
@@ -276,4 +284,21 @@ function () {
     return _ref3.apply(this, arguments);
   };
 }();
+/**
+ * P U G
+ * E V E N T S
+ */
+
+
+_commands.emitters.pugEventEmitter.on(_constants.pugEvents.captainsReady, function (serverId, name) {
+  var state = _store["default"].getState();
+
+  var _state$pugs$serverId = state.pugs[serverId],
+      pugChannel = _state$pugs$serverId.pugChannel,
+      list = _state$pugs$serverId.list;
+  var pug = list.find(function (p) {
+    return p.name === name;
+  });
+  bBot.channels.get(pugChannel).send((0, _formats.formatBroadcastCaptainsReady)(pug));
+});
 //# sourceMappingURL=bot.js.map

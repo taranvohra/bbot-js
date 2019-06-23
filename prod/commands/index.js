@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.handlers = exports.commands = void 0;
+exports.emitters = exports.handlers = exports.commands = void 0;
 
 var genericHandlers = _interopRequireWildcard(require("./genericHandlers"));
 
@@ -16,6 +16,11 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var emitters = {
+  pugEventEmitter: pugHandlers.pugEventEmitter
+};
+exports.emitters = emitters;
 
 var handlers = _objectSpread({}, genericHandlers, ut99Handlers, pugHandlers);
 
@@ -90,6 +95,36 @@ var commands = [{
   description: '',
   aliases: ['lva'],
   solo: true
+}, {
+  key: 'addCaptain',
+  description: '',
+  aliases: ['captain', 'capt'],
+  solo: true
+}, {
+  key: 'pickPlayer',
+  description: '',
+  aliases: ['p', 'pick'],
+  solo: false
+}, {
+  key: 'pugPicking',
+  description: '',
+  aliases: ['picking'],
+  solo: true
+}, {
+  key: 'adminAddPlayer',
+  description: '',
+  aliases: ['adminadd'],
+  solo: false
+}, {
+  key: 'adminRemovePlayer',
+  description: '',
+  aliases: ['adminremove'],
+  solo: false
+}, {
+  key: 'adminPickPlayer',
+  description: '',
+  aliases: ['adminpick'],
+  solo: false
 }];
 exports.commands = commands;
 //# sourceMappingURL=index.js.map

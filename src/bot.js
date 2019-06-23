@@ -13,7 +13,8 @@ import {
 import { DiscordServers, UT99QueryServers, GameTypes } from './models';
 import { handlers, commands, emitters } from './commands';
 import { sanitizeName } from './utils';
-import { prefix, offline } from './constants';
+import { prefix, offline, pugEvents } from './constants';
+import { formatBroadcastCaptainsReady } from './formats';
 
 dotenv.config();
 
@@ -34,6 +35,11 @@ async function onMessage(message) {
 
   if (!serverId) return;
 
+  const hasUserMention = message.mentions.users.first();
+  const mentionedUser = hasUserMention
+    ? { id: hasUserMention.id, username: sanitizeName(hasUserMention.username) }
+    : null;
+
   const [first, ...args] = message.content
     .substring(prefix.length)
     .split(' ')
@@ -50,6 +56,7 @@ async function onMessage(message) {
       id,
       roles,
       username: sanitizeName(username),
+      mentionedUser,
     });
   }
   message.channel.send(`Command not found`);
@@ -158,6 +165,7 @@ const hydrateStore = async () => {
 emitters.pugEventEmitter.on(pugEvents.captainsReady, (serverId, name) => {
   const state = store.getState();
   const { pugChannel, list } = state.pugs[serverId];
-  const pug = list.filter(p => p.name === name);
+  const pug = list.find(p => p.name === name);
+
   bBot.channels.get(pugChannel).send(formatBroadcastCaptainsReady(pug));
 });

@@ -115,6 +115,24 @@ const commands = [
     aliases: ['picking'],
     solo: true,
   },
+  {
+    key: 'adminAddPlayer',
+    description: '',
+    aliases: ['adminadd'],
+    solo: false,
+  },
+  {
+    key: 'adminRemovePlayer',
+    description: '',
+    aliases: ['adminremove'],
+    solo: false,
+  },
+  {
+    key: 'adminPickPlayer',
+    description: '',
+    aliases: ['adminpick'],
+    solo: false,
+  },
 ];
 
 export { commands, handlers, emitters };
