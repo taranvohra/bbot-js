@@ -275,3 +275,46 @@ export const formatPickPlayerStatus = ({ pickedPlayers, finished, pug }) => {
     finished ? `${players}\n` : ``
   }\n${activeTeams}`;
 };
+
+export const formatPugsInPicking = pugsInPicking => {
+  const body = pugsInPicking.reduce((acc, pug) => {
+    let count = 0;
+    const next = pug.captains[pug.pickingOrder[pug.turn]];
+    for (let i = pug.turn; ; i++) {
+      if (pickingOrder[i] !== next.team) break;
+      count++;
+    }
+    const turn = `<@${next.id}> pick ${count} players for **${
+      teams[`team_${next.team}`]
+    }**`;
+
+    const pugTeams = Array(pug.noOfTeams)
+      .fill(0)
+      .reduce((acc, _, i) => {
+        acc[i] = `**${teams[`team_${i}`]}**: `;
+        return acc;
+      }, {});
+
+    const players = pug.players.reduce((acc, curr, index) => {
+      if (curr.team === null) acc += `**${index + 1}**) *${curr.username}*  `;
+      return acc;
+    }, `Players: `);
+
+    const currTeams = [...pug.players]
+      .sort((a, b) => a.pick - b.pick)
+      .reduce((acc, curr) => {
+        if (curr.team !== null) acc[curr.team] += `*${curr.username}*  `;
+        return acc;
+      }, pugTeams);
+
+    const activeTeams = Object.values(currTeams).reduce((acc, curr) => {
+      acc += `${curr}\n`;
+      return acc;
+    }, ``);
+
+    acc += `${turn}\n\n${players}\n\n${activeTeams}\n\n`;
+    return acc;
+  }, ``);
+
+  return body;
+};

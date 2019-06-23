@@ -14,6 +14,7 @@ import {
   formatBroadcastPug,
   formatListAllCurrentGameTypes,
   formatAddCaptainStatus,
+  formatPugsInPicking,
 } from '../formats';
 import { assignGameTypes, addNewPug, removePug } from '../store/actions';
 
@@ -564,6 +565,31 @@ export const pickPlayer = async (
     if (result.finished) {
       store.dispatch(removePug({ serverId, name }));
     }
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const pugPicking = async ({ channel }, _, serverId, __) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, list } = state.pugs[serverId];
+
+    if (pugChannel !== message.channel.id)
+      return message.channel.send(
+        `Active channel for pugs is <#${pugChannel}>`
+      );
+
+    const pugsInPicking = list.filter(
+      pug => pug.picking && pug.areCaptainsDecided()
+    );
+
+    if (pugsInPicking.length === 0) {
+      return channel.send('There are no pugs in picking mode');
+    }
+
+    channel.send(formatPugsInPicking(pugsInPicking));
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);

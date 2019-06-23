@@ -99,6 +99,18 @@ const commands = [
     aliases: ['captain', 'capt'],
     solo: true,
   },
+  {
+    key: 'pickPlayer',
+    description: '',
+    aliases: ['p', 'pick'],
+    solo: false,
+  },
+  {
+    key: 'pugPicking',
+    description: '',
+    aliases: ['picking'],
+    solo: true,
+  },
 ];
 
 export { commands, handlers };
