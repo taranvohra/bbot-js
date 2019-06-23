@@ -225,3 +225,53 @@ export const formatAddCaptainStatus = (user, { team }) => {
   ].toUpperCase()}**`;
   return body;
 };
+
+export const formatPickPlayerStatus = ({ pickedPlayers, finished, pug }) => {
+  const picked = pickedPlayers.reduce((acc, curr) => {
+    acc += `<@${curr.player.id}> was picked for **${
+      teams[`team_${curr.team}`]
+    }**\n`;
+    return acc;
+  }, ``);
+
+  let count = 0;
+  const next = pug.captains[pug.pickingOrder[pug.turn]];
+  for (let i = pug.turn; ; i++) {
+    if (pickingOrder[i] !== next.team) break;
+    count++;
+  }
+
+  const turn = finished
+    ? `<@${next.id}> pick ${count} players for **${
+        teams[`team_${next.team}`]
+      }**`
+    : `**Picking has finished`;
+
+  const pugTeams = Array(pug.noOfTeams)
+    .fill(0)
+    .reduce((acc, _, i) => {
+      acc[i] = `**${teams[`team_${i}`]}**: `;
+      return acc;
+    }, {});
+
+  const players = pug.players.reduce((acc, curr, index) => {
+    if (curr.team === null) acc += `**${index + 1}**) *${curr.username}*  `;
+    return acc;
+  }, `Players: `);
+
+  const currTeams = [...pug.players]
+    .sort((a, b) => a.pick - b.pick)
+    .reduce((acc, curr) => {
+      if (curr.team !== null) acc[curr.team] += `*${curr.username}*  `;
+      return acc;
+    }, pugTeams);
+
+  const activeTeams = Object.values(currTeams).reduce((acc, curr) => {
+    acc += `${curr}\n`;
+    return acc;
+  }, ``);
+
+  return `${picked}\n${turn}\n${
+    finished ? `${players}\n` : ``
+  }\n${activeTeams}`;
+};

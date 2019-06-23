@@ -94,6 +94,39 @@ class Pug {
     return false;
   }
 
+  pickPlayer(playerIndex, team) {
+    if (this.players[playerIndex].team === null) {
+      this.players[playerIndex].team = team;
+      this.turn += 1;
+      this.players[playerIndex].pick = this.turn;
+
+      let pickedPlayers = [{ player: this.players[playerIndex], team }];
+      // last pick automatically goes
+      if (this.turn === this.pickingOrder.length - 1) {
+        const lastPlayerIndex = this.players.findIndex(u => u.team === null);
+        const lastPlayerTeam = this.pickingOrder[this.turn];
+
+        this.players[lastPlayerIndex].team = lastPlayerTeam;
+        this.turn += 1;
+        this.players[lastPlayerIndex].pick = this.turn;
+        // pug ends
+        this.picking = false;
+        pickedPlayers.push({
+          player: this.players[lastPlayerIndex],
+          team: lastPlayerTeam,
+        });
+        return {
+          pickedPlayers,
+          finished: true,
+        };
+      }
+      return {
+        pickedPlayers,
+        finished: false,
+      };
+    }
+  }
+
   stopPug() {
     this.cleanup();
   }
@@ -469,6 +502,65 @@ export const addCaptain = async (
     const result = forWhichPug.addCaptain(user);
     channel.send(formatAddCaptainStatus(user, result));
     // TODO Broadcast captains decided
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const pickPlayer = async (
+  { channel },
+  [index, ...args],
+  serverId,
+  { id, username, roles }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, list } = state.pugs[serverId];
+
+    if (pugChannel !== message.channel.id)
+      return message.channel.send(
+        `Active channel for pugs is <#${pugChannel}>`
+      );
+
+    const playerIndex = parseInt(index);
+    if (!playerIndex) return;
+
+    const forWhichPug = list.find(pug => {
+      if (pug.picking) {
+        return pug.players.some(u => u.id === id && u.captain !== null); // check whether the guy is present there
+      }
+      return false;
+    });
+
+    if (!forWhichPug)
+      return channel.send(
+        'Cannot pick if you are not a captain in a pug :head_bandage: '
+      );
+
+    if (!forWhichPug.areCaptainsDecided())
+      return channel.send('Please wait until all captains have been decided');
+
+    const { team } = forWhichPug.players.find(
+      u => (u.id === id) & (u.captain !== null)
+    );
+    const { pickingOrder, turn } = forWhichPug;
+
+    if (team !== pickingOrder[turn])
+      return channel.send('Please wait for your turn :pouting_cat: ');
+
+    if (!playerIndex < 1 || playerIndex > forWhichPug.players.length)
+      return channel.send('Invalid pick');
+
+    if (forWhichPug.players[playerIndex - 1].team !== null) {
+      const alreadyPicked = forWhichPug.players[playerIndex - 1];
+      return channel.send(`${alreadyPicked.username} is already picked`);
+    }
+
+    const result = forWhichPug.pickPlayer(playerIndex - 1, pickingOrder[turn]);
+    channel.send(formatPickPlayerStatus({ ...result, pug: forWhichPug }));
+
+    // TODO If finished, save stats to DB and remove from redux
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);
