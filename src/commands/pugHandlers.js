@@ -43,7 +43,6 @@ class Pug {
         rating: 0,
         ...user,
       });
-      this.players.length === this.noOfPlayers ? this.fillPug() : null;
       return 1;
     }
     return 0;
@@ -55,7 +54,7 @@ class Pug {
     if (this.picking) this.stopPug();
   }
 
-  fillPug() {
+  fillPug(serverId) {
     this.picking = true;
     this.timer = setTimeout(() => {
       const remaining = this.noOfPlayers - this.captains.length;
@@ -66,6 +65,77 @@ class Pug {
         .slice(0, remaining * 0.8)
         .sort((a, b) => a.rating - b.rating);
 
+      if (this.noOfTeams === 2) {
+        if (remaining === this.noOfPlayers.length) {
+          let leastDiff = 0;
+          let pair = [0, 1];
+          for (let i = 1; i < poolForCaptains.length - 1; i++) {
+            const left = {
+              pair: [i, i - 1],
+              diff: Math.abs(
+                poolForCaptains[i].rating - poolForCaptains[i - 1].rating
+              ),
+            };
+            const right = {
+              pair: [i, i + 1],
+              diff: Math.abs(
+                poolForCaptains[i].rating - poolForCaptains[i + 1].rating
+              ),
+            };
+
+            const smallest = Math.min(left.diff, right.diff);
+            if (smallest === left.diff && smallest <= leastDiff) {
+              leastDiff = left.diff;
+              pair = left.pair;
+            } else if (smallest === right.diff && smallest <= leastDiff) {
+              leastDiff = right.diff;
+              pair = right.pair;
+            }
+          }
+          const firstCaptain = poolForCaptains[pair[0]];
+          const secondCaptain = poolForCaptains[pair[1]];
+          if (firstCaptain.rating >= secondCaptain.rating) {
+            this.fillCaptainSpot(firstCaptain, 0);
+            this.fillCaptainSpot(secondCaptain, 1);
+          } else {
+            this.fillCaptainSpot(firstCaptain, 1);
+            this.fillCaptainSpot(secondCaptain, 0);
+          }
+        } else {
+          // 1 capt already there
+          const firstCaptain = this.captains.filter(u => u.captain !== null);
+          let leastDiff = 10000;
+          let otherCaptainIndex = null;
+          for (let i = 0; i < poolForCaptains.length; i++) {
+            const diff = Math.abs(
+              firstCaptain.rating - poolForCaptains[i].rating
+            );
+            if (diff <= leastDiff) {
+              leastDiff = diff;
+              otherCaptainIndex = i;
+            }
+          }
+
+          const otherCaptain = poolForCaptains[otherCaptainIndex];
+          const otherCaptainTeam = Math.abs((firstCaptain.team % 2) - 1);
+          this.fillCaptainSpot(otherCaptain, otherCaptainTeam);
+        }
+      } else {
+        // more than 2 capts
+        for (let i = 0; i < this.noOfTeams; i++) {
+          if (this.captains[i]) continue;
+          while (1) {
+            const pIndex = getRandomInt(0, poolForCaptains.length - 1);
+            const didFillSpot = this.fillCaptainSpot(
+              poolForCaptains[pIndex],
+              i
+            );
+            if (didFillSpot) break;
+          }
+        }
+      }
+
+      pugEventEmitter.emit(pugEvents.captainsReady, serverId, this.name);
       //  TODO
     }, captainTimeout);
   }
@@ -327,6 +397,7 @@ export const joinGameTypes = async (
 
         const hasFilledBeforeJoining = pug.picking;
         const joined = pug.addPlayer(user);
+        pug.players.length === pug.noOfPlayers ? this.fillPug(serverId) : null;
         const hasFilledAfterJoining = pug.picking;
 
         if (!hasFilledBeforeJoining && hasFilledAfterJoining) {
