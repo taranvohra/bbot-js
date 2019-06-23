@@ -55,7 +55,7 @@ function _onMessage() {
   _onMessage = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee3(message) {
-    var _message$author, id, username, roles, serverId, hasUserMention, mentionedUser, _message$content$subs, _message$content$subs2, first, args, action, isSolo, foundCommand;
+    var _message$author, id, username, roles, isInvisible, serverId, hasUserMention, mentionedUser, _message$content$subs, _message$content$subs2, first, args, action, isSolo, foundCommand;
 
     return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
@@ -79,16 +79,17 @@ function _onMessage() {
           case 4:
             _message$author = message.author, id = _message$author.id, username = _message$author.username;
             roles = message.member ? message.member.roles : null;
+            isInvisible = message.author.presence.status === 'offline';
             serverId = message.guild.id;
 
             if (serverId) {
-              _context3.next = 9;
+              _context3.next = 10;
               break;
             }
 
             return _context3.abrupt("return");
 
-          case 9:
+          case 10:
             hasUserMention = message.mentions.users.first();
             mentionedUser = hasUserMention ? {
               id: hasUserMention.id,
@@ -102,7 +103,7 @@ function _onMessage() {
             });
 
             if (!foundCommand) {
-              _context3.next = 17;
+              _context3.next = 18;
               break;
             }
 
@@ -110,13 +111,14 @@ function _onMessage() {
               id: id,
               roles: roles,
               username: (0, _utils.sanitizeName)(username),
-              mentionedUser: mentionedUser
+              mentionedUser: mentionedUser,
+              isInvisible: isInvisible
             }));
 
-          case 17:
+          case 18:
             message.channel.send("Command not found");
 
-          case 18:
+          case 19:
           case "end":
             return _context3.stop();
         }

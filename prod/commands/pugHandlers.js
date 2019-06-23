@@ -623,14 +623,14 @@ function () {
   var _ref18 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee5(_ref16, args, serverId, _ref17) {
-    var channel, id, username, roles, state, _state$pugs$serverId3, pugChannel, list, gameTypes, isPartOfFilledPug, db_user, toBroadcast, user, statuses, allLeaveMsgs, i, op, allPugLeaveMsgs, j, player, msg;
+    var channel, id, username, roles, isInvisible, state, _state$pugs$serverId3, pugChannel, list, gameTypes, isPartOfFilledPug, db_user, toBroadcast, user, statuses, allLeaveMsgs, i, op, allPugLeaveMsgs, j, player, msg;
 
     return regeneratorRuntime.wrap(function _callee5$(_context5) {
       while (1) {
         switch (_context5.prev = _context5.next) {
           case 0:
             channel = _ref16.channel;
-            id = _ref17.id, username = _ref17.username, roles = _ref17.roles;
+            id = _ref17.id, username = _ref17.username, roles = _ref17.roles, isInvisible = _ref17.isInvisible;
             _context5.prev = 2;
             state = _store["default"].getState();
             _state$pugs$serverId3 = state.pugs[serverId], pugChannel = _state$pugs$serverId3.pugChannel, list = _state$pugs$serverId3.list, gameTypes = _state$pugs$serverId3.gameTypes;
@@ -643,14 +643,22 @@ function () {
             return _context5.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
 
           case 7:
-            if (id) {
+            if (!isInvisible) {
               _context5.next = 9;
+              break;
+            }
+
+            return _context5.abrupt("return", channel.send("Please change your status. Cannot use this command while invisible"));
+
+          case 9:
+            if (id) {
+              _context5.next = 11;
               break;
             }
 
             return _context5.abrupt("return", channel.send('No user was mentioned'));
 
-          case 9:
+          case 11:
             isPartOfFilledPug = list.find(function (p) {
               return p.picking && p.players.some(function (u) {
                 return u.id === id;
@@ -658,26 +666,26 @@ function () {
             });
 
             if (!isPartOfFilledPug) {
-              _context5.next = 12;
+              _context5.next = 14;
               break;
             }
 
             return _context5.abrupt("return", channel.send("Please leave **".concat(isPartOfFilledPug.name.toUpperCase(), "** first to join other pugs")));
 
-          case 12:
-            _context5.next = 14;
+          case 14:
+            _context5.next = 16;
             return _models.Users.findOne({
               server_id: serverId,
               id: id
             }).exec();
 
-          case 14:
+          case 16:
             db_user = _context5.sent;
             toBroadcast = null;
             user = {
               id: id,
               username: username,
-              stats: db_user.stats || {}
+              stats: db_user ? db_user.stats : {}
             };
             statuses = args.map(function (a) {
               if (!toBroadcast) {
@@ -723,84 +731,84 @@ function () {
             channel.send((0, _formats.formatJoinStatus)(statuses.filter(Boolean)));
 
             if (!toBroadcast) {
-              _context5.next = 43;
+              _context5.next = 45;
               break;
             }
 
             allLeaveMsgs = "";
             i = 0;
 
-          case 22:
+          case 24:
             if (!(i < list.length)) {
-              _context5.next = 41;
+              _context5.next = 43;
               break;
             }
 
             op = list[i];
 
             if (!(op.name !== toBroadcast.name)) {
-              _context5.next = 38;
+              _context5.next = 40;
               break;
             }
 
             allPugLeaveMsgs = "";
             j = 0;
 
-          case 27:
+          case 29:
             if (!(j < toBroadcast.players.length)) {
-              _context5.next = 37;
+              _context5.next = 39;
               break;
             }
 
             player = toBroadcast.players[j];
 
             if (!op.findPlayer(player)) {
-              _context5.next = 34;
+              _context5.next = 36;
               break;
             }
 
-            _context5.next = 32;
+            _context5.next = 34;
             return leaveGameTypes({
               channel: channel
             }, [op.name], serverId, player, null, true);
 
-          case 32:
+          case 34:
             msg = _context5.sent;
             allPugLeaveMsgs += "".concat(msg, " ");
 
-          case 34:
+          case 36:
             j++;
-            _context5.next = 27;
+            _context5.next = 29;
             break;
 
-          case 37:
+          case 39:
             allLeaveMsgs += "".concat(allPugLeaveMsgs, " \n");
 
-          case 38:
+          case 40:
             i++;
-            _context5.next = 22;
+            _context5.next = 24;
             break;
 
-          case 41:
+          case 43:
             allLeaveMsgs && channel.send(allLeaveMsgs);
             channel.send((0, _formats.formatBroadcastPug)(toBroadcast));
 
-          case 43:
-            _context5.next = 49;
+          case 45:
+            _context5.next = 51;
             break;
 
-          case 45:
-            _context5.prev = 45;
+          case 47:
+            _context5.prev = 47;
             _context5.t0 = _context5["catch"](2);
             channel.send('Something went wrong');
             console.log(_context5.t0);
 
-          case 49:
+          case 51:
           case "end":
             return _context5.stop();
         }
       }
-    }, _callee5, null, [[2, 45]]);
+    }, _callee5, null, [[2, 47]]);
   }));
 
   return function joinGameTypes(_x17, _x18, _x19, _x20) {
@@ -1224,7 +1232,6 @@ function () {
                     stats = _ref32.stats;
                 var updatedStats = {};
                 var existingStats = stats[forWhichPug.name];
-                console.log('feach', stats);
 
                 if (!existingStats) {
                   updatedStats = {

@@ -375,7 +375,7 @@ export const joinGameTypes = async (
   { channel },
   args,
   serverId,
-  { id, username, roles }
+  { id, username, roles, isInvisible }
 ) => {
   try {
     const state = store.getState();
@@ -385,6 +385,10 @@ export const joinGameTypes = async (
       return channel.send(`Active channel for pugs is <#${pugChannel}>`);
 
     // TODO args length 0 (default join with .j)
+    if (isInvisible)
+      return channel.send(
+        `Please change your status. Cannot use this command while invisible`
+      );
 
     if (!id) return channel.send('No user was mentioned');
 
@@ -400,7 +404,7 @@ export const joinGameTypes = async (
     const db_user = await Users.findOne({ server_id: serverId, id: id }).exec();
 
     let toBroadcast = null;
-    const user = { id, username, stats: db_user.stats || {} };
+    const user = { id, username, stats: db_user ? db_user.stats : {} };
     const statuses = args.map(a => {
       if (!toBroadcast) {
         const game = a.toLowerCase();

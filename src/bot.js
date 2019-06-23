@@ -28,6 +28,7 @@ async function onMessage(message) {
 
   const { id, username } = message.author;
   const roles = message.member ? message.member.roles : null;
+  const isInvisible = message.author.presence.status === 'offline';
 
   const {
     guild: { id: serverId },
@@ -57,6 +58,7 @@ async function onMessage(message) {
       roles,
       username: sanitizeName(username),
       mentionedUser,
+      isInvisible,
     });
   }
   message.channel.send(`Command not found`);
