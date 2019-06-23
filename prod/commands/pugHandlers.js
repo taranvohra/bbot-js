@@ -19,6 +19,8 @@ var _actions = require("../store/actions");
 
 var _events = _interopRequireDefault(require("events"));
 
+var _discord = require("discord.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toArray(arr) { return _arrayWithHoles(arr) || _iterableToArray(arr) || _nonIterableRest(); }
@@ -89,7 +91,7 @@ function () {
           captain: null,
           pick: null,
           tag: null,
-          rating: 0
+          rating: user.stats[this.name] ? user.stats[this.name].totalRating : 0
         }, user));
         return 1;
       }
@@ -621,7 +623,7 @@ function () {
   var _ref18 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee5(_ref16, args, serverId, _ref17) {
-    var channel, id, username, roles, state, _state$pugs$serverId3, pugChannel, list, gameTypes, isPartOfFilledPug, toBroadcast, user, statuses, allLeaveMsgs, i, op, allPugLeaveMsgs, j, player, msg;
+    var channel, id, username, roles, state, _state$pugs$serverId3, pugChannel, list, gameTypes, isPartOfFilledPug, db_user, toBroadcast, user, statuses, allLeaveMsgs, i, op, allPugLeaveMsgs, j, player, msg;
 
     return regeneratorRuntime.wrap(function _callee5$(_context5) {
       while (1) {
@@ -663,10 +665,19 @@ function () {
             return _context5.abrupt("return", channel.send("Please leave **".concat(isPartOfFilledPug.name.toUpperCase(), "** first to join other pugs")));
 
           case 12:
+            _context5.next = 14;
+            return _models.Users.find({
+              server_id: serverId,
+              id: id
+            }).exec();
+
+          case 14:
+            db_user = _context5.sent;
             toBroadcast = null;
             user = {
               id: id,
-              username: username
+              username: username,
+              stats: db_user.stats || {}
             };
             statuses = args.map(function (a) {
               if (!toBroadcast) {
@@ -712,84 +723,84 @@ function () {
             channel.send((0, _formats.formatJoinStatus)(statuses.filter(Boolean)));
 
             if (!toBroadcast) {
-              _context5.next = 40;
+              _context5.next = 43;
               break;
             }
 
             allLeaveMsgs = "";
             i = 0;
 
-          case 19:
+          case 22:
             if (!(i < list.length)) {
-              _context5.next = 38;
+              _context5.next = 41;
               break;
             }
 
             op = list[i];
 
             if (!(op.name !== toBroadcast.name)) {
-              _context5.next = 35;
+              _context5.next = 38;
               break;
             }
 
             allPugLeaveMsgs = "";
             j = 0;
 
-          case 24:
+          case 27:
             if (!(j < toBroadcast.players.length)) {
-              _context5.next = 34;
+              _context5.next = 37;
               break;
             }
 
             player = toBroadcast.players[j];
 
             if (!op.findPlayer(player)) {
-              _context5.next = 31;
+              _context5.next = 34;
               break;
             }
 
-            _context5.next = 29;
+            _context5.next = 32;
             return leaveGameTypes({
               channel: channel
             }, [op.name], serverId, player, null, true);
 
-          case 29:
+          case 32:
             msg = _context5.sent;
             allPugLeaveMsgs += "".concat(msg, " ");
 
-          case 31:
+          case 34:
             j++;
-            _context5.next = 24;
+            _context5.next = 27;
             break;
 
-          case 34:
+          case 37:
             allLeaveMsgs += "".concat(allPugLeaveMsgs, " \n");
 
-          case 35:
+          case 38:
             i++;
-            _context5.next = 19;
+            _context5.next = 22;
             break;
 
-          case 38:
+          case 41:
             allLeaveMsgs && channel.send(allLeaveMsgs);
             channel.send((0, _formats.formatBroadcastPug)(toBroadcast));
 
-          case 40:
-            _context5.next = 46;
+          case 43:
+            _context5.next = 49;
             break;
 
-          case 42:
-            _context5.prev = 42;
+          case 45:
+            _context5.prev = 45;
             _context5.t0 = _context5["catch"](2);
             channel.send('Something went wrong');
             console.log(_context5.t0);
 
-          case 46:
+          case 49:
           case "end":
             return _context5.stop();
         }
       }
-    }, _callee5, null, [[2, 42]]);
+    }, _callee5, null, [[2, 45]]);
   }));
 
   return function joinGameTypes(_x17, _x18, _x19, _x20) {
@@ -1105,7 +1116,7 @@ function () {
   var _ref30 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee9(_ref27, _ref28, serverId, _ref29) {
-    var channel, _ref31, index, args, id, username, roles, state, _state$pugs$serverId7, pugChannel, list, playerIndex, forWhichPug, _forWhichPug$players$, team, pickingOrder, turn, name, alreadyPicked, result;
+    var channel, _ref31, index, args, id, username, roles, state, _state$pugs$serverId7, pugChannel, list, playerIndex, forWhichPug, _forWhichPug$players$, team, pickingOrder, turn, name, alreadyPicked, result, players;
 
     return regeneratorRuntime.wrap(function _callee9$(_context9) {
       while (1) {
@@ -1198,6 +1209,50 @@ function () {
             }))); // TODO If finished, save stats to DB and remove from redux
 
             if (result.finished) {
+              new _models.Pugs({
+                server_id: serverId,
+                name: forWhichPug.name,
+                pug: forWhichPug,
+                timestamp: new Date()
+              }).save();
+              players = forWhichPug.players;
+              players.forEach(function (_ref32) {
+                var id = _ref32.id,
+                    username = _ref32.username,
+                    pick = _ref32.pick,
+                    captain = _ref32.captain,
+                    stats = _ref32.stats;
+                var updatedStats = {};
+                var existingStats = stats[forWhichPug.name];
+
+                if (!existingStats) {
+                  updatedStats = {
+                    totalRating: pick,
+                    totalCaptain: captain ? 1 : 0,
+                    totalPugs: 1
+                  };
+                } else {
+                  updatedStats = {
+                    totalRating: (existingStats.totalRating + pick) / (existingStats.totalPugs + 1),
+                    totalCaptain: existingStats.totalCaptain + 1,
+                    totalPugs: existingStats.totalPugs + 1
+                  };
+                }
+
+                _models.Users.findOneAndUpdate({
+                  id: id,
+                  server_id: serverId
+                }, {
+                  $set: {
+                    username: username,
+                    last_pug: forWhichPug,
+                    stats: _objectSpread({}, stats, _defineProperty({}, forWhichPug.name, updatedStats))
+                  }
+                }, {
+                  upsert: true
+                }).exec();
+              });
+
               _store["default"].dispatch((0, _actions.removePug)({
                 serverId: serverId,
                 name: name
@@ -1231,16 +1286,16 @@ exports.pickPlayer = pickPlayer;
 var pugPicking =
 /*#__PURE__*/
 function () {
-  var _ref33 = _asyncToGenerator(
+  var _ref34 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee10(_ref32, _, serverId, __) {
+  regeneratorRuntime.mark(function _callee10(_ref33, _, serverId, __) {
     var channel, state, _state$pugs$serverId8, pugChannel, list, pugsInPicking;
 
     return regeneratorRuntime.wrap(function _callee10$(_context10) {
       while (1) {
         switch (_context10.prev = _context10.next) {
           case 0:
-            channel = _ref32.channel;
+            channel = _ref33.channel;
             _context10.prev = 1;
             state = _store["default"].getState();
             _state$pugs$serverId8 = state.pugs[serverId], pugChannel = _state$pugs$serverId8.pugChannel, list = _state$pugs$serverId8.list;
@@ -1284,14 +1339,14 @@ function () {
   }));
 
   return function pugPicking(_x39, _x40, _x41, _x42) {
-    return _ref33.apply(this, arguments);
+    return _ref34.apply(this, arguments);
   };
 }();
 
 exports.pugPicking = pugPicking;
 
-var promoteAvailablePugs = function promoteAvailablePugs(_ref34, args, serverId, _) {
-  var channel = _ref34.channel;
+var promoteAvailablePugs = function promoteAvailablePugs(_ref35, args, serverId, _) {
+  var channel = _ref35.channel;
 
   try {
     var state = _store["default"].getState();
@@ -1317,16 +1372,16 @@ exports.promoteAvailablePugs = promoteAvailablePugs;
 var adminAddPlayer =
 /*#__PURE__*/
 function () {
-  var _ref37 = _asyncToGenerator(
+  var _ref38 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee11(_ref35, args, serverId, _ref36) {
+  regeneratorRuntime.mark(function _callee11(_ref36, args, serverId, _ref37) {
     var channel, mentionedUser, roles, state, pugChannel;
     return regeneratorRuntime.wrap(function _callee11$(_context11) {
       while (1) {
         switch (_context11.prev = _context11.next) {
           case 0:
-            channel = _ref35.channel;
-            mentionedUser = _ref36.mentionedUser, roles = _ref36.roles;
+            channel = _ref36.channel;
+            mentionedUser = _ref37.mentionedUser, roles = _ref37.roles;
             _context11.prev = 2;
             state = _store["default"].getState();
             pugChannel = state.pugs[serverId].pugChannel;
@@ -1379,7 +1434,7 @@ function () {
   }));
 
   return function adminAddPlayer(_x43, _x44, _x45, _x46) {
-    return _ref37.apply(this, arguments);
+    return _ref38.apply(this, arguments);
   };
 }();
 
@@ -1388,16 +1443,16 @@ exports.adminAddPlayer = adminAddPlayer;
 var adminRemovePlayer =
 /*#__PURE__*/
 function () {
-  var _ref40 = _asyncToGenerator(
+  var _ref41 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee12(_ref38, args, serverId, _ref39) {
+  regeneratorRuntime.mark(function _callee12(_ref39, args, serverId, _ref40) {
     var channel, mentionedUser, roles, state, pugChannel;
     return regeneratorRuntime.wrap(function _callee12$(_context12) {
       while (1) {
         switch (_context12.prev = _context12.next) {
           case 0:
-            channel = _ref38.channel;
-            mentionedUser = _ref39.mentionedUser, roles = _ref39.roles;
+            channel = _ref39.channel;
+            mentionedUser = _ref40.mentionedUser, roles = _ref40.roles;
             _context12.prev = 2;
             state = _store["default"].getState();
             pugChannel = state.pugs[serverId].pugChannel;
@@ -1450,7 +1505,7 @@ function () {
   }));
 
   return function adminRemovePlayer(_x47, _x48, _x49, _x50) {
-    return _ref40.apply(this, arguments);
+    return _ref41.apply(this, arguments);
   };
 }();
 
@@ -1459,16 +1514,16 @@ exports.adminRemovePlayer = adminRemovePlayer;
 var adminPickPlayer =
 /*#__PURE__*/
 function () {
-  var _ref43 = _asyncToGenerator(
+  var _ref44 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee13(_ref41, args, serverId, _ref42) {
+  regeneratorRuntime.mark(function _callee13(_ref42, args, serverId, _ref43) {
     var channel, mentionedUser, roles, state, pugChannel;
     return regeneratorRuntime.wrap(function _callee13$(_context13) {
       while (1) {
         switch (_context13.prev = _context13.next) {
           case 0:
-            channel = _ref41.channel;
-            mentionedUser = _ref42.mentionedUser, roles = _ref42.roles;
+            channel = _ref42.channel;
+            mentionedUser = _ref43.mentionedUser, roles = _ref43.roles;
             _context13.prev = 2;
             state = _store["default"].getState();
             pugChannel = state.pugs[serverId].pugChannel;
@@ -1521,7 +1576,7 @@ function () {
   }));
 
   return function adminPickPlayer(_x51, _x52, _x53, _x54) {
-    return _ref43.apply(this, arguments);
+    return _ref44.apply(this, arguments);
   };
 }();
 

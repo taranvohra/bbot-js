@@ -10,16 +10,14 @@ var _mongoose = _interopRequireDefault(require("mongoose"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var schema = _mongoose["default"].Schema({
+  id: String,
+  username: String,
   server_id: String,
-  blocked_users: [{
-    id: String,
-    name: String,
-    blocked_on: Date,
-    expires_at: Date
-  }]
+  last_pug: Object,
+  stats: Object
 });
 
-var _default = _mongoose["default"].model('blocks', schema);
+var _default = _mongoose["default"].model('users', schema);
 
 exports["default"] = _default;
-//# sourceMappingURL=blocks.js.map
+//# sourceMappingURL=users.js.map

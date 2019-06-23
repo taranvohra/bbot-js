@@ -245,7 +245,7 @@ export const formatPickPlayerStatus = ({ pickedPlayers, finished, pug }) => {
   }
 
   const turn = finished
-    ? `:fire: Picking has finished :fire:`
+    ? `**Picking has finished** :fire:`
     : `<@${next.id}> pick ${count} player${count > 1 ? 's' : ''} for **${
         teams[`team_${next.team}`]
       }**`;
@@ -266,7 +266,7 @@ export const formatPickPlayerStatus = ({ pickedPlayers, finished, pug }) => {
     .sort((a, b) => a.pick - b.pick)
     .reduce((acc, curr) => {
       if (curr.team !== null)
-        acc[curr.team] += `:small_blue_diamond: *${curr.username}* `;
+        acc[curr.team] += `*${curr.username}* :small_blue_diamond: `;
       return acc;
     }, pugTeams);
 
@@ -308,7 +308,7 @@ export const formatPugsInPicking = pugsInPicking => {
       .sort((a, b) => a.pick - b.pick)
       .reduce((acc, curr) => {
         if (curr.team !== null)
-          acc[curr.team] += `:small_blue_diamond: *${curr.username}* `;
+          acc[curr.team] += `*${curr.username}* :small_blue_diamond: `;
         return acc;
       }, pugTeams);
 
