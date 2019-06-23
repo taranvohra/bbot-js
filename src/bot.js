@@ -1,7 +1,7 @@
 import '@babel/polyfill';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import { Client, User, Message, GuildMember } from 'discord.js';
+import { Client, User, Message } from 'discord.js';
 import store from './store';
 import {
   INIT,
@@ -11,7 +11,7 @@ import {
   assignGameTypes,
 } from './store/actions';
 import { DiscordServers, UT99QueryServers, GameTypes } from './models';
-import { handlers, commands } from './commands';
+import { handlers, commands, emitters } from './commands';
 import { sanitizeName } from './utils';
 import { prefix, offline } from './constants';
 
@@ -150,3 +150,14 @@ const hydrateStore = async () => {
     );
   });
 };
+
+/**
+ * P U G
+ * E V E N T S
+ */
+emitters.pugEventEmitter.on(pugEvents.captainsReady, (serverId, name) => {
+  const state = store.getState();
+  const { pugChannel, list } = state.pugs[serverId];
+  const pug = list.filter(p => p.name === name);
+  bBot.channels.get(pugChannel).send(formatBroadcastCaptainsReady(pug));
+});

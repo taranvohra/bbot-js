@@ -2,6 +2,10 @@ import * as genericHandlers from './genericHandlers';
 import * as ut99Handlers from './ut99Handlers';
 import * as pugHandlers from './pugHandlers';
 
+const emitters = {
+  pugEventEmitter: pugHandlers.pugEventEmitter,
+};
+
 const handlers = {
   ...genericHandlers,
   ...ut99Handlers,
@@ -113,4 +117,4 @@ const commands = [
   },
 ];
 
-export { commands, handlers };
+export { commands, handlers, emitters };

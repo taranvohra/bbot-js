@@ -6,7 +6,12 @@ import {
   shuffle,
   getRandomInt,
 } from '../utils';
-import { privilegedRoles, captainTimeout, offline } from '../constants';
+import {
+  privilegedRoles,
+  captainTimeout,
+  offline,
+  pugEvents,
+} from '../constants';
 import {
   formatListGameTypes,
   formatJoinStatus,
@@ -17,6 +22,9 @@ import {
   formatPugsInPicking,
 } from '../formats';
 import { assignGameTypes, addNewPug, removePug } from '../store/actions';
+import events from 'events';
+
+export const pugEventEmitter = new events.EventEmitter();
 
 class Pug {
   constructor({ name, noOfPlayers, noOfTeams, pickingOrder }) {
@@ -574,6 +582,10 @@ export const addCaptain = async (
     const result = forWhichPug.addCaptain(user);
     channel.send(formatAddCaptainStatus(user, result));
     // TODO Broadcast captains decided
+    if (result.captainsDecided) {
+      // emit
+      pugEventEmitter.emit(pugEvents.captainsReady, serverId, forWhichPug.name);
+    }
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);

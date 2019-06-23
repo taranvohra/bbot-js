@@ -318,3 +318,22 @@ export const formatPugsInPicking = pugsInPicking => {
 
   return body;
 };
+
+export const formatBroadcastCaptainsReady = ({ players, captains }) => {
+  const pugCaptains = captains.reduce((acc, curr, index) => {
+    acc += `<@${curr.id}> is the captain for **${teams[`team_${index}`]}**\n`;
+    return acc;
+  }, ``);
+
+  const turn = `<@${captains[0].id}> pick 1 player for **${teams[`team_0`]}**`;
+  const { pugPlayers } = players.reduce(
+    (acc, curr, index) => {
+      if (curr.captain === null)
+        acc.pugPlayers += `**${index + 1}**) *${curr.username}*  `;
+      return acc;
+    },
+    { pugPlayers: `Players: ` }
+  );
+
+  return `${pugCaptains}\n${turn}\n${players}`;
+};

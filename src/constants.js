@@ -13,3 +13,6 @@ export const teams = {
 
 export const captainTimeout = 15000;
 export const offline = 'unplugged';
+export const pugEvents = {
+  captainsReady: 'captainsReady',
+};
