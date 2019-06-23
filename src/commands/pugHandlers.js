@@ -561,7 +561,9 @@ export const pickPlayer = async (
     channel.send(formatPickPlayerStatus({ ...result, pug: forWhichPug }));
 
     // TODO If finished, save stats to DB and remove from redux
-    store.dispatch(removePug({ serverId, name }));
+    if (result.finished) {
+      store.dispatch(removePug({ serverId, name }));
+    }
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);
