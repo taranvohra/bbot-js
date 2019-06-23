@@ -93,6 +93,12 @@ const commands = [
     aliases: ['lva'],
     solo: true,
   },
+  {
+    key: 'addCaptain',
+    description: '',
+    aliases: ['captain', 'capt'],
+    solo: true,
+  },
 ];
 
 export { commands, handlers };

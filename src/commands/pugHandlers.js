@@ -1,6 +1,11 @@
 import store from '../store';
 import { GameTypes } from '../models';
-import { computePickingOrder, hasPrivilegedRole, shuffle } from '../utils';
+import {
+  computePickingOrder,
+  hasPrivilegedRole,
+  shuffle,
+  getRandomInt,
+} from '../utils';
 import { privilegedRoles, captainTimeout, offline } from '../constants';
 import {
   formatListGameTypes,
@@ -8,6 +13,7 @@ import {
   formatLeaveStatus,
   formatBroadcastPug,
   formatListAllCurrentGameTypes,
+  formatAddCaptainStatus,
 } from '../formats';
 import { assignGameTypes, addNewPug, removePug } from '../store/actions';
 
@@ -63,6 +69,31 @@ class Pug {
     }, captainTimeout);
   }
 
+  addCaptain(user) {
+    while (1) {
+      const teamIndex = getRandomInt(0, this.noOfTeams - 1);
+      const didFillSpot = this.fillCaptainSpot(user, teamIndex);
+      if (didFillSpot) break;
+    }
+
+    if (this.areCaptainsDecided()) clearTimeout(this.timer);
+    return {
+      team: teamIndex,
+      captainsDecided: this.areCaptainsDecided(),
+    };
+  }
+
+  fillCaptainSpot(user, teamIndex) {
+    const pIndex = this.players.findIndex(u => u.id === user.id);
+    if (this.players[pIndex].captain === null && !this.captains[teamIndex]) {
+      this.players[pIndex].captain = this.players[pIndex].team = teamIndex;
+      this.players[pIndex].pick = 0;
+      this.captains[teamIndex] = this.players[playerIndex];
+      return true;
+    }
+    return false;
+  }
+
   stopPug() {
     this.cleanup();
   }
@@ -73,6 +104,10 @@ class Pug {
 
   isEmpty() {
     return this.players.length === 0 ? true : false;
+  }
+
+  areCaptainsDecided() {
+    return this.captains.filter(Boolean).length === this.noOfTeams;
   }
 
   cleanup() {
@@ -245,7 +280,7 @@ export const joinGameTypes = async (
       );
 
     let toBroadcast = null;
-    const user = { id, username, roles };
+    const user = { id, username };
     const statuses = args.map(a => {
       if (!toBroadcast) {
         const game = a.toLowerCase();
@@ -327,7 +362,7 @@ export const leaveGameTypes = async (
     if (args.length === 0)
       return channel.send('Invalid, No pugs were mentioned');
 
-    const user = { id, username, roles };
+    const user = { id, username };
     const statuses = args.map(a => {
       const game = a.toLowerCase();
       const gameType = gameTypes.find(g => g.name === game);
@@ -395,6 +430,47 @@ export const leaveAllGameTypes = async (message, args, serverId, user) => {
     leaveGameTypes(message, listToLeave, serverId, user, hasGoneOffline);
   } catch (error) {
     message.channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const addCaptain = async (
+  { channel },
+  args,
+  serverId,
+  { id, username, roles }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, list } = state.pugs[serverId];
+
+    if (pugChannel !== message.channel.id)
+      return message.channel.send(
+        `Active channel for pugs is <#${pugChannel}>`
+      );
+
+    const forWhichPug = list.find(pug => {
+      const isCandidate = pug.picking && !pug.areCaptainsDecided();
+      if (isCandidate) {
+        return pug.players.some(u => u.id === id); // check whether the guy is present there
+      }
+      return false;
+    });
+
+    if (!forWhichPug)
+      return channel.send(
+        'There was no filled pug for which you could captain'
+      );
+
+    if (!forWhichPug.players.some(u => u.id === id && u.captain === null))
+      return channel.send(`**${username}** is already a captain`);
+
+    const user = { id, username };
+    const result = forWhichPug.addCaptain(user);
+    channel.send(formatAddCaptainStatus(user, result));
+    // TODO Broadcast captains decided
+  } catch (error) {
+    channel.send('Something went wrong');
     console.log(error);
   }
 };

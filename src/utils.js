@@ -137,3 +137,9 @@ export const computePickingOrder = (noOfPlayers, noOfTeams) => {
 
 export const shuffle = array =>
   Array.from(array).sort(() => Math.random() - 0.5);
+
+export function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}

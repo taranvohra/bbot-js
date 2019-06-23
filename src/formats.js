@@ -218,3 +218,10 @@ export const formatListAllCurrentGameTypes = (list, guildName) => {
     ? `Listing active pugs at **${guildName}**\n${body}`
     : `There are currently no active pugs, try joining one!`;
 };
+
+export const formatAddCaptainStatus = (user, { team }) => {
+  const body = `**${user.username}** became captain for **${teams[
+    `team_${team}`
+  ].toUpperCase()}**`;
+  return body;
+};
