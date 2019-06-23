@@ -335,5 +335,5 @@ export const formatBroadcastCaptainsReady = ({ players, captains }) => {
     { pugPlayers: `Players: ` }
   );
 
-  return `${pugCaptains}\n${turn}\n${players}`;
+  return `${pugCaptains}\n${turn}\n${pugPlayers}`;
 };
