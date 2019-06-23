@@ -6,8 +6,8 @@ const schema = mongoose.Schema({
     {
       id: String,
       name: String,
-      blocked_on: Number,
-      expires_at: Number,
+      blocked_on: Date,
+      expires_at: Date,
     },
   ],
 });

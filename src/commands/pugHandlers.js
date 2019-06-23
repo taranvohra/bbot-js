@@ -1,5 +1,5 @@
 import store from '../store';
-import { GameTypes } from '../models';
+import { GameTypes, Pugs, Users } from '../models';
 import {
   computePickingOrder,
   hasPrivilegedRole,
@@ -26,6 +26,7 @@ import {
 } from '../formats';
 import { assignGameTypes, addNewPug, removePug } from '../store/actions';
 import events from 'events';
+import { User } from 'discord.js';
 
 export const pugEventEmitter = new events.EventEmitter();
 
@@ -51,7 +52,7 @@ class Pug {
         captain: null,
         pick: null,
         tag: null,
-        rating: 0,
+        rating: user.stats[this.name] ? user.stats[this.name].totalRating : 0,
         ...user,
       });
       return 1;
@@ -396,8 +397,10 @@ export const joinGameTypes = async (
         `Please leave **${isPartOfFilledPug.name.toUpperCase()}** first to join other pugs`
       );
 
+    const db_user = await User.find({ server_id: serverId, id: id }).exec();
+
     let toBroadcast = null;
-    const user = { id, username };
+    const user = { id, username, stats: db_user.stats || {} };
     const statuses = args.map(a => {
       if (!toBroadcast) {
         const game = a.toLowerCase();
@@ -655,6 +658,49 @@ export const pickPlayer = async (
 
     // TODO If finished, save stats to DB and remove from redux
     if (result.finished) {
+      new Pugs({
+        server_id: serverId,
+        name: forWhichPug.name,
+        pug: forWhichPug,
+        timestamp: new Date(),
+      }).save();
+
+      const players = forWhichPug.players;
+
+      players.forEach(({ id, username, pick, captain, stats }) => {
+        let updatedStats = {};
+        const existingStats = stats[forWhichPug.name];
+        if (!existingStats) {
+          updatedStats = {
+            totalRating: pick,
+            totalCaptain: captain ? 1 : 0,
+            totalPugs: 1,
+          };
+        } else {
+          updatedStats = {
+            totalRating:
+              (existingStats.totalRating + pick) /
+              (existingStats.totalPugs + 1),
+            totalCaptain: existingStats.totalCaptain + 1,
+            totalPugs: existingStats.totalPugs + 1,
+          };
+        }
+
+        Users.findOneAndUpdate(
+          { id, server_id: serverId },
+          {
+            $set: {
+              username,
+              last_pug: forWhichPug,
+              stats: { ...stats, [forWhichPug.name]: updatedStats },
+            },
+          },
+          {
+            upsert: true,
+          }
+        ).exec();
+      });
+
       store.dispatch(removePug({ serverId, name }));
     }
   } catch (error) {
