@@ -666,7 +666,7 @@ function () {
 
           case 12:
             _context5.next = 14;
-            return _models.Users.find({
+            return _models.Users.findOne({
               server_id: serverId,
               id: id
             }).exec();
@@ -1224,6 +1224,7 @@ function () {
                     stats = _ref32.stats;
                 var updatedStats = {};
                 var existingStats = stats[forWhichPug.name];
+                console.log('feach', stats);
 
                 if (!existingStats) {
                   updatedStats = {

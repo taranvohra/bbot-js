@@ -397,7 +397,7 @@ export const joinGameTypes = async (
         `Please leave **${isPartOfFilledPug.name.toUpperCase()}** first to join other pugs`
       );
 
-    const db_user = await Users.find({ server_id: serverId, id: id }).exec();
+    const db_user = await Users.findOne({ server_id: serverId, id: id }).exec();
 
     let toBroadcast = null;
     const user = { id, username, stats: db_user.stats || {} };

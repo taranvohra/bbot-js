@@ -253,7 +253,7 @@ var formatPickPlayerStatus = function formatPickPlayerStatus(_ref5) {
     }
   }
 
-  var turn = finished ? ":fire: Picking has finished :fire:" : "<@".concat(next.id, "> pick ").concat(count, " player").concat(count > 1 ? 's' : '', " for **").concat(_constants.teams["team_".concat(next.team)], "**");
+  var turn = finished ? "**Picking has finished** :fire:" : "<@".concat(next.id, "> pick ").concat(count, " player").concat(count > 1 ? 's' : '', " for **").concat(_constants.teams["team_".concat(next.team)], "**");
   var pugTeams = Array(pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
     acc[i] = "**".concat(_constants.teams["team_".concat(i)], "**: ");
     return acc;
@@ -266,7 +266,7 @@ var formatPickPlayerStatus = function formatPickPlayerStatus(_ref5) {
   var currTeams = _toConsumableArray(pug.players).sort(function (a, b) {
     return a.pick - b.pick;
   }).reduce(function (acc, curr) {
-    if (curr.team !== null) acc[curr.team] += ":small_blue_diamond: *".concat(curr.username, "* ");
+    if (curr.team !== null) acc[curr.team] += "*".concat(curr.username, "* :small_blue_diamond: ");
     return acc;
   }, pugTeams);
 
@@ -302,7 +302,7 @@ var formatPugsInPicking = function formatPugsInPicking(pugsInPicking) {
     var currTeams = _toConsumableArray(pug.players).sort(function (a, b) {
       return a.pick - b.pick;
     }).reduce(function (acc, curr) {
-      if (curr.team !== null) acc[curr.team] += ":small_blue_diamond: *".concat(curr.username, "* ");
+      if (curr.team !== null) acc[curr.team] += "*".concat(curr.username, "* :small_blue_diamond: ");
       return acc;
     }, pugTeams);
 
