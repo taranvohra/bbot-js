@@ -386,7 +386,7 @@ function () {
           case 18:
             _store["default"].dispatch((0, _actions.assignGameTypes)({
               serverId: serverId,
-              gameTypes: [].concat(_toConsumableArray(game_types), [newGameType])
+              gameTypes: [].concat(_toConsumableArray(gameTypes), [newGameType])
             }));
 
             channel.send("**".concat(gameName, "** has been added"));
@@ -648,7 +648,7 @@ function () {
               break;
             }
 
-            return _context5.abrupt("return", channel.send("Please change your status. Cannot use this command while invisible"));
+            return _context5.abrupt("return", channel.send("Cannot use this command while invisible"));
 
           case 9:
             if (id) {

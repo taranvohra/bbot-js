@@ -277,7 +277,7 @@ export const addGameType = async (
       { $push: { game_types: newGameType } }
     ).exec();
     store.dispatch(
-      assignGameTypes({ serverId, gameTypes: [...game_types, newGameType] })
+      assignGameTypes({ serverId, gameTypes: [...gameTypes, newGameType] })
     );
 
     channel.send(`**${gameName}** has been added`);

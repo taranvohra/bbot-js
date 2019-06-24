@@ -36,7 +36,8 @@ var queryServers = function queryServers() {
     case 'SET_QUERY_CHANNEL':
       {
         return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
-          queryChannel: payload.queryChannel
+          queryChannel: payload.queryChannel,
+          list: []
         })));
       }
 

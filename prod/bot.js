@@ -140,10 +140,10 @@ bBot.on('presenceUpdate', function (_, _ref) {
   if (status === 'offline') {
     var state = _store["default"].getState();
 
-    var _state$pugs$guild$id = state.pugs[guild.id],
-        _state$pugs$guild$id$ = _state$pugs$guild$id.list,
-        list = _state$pugs$guild$id$ === void 0 ? [] : _state$pugs$guild$id$,
-        pugChannel = _state$pugs$guild$id.pugChannel;
+    var _ref2 = state.pugs[guild.id] || {},
+        _ref2$list = _ref2.list,
+        list = _ref2$list === void 0 ? [] : _ref2$list,
+        pugChannel = _ref2.pugChannel;
 
     for (var i = 0; i < list.length; i++) {
       var pug = list[i];
@@ -213,7 +213,7 @@ regeneratorRuntime.mark(function _callee() {
 var hydrateStore =
 /*#__PURE__*/
 function () {
-  var _ref3 = _asyncToGenerator(
+  var _ref4 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee2() {
     var dServers, qServers, gameTypes;
@@ -236,10 +236,10 @@ function () {
 
           case 8:
             gameTypes = _context2.sent;
-            dServers.forEach(function (_ref4) {
-              var server_id = _ref4.server_id,
-                  pug_channel = _ref4.pug_channel,
-                  query_channel = _ref4.query_channel;
+            dServers.forEach(function (_ref5) {
+              var server_id = _ref5.server_id,
+                  pug_channel = _ref5.pug_channel,
+                  query_channel = _ref5.query_channel;
 
               _store["default"].dispatch((0, _actions.INIT)({
                 serverId: server_id
@@ -255,18 +255,18 @@ function () {
                 queryChannel: query_channel
               }));
             });
-            qServers.forEach(function (_ref5) {
-              var server_id = _ref5.server_id,
-                  query_servers = _ref5.query_servers;
+            qServers.forEach(function (_ref6) {
+              var server_id = _ref6.server_id,
+                  query_servers = _ref6.query_servers;
 
               _store["default"].dispatch((0, _actions.assignQueryServers)({
                 serverId: server_id,
                 list: Array.from(query_servers)
               }));
             });
-            gameTypes.forEach(function (_ref6) {
-              var server_id = _ref6.server_id,
-                  game_types = _ref6.game_types;
+            gameTypes.forEach(function (_ref7) {
+              var server_id = _ref7.server_id,
+                  game_types = _ref7.game_types;
 
               _store["default"].dispatch((0, _actions.assignGameTypes)({
                 serverId: server_id,
@@ -283,7 +283,7 @@ function () {
   }));
 
   return function hydrateStore() {
-    return _ref3.apply(this, arguments);
+    return _ref4.apply(this, arguments);
   };
 }();
 /**

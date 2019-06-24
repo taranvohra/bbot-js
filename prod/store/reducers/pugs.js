@@ -37,7 +37,9 @@ var pugs = function pugs() {
     case 'SET_PUG_CHANNEL':
       {
         return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
-          pugChannel: payload.pugChannel
+          pugChannel: payload.pugChannel,
+          list: [],
+          gameTypes: []
         })));
       }
 

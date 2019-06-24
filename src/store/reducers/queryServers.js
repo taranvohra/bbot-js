@@ -15,6 +15,7 @@ const queryServers = (state = {}, { type, payload }) => {
         [payload.serverId]: {
           ...state[payload.serverId],
           queryChannel: payload.queryChannel,
+          list: [],
         },
       };
     }

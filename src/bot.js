@@ -78,7 +78,7 @@ bBot.on('message', onMessage);
 bBot.on('presenceUpdate', (_, { user, guild, presence: { status } }) => {
   if (status === 'offline') {
     const state = store.getState();
-    const { list = [], pugChannel } = state.pugs[guild.id];
+    const { list = [], pugChannel } = state.pugs[guild.id] || {};
     for (let i = 0; i < list.length; i++) {
       const pug = list[i];
       const isInPug = pug.findPlayer(user);

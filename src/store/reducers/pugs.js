@@ -15,6 +15,8 @@ const pugs = (state = {}, { type, payload }) => {
         [payload.serverId]: {
           ...state[payload.serverId],
           pugChannel: payload.pugChannel,
+          list: [],
+          gameTypes: [],
         },
       };
     }
