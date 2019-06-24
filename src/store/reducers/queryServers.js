@@ -2,6 +2,7 @@ const queryServers = (state = {}, { type, payload }) => {
   switch (type) {
     case 'INIT': {
       return {
+        ...state,
         [payload.serverId]: {
           queryChannel: null,
           list: [],

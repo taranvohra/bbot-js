@@ -93,7 +93,7 @@ export const formatListGameTypes = (guildName, list) => {
   const body = sortedList.reduce((acc, curr, i) => {
     acc += `**${curr.name.toUpperCase()}** (${curr.players}/${
       curr.maxPlayers
-    }) ${i === list.length - 1 ? '' : ':small_blue_diamond:'}`;
+    }) ${i === list.length - 1 ? '' : ':small_orange_diamond:'}`;
     return acc;
   }, ``);
 
@@ -110,7 +110,7 @@ export const formatJoinStatus = statuses => {
         case 0:
           acc.missed += `Sorry, **${name.toUpperCase()}** is already filled\n`;
         case 1:
-          acc.joined += `**${name.toUpperCase()}** (${activeCount}/${maxPlayers}) :small_blue_diamond: `;
+          acc.joined += `**${name.toUpperCase()}** (${activeCount}/${maxPlayers}) :small_orange_diamond: `;
           break;
         case 2:
           acc.aj += `**${name.toUpperCase()}** `;
@@ -132,7 +132,7 @@ export const formatJoinStatus = statuses => {
 
   const body = `${
     joined.length > 0
-      ? `${user.username} joined :small_blue_diamond: ${joined}`
+      ? `${user.username} joined :small_orange_diamond: ${joined}`
       : ``
   } ${missed.length > 0 ? `\n${missed}` : ``} ${
     aj.length > 0 ? `\n${user.username}, you have already joined ${aj}` : ``
@@ -206,7 +206,7 @@ export const formatListAllCurrentGameTypes = (list, guildName) => {
     }) `;
 
     const players = curr.players.reduce((acc, u) => {
-      acc += `:small_blue_diamond: ${u.username} `;
+      acc += `:small_orange_diamond: ${u.username} `;
       return acc;
     }, ``);
 
@@ -266,12 +266,12 @@ export const formatPickPlayerStatus = ({ pickedPlayers, finished, pug }) => {
     .sort((a, b) => a.pick - b.pick)
     .reduce((acc, curr) => {
       if (curr.team !== null)
-        acc[curr.team] += `*${curr.username}* :small_blue_diamond: `;
+        acc[curr.team] += `*${curr.username}* :small_orange_diamond: `;
       return acc;
     }, pugTeams);
 
   const activeTeams = Object.values(currTeams).reduce((acc, curr) => {
-    acc += `${curr}\n`;
+    acc += `${curr.slice(0, curr.length - 24)}\n`;
     return acc;
   }, ``);
 
@@ -308,12 +308,12 @@ export const formatPugsInPicking = pugsInPicking => {
       .sort((a, b) => a.pick - b.pick)
       .reduce((acc, curr) => {
         if (curr.team !== null)
-          acc[curr.team] += `*${curr.username}* :small_blue_diamond: `;
+          acc[curr.team] += `*${curr.username}* :small_orange_diamond: `;
         return acc;
       }, pugTeams);
 
     const activeTeams = Object.values(currTeams).reduce((acc, curr) => {
-      acc += `${curr}\n`;
+      acc += `${curr.slice(0, curr.length - 24)}\n`;
       return acc;
     }, ``);
 
@@ -351,4 +351,31 @@ export const formatPromoteAvailablePugs = (pugs, guildName) => {
     return acc;
   }, ``);
   return `${title}\n${body}`;
+};
+
+export const formatLastPugStatus = ({ pug, guildName }, action, timestamp) => {
+  const title = `${action.charAt(0).toUpperCase() +
+    action.slice(1)} **${pug.name.toUpperCase()}** at **${guildName}**`;
+
+  const pugTeams = Array(pug.noOfTeams)
+    .fill(0)
+    .reduce((acc, _, i) => {
+      acc[i] = `**${teams[`team_${i}`]}**: `;
+      return acc;
+    }, {});
+
+  const currTeams = [...pug.players]
+    .sort((a, b) => a.pick - b.pick)
+    .reduce((acc, curr) => {
+      if (curr.team !== null)
+        acc[curr.team] += `*${curr.username}* :small_orange_diamond: `;
+      return acc;
+    }, pugTeams);
+
+  const activeTeams = Object.values(currTeams).reduce((acc, curr) => {
+    acc += `${curr.slice(0, curr.length - 24)}\n`;
+    return acc;
+  }, ``);
+
+  return `${title}\n\n${activeTeams}`;
 };

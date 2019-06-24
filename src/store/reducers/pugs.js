@@ -2,6 +2,7 @@ const pugs = (state = {}, { type, payload }) => {
   switch (type) {
     case 'INIT': {
       return {
+        ...state,
         [payload.serverId]: {
           pugChannel: null,
           list: [],

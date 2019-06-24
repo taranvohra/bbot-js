@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.formatPromoteAvailablePugs = exports.formatBroadcastCaptainsReady = exports.formatPugsInPicking = exports.formatPickPlayerStatus = exports.formatAddCaptainStatus = exports.formatListAllCurrentGameTypes = exports.formatBroadcastPug = exports.formatDeadPugs = exports.formatLeaveStatus = exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
+exports.formatLastPugStatus = exports.formatPromoteAvailablePugs = exports.formatBroadcastCaptainsReady = exports.formatPugsInPicking = exports.formatPickPlayerStatus = exports.formatAddCaptainStatus = exports.formatListAllCurrentGameTypes = exports.formatBroadcastPug = exports.formatDeadPugs = exports.formatLeaveStatus = exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
 
 var _discord = _interopRequireDefault(require("discord.js"));
 
@@ -87,7 +87,7 @@ var formatListGameTypes = function formatListGameTypes(guildName, list) {
   }); // by number of joined players
 
   var body = sortedList.reduce(function (acc, curr, i) {
-    acc += "**".concat(curr.name.toUpperCase(), "** (").concat(curr.players, "/").concat(curr.maxPlayers, ") ").concat(i === list.length - 1 ? '' : ':small_blue_diamond:');
+    acc += "**".concat(curr.name.toUpperCase(), "** (").concat(curr.players, "/").concat(curr.maxPlayers, ") ").concat(i === list.length - 1 ? '' : ':small_orange_diamond:');
     return acc;
   }, "");
   return "".concat(title, "\n").concat(body);
@@ -112,7 +112,7 @@ var formatJoinStatus = function formatJoinStatus(statuses) {
         acc.missed += "Sorry, **".concat(name.toUpperCase(), "** is already filled\n");
 
       case 1:
-        acc.joined += "**".concat(name.toUpperCase(), "** (").concat(activeCount, "/").concat(maxPlayers, ") :small_blue_diamond: ");
+        acc.joined += "**".concat(name.toUpperCase(), "** (").concat(activeCount, "/").concat(maxPlayers, ") :small_orange_diamond: ");
         break;
 
       case 2:
@@ -138,7 +138,7 @@ var formatJoinStatus = function formatJoinStatus(statuses) {
       aj = _statuses$reduce.aj,
       user = _statuses$reduce.user;
 
-  var body = "".concat(joined.length > 0 ? "".concat(user.username, " joined :small_blue_diamond: ").concat(joined) : "", " ").concat(missed.length > 0 ? "\n".concat(missed) : "", " ").concat(aj.length > 0 ? "\n".concat(user.username, ", you have already joined ").concat(aj) : "", " ").concat(nf.length > 0 ? "\n".concat(nf) : "");
+  var body = "".concat(joined.length > 0 ? "".concat(user.username, " joined :small_orange_diamond: ").concat(joined) : "", " ").concat(missed.length > 0 ? "\n".concat(missed) : "", " ").concat(aj.length > 0 ? "\n".concat(user.username, ", you have already joined ").concat(aj) : "", " ").concat(nf.length > 0 ? "\n".concat(nf) : "");
   return body;
 };
 
@@ -216,7 +216,7 @@ var formatListAllCurrentGameTypes = function formatListAllCurrentGameTypes(list,
   var body = list.reduce(function (prev, curr) {
     var base = "**".concat(curr.name.toUpperCase(), "** (").concat(curr.players.length, "/").concat(curr.noOfPlayers, ") ");
     var players = curr.players.reduce(function (acc, u) {
-      acc += ":small_blue_diamond: ".concat(u.username, " ");
+      acc += ":small_orange_diamond: ".concat(u.username, " ");
       return acc;
     }, "");
     prev += "".concat(base).concat(players, "\n");
@@ -266,12 +266,12 @@ var formatPickPlayerStatus = function formatPickPlayerStatus(_ref5) {
   var currTeams = _toConsumableArray(pug.players).sort(function (a, b) {
     return a.pick - b.pick;
   }).reduce(function (acc, curr) {
-    if (curr.team !== null) acc[curr.team] += "*".concat(curr.username, "* :small_blue_diamond: ");
+    if (curr.team !== null) acc[curr.team] += "*".concat(curr.username, "* :small_orange_diamond: ");
     return acc;
   }, pugTeams);
 
   var activeTeams = Object.values(currTeams).reduce(function (acc, curr) {
-    acc += "".concat(curr, "\n");
+    acc += "".concat(curr.slice(0, curr.length - 24), "\n");
     return acc;
   }, "");
   return "".concat(picked, "\n").concat(turn, "\n").concat(finished ? '' : '\n').concat(finished ? "" : "".concat(players, "\n"), "\n").concat(activeTeams);
@@ -302,12 +302,12 @@ var formatPugsInPicking = function formatPugsInPicking(pugsInPicking) {
     var currTeams = _toConsumableArray(pug.players).sort(function (a, b) {
       return a.pick - b.pick;
     }).reduce(function (acc, curr) {
-      if (curr.team !== null) acc[curr.team] += "*".concat(curr.username, "* :small_blue_diamond: ");
+      if (curr.team !== null) acc[curr.team] += "*".concat(curr.username, "* :small_orange_diamond: ");
       return acc;
     }, pugTeams);
 
     var activeTeams = Object.values(currTeams).reduce(function (acc, curr) {
-      acc += "".concat(curr, "\n");
+      acc += "".concat(curr.slice(0, curr.length - 24), "\n");
       return acc;
     }, "");
     acc += "".concat(turn, "\n\n").concat(players, "\n\n").concat(activeTeams, "\n\n");
@@ -350,4 +350,29 @@ var formatPromoteAvailablePugs = function formatPromoteAvailablePugs(pugs, guild
 };
 
 exports.formatPromoteAvailablePugs = formatPromoteAvailablePugs;
+
+var formatLastPugStatus = function formatLastPugStatus(_ref7, action, timestamp) {
+  var pug = _ref7.pug,
+      guildName = _ref7.guildName;
+  var title = "".concat(action.charAt(0).toUpperCase() + action.slice(1), " **").concat(pug.name.toUpperCase(), "** at **").concat(guildName, "**");
+  var pugTeams = Array(pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
+    acc[i] = "**".concat(_constants.teams["team_".concat(i)], "**: ");
+    return acc;
+  }, {});
+
+  var currTeams = _toConsumableArray(pug.players).sort(function (a, b) {
+    return a.pick - b.pick;
+  }).reduce(function (acc, curr) {
+    if (curr.team !== null) acc[curr.team] += "*".concat(curr.username, "* :small_orange_diamond: ");
+    return acc;
+  }, pugTeams);
+
+  var activeTeams = Object.values(currTeams).reduce(function (acc, curr) {
+    acc += "".concat(curr.slice(0, curr.length - 24), "\n");
+    return acc;
+  }, "");
+  return "".concat(title, "\n\n").concat(activeTeams);
+};
+
+exports.formatLastPugStatus = formatLastPugStatus;
 //# sourceMappingURL=formats.js.map

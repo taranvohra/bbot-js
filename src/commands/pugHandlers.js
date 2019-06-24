@@ -23,10 +23,10 @@ import {
   formatDeadPugs,
   formatPickPlayerStatus,
   formatPromoteAvailablePugs,
+  formatLastPugStatus,
 } from '../formats';
 import { assignGameTypes, addNewPug, removePug } from '../store/actions';
 import events from 'events';
-import { User } from 'discord.js';
 
 export const pugEventEmitter = new events.EventEmitter();
 
@@ -588,7 +588,7 @@ export const addCaptain = async (
 
     if (!forWhichPug)
       return channel.send(
-        'There was no filled pug for which you could captain'
+        'There was no filled pug for howMany you could captain'
       );
 
     if (!forWhichPug.players.some(u => u.id === id && u.captain === null))
@@ -734,7 +734,7 @@ export const pugPicking = async ({ channel }, _, serverId, __) => {
   }
 };
 
-export const promoteAvailablePugs = ({ channel }, args, serverId, _) => {
+export const promoteAvailablePugs = async ({ channel }, args, serverId, _) => {
   try {
     const state = store.getState();
     const { pugChannel, list } = state.pugs[serverId];
@@ -749,6 +749,65 @@ export const promoteAvailablePugs = ({ channel }, args, serverId, _) => {
     channel.send('Something went wrong');
     console.log(error);
   }
+};
+
+export const checkLastPugs = async (
+  { channel },
+  args,
+  serverId,
+  { action }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, list } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+
+    const howMany = action
+      .split('')
+      .reduce((acc, curr) => (acc += curr === 't' ? 1 : 0), 0);
+
+    const results = await Pugs.find({ server_id: serverId })
+      .sort({ timestamp: -1 })
+      .limit(howMany)
+      .exec();
+
+    if (!results) return;
+
+    const [found] = results.filter((_, i) => i === howMany - 1);
+
+    found &&
+      channel.send(
+        formatLastPugStatus(
+          { pug: found.pug, guildName: channel.guild.name },
+          action,
+          found.timestamp
+        )
+      );
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const resetPug = ({ channel }, args, serverId, { roles }) => {
+  if (!hasPrivilegedRole(privilegedRoles, roles)) return;
+
+  const state = store.getState();
+  const { pugChannel, list } = state.pugs[serverId];
+
+  if (pugChannel !== channel.id)
+    return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+
+  const pugName = args[0].toLowerCase();
+  const forWhichPug = list.find(p => p.name === pugName);
+
+  if (!forWhichPug) return channel.send(`No Pug found: ${args[0]}`);
+  if (!forWhichPug.picking)
+    return channel.send(`${forWhichPug.name} is not in picking mode yet`);
+
+  // reset
 };
 
 /**

@@ -27,10 +27,10 @@ var queryServers = function queryServers() {
   switch (type) {
     case 'INIT':
       {
-        return _defineProperty({}, payload.serverId, {
+        return _objectSpread({}, state, _defineProperty({}, payload.serverId, {
           queryChannel: null,
           list: []
-        });
+        }));
       }
 
     case 'SET_QUERY_CHANNEL':

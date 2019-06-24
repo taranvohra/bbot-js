@@ -46,10 +46,11 @@ async function onMessage(message) {
     .split(' ')
     .filter(Boolean);
   const action = first && first.toLowerCase();
-  const isSolo = args[0] === offline || args.length === 0;
+  const soloType = args[0] === offline || args.length === 0 ? 1 : 0;
 
   const foundCommand = commands.find(
-    cmd => cmd.solo === isSolo && cmd.aliases.includes(action)
+    cmd =>
+      cmd.aliases.includes(action) && (cmd.solo === soloType || cmd.solo === 2)
   );
 
   if (foundCommand) {
@@ -59,9 +60,10 @@ async function onMessage(message) {
       username: sanitizeName(username),
       mentionedUser,
       isInvisible,
+      action,
     });
   }
-  message.channel.send(`Command not found`);
+  // message.channel.send(`Command not found`);
 }
 
 /*
@@ -124,9 +126,11 @@ bBot.on('presenceUpdate', (_, { user, guild, presence: { status } }) => {
 })();
 
 const hydrateStore = async () => {
-  const dServers = await DiscordServers.find({}).exec();
-  const qServers = await UT99QueryServers.find({}).exec();
-  const gameTypes = await GameTypes.find({}).exec();
+  const [dServers, qServers, gameTypes] = await Promise.all([
+    DiscordServers.find({}).exec(),
+    UT99QueryServers.find({}).exec(),
+    GameTypes.find({}).exec(),
+  ]);
 
   dServers.forEach(({ server_id, pug_channel, query_channel }) => {
     store.dispatch(INIT({ serverId: server_id }));

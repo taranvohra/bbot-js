@@ -26,9 +26,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 
 function _toArray(arr) { return _arrayWithHoles(arr) || _iterableToArray(arr) || _nonIterableRest(); }
 
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
 
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
@@ -55,7 +59,7 @@ function _onMessage() {
   _onMessage = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee3(message) {
-    var _message$author, id, username, roles, isInvisible, serverId, hasUserMention, mentionedUser, _message$content$subs, _message$content$subs2, first, args, action, isSolo, foundCommand;
+    var _message$author, id, username, roles, isInvisible, serverId, hasUserMention, mentionedUser, _message$content$subs, _message$content$subs2, first, args, action, soloType, foundCommand;
 
     return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
@@ -97,9 +101,9 @@ function _onMessage() {
             } : null;
             _message$content$subs = message.content.substring(_constants.prefix.length).split(' ').filter(Boolean), _message$content$subs2 = _toArray(_message$content$subs), first = _message$content$subs2[0], args = _message$content$subs2.slice(1);
             action = first && first.toLowerCase();
-            isSolo = args[0] === _constants.offline || args.length === 0;
+            soloType = args[0] === _constants.offline || args.length === 0 ? 1 : 0;
             foundCommand = _commands.commands.find(function (cmd) {
-              return cmd.solo === isSolo && cmd.aliases.includes(action);
+              return cmd.aliases.includes(action) && (cmd.solo === soloType || cmd.solo === 2);
             });
 
             if (!foundCommand) {
@@ -112,13 +116,11 @@ function _onMessage() {
               roles: roles,
               username: (0, _utils.sanitizeName)(username),
               mentionedUser: mentionedUser,
-              isInvisible: isInvisible
+              isInvisible: isInvisible,
+              action: action
             }));
 
           case 18:
-            message.channel.send("Command not found");
-
-          case 19:
           case "end":
             return _context3.stop();
         }
@@ -216,30 +218,25 @@ function () {
   var _ref4 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee2() {
-    var dServers, qServers, gameTypes;
+    var _ref5, _ref6, dServers, qServers, gameTypes;
+
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
             _context2.next = 2;
-            return _models.DiscordServers.find({}).exec();
+            return Promise.all([_models.DiscordServers.find({}).exec(), _models.UT99QueryServers.find({}).exec(), _models.GameTypes.find({}).exec()]);
 
           case 2:
-            dServers = _context2.sent;
-            _context2.next = 5;
-            return _models.UT99QueryServers.find({}).exec();
-
-          case 5:
-            qServers = _context2.sent;
-            _context2.next = 8;
-            return _models.GameTypes.find({}).exec();
-
-          case 8:
-            gameTypes = _context2.sent;
-            dServers.forEach(function (_ref5) {
-              var server_id = _ref5.server_id,
-                  pug_channel = _ref5.pug_channel,
-                  query_channel = _ref5.query_channel;
+            _ref5 = _context2.sent;
+            _ref6 = _slicedToArray(_ref5, 3);
+            dServers = _ref6[0];
+            qServers = _ref6[1];
+            gameTypes = _ref6[2];
+            dServers.forEach(function (_ref7) {
+              var server_id = _ref7.server_id,
+                  pug_channel = _ref7.pug_channel,
+                  query_channel = _ref7.query_channel;
 
               _store["default"].dispatch((0, _actions.INIT)({
                 serverId: server_id
@@ -255,18 +252,18 @@ function () {
                 queryChannel: query_channel
               }));
             });
-            qServers.forEach(function (_ref6) {
-              var server_id = _ref6.server_id,
-                  query_servers = _ref6.query_servers;
+            qServers.forEach(function (_ref8) {
+              var server_id = _ref8.server_id,
+                  query_servers = _ref8.query_servers;
 
               _store["default"].dispatch((0, _actions.assignQueryServers)({
                 serverId: server_id,
                 list: Array.from(query_servers)
               }));
             });
-            gameTypes.forEach(function (_ref7) {
-              var server_id = _ref7.server_id,
-                  game_types = _ref7.game_types;
+            gameTypes.forEach(function (_ref9) {
+              var server_id = _ref9.server_id,
+                  game_types = _ref9.game_types;
 
               _store["default"].dispatch((0, _actions.assignGameTypes)({
                 serverId: server_id,
@@ -274,7 +271,7 @@ function () {
               }));
             });
 
-          case 12:
+          case 10:
           case "end":
             return _context2.stop();
         }

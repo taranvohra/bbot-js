@@ -29,107 +29,112 @@ var commands = [{
   key: 'registerServer',
   description: '',
   aliases: ['register'],
-  solo: true
+  solo: 1
 }, {
   key: 'registerQueryChannel',
   description: '',
   aliases: ['setquerychannel'],
-  solo: true
+  solo: 1
 }, {
   key: 'registerPugChannel',
   description: '',
   aliases: ['setpugchannel'],
-  solo: true
+  solo: 1
 }, {
   key: 'addQueryServer',
   description: '',
   aliases: ['addqueryserver'],
-  solo: false
+  solo: 0
 }, {
   key: 'delQueryServer',
   description: '',
   aliases: ['delqueryserver'],
-  solo: false
+  solo: 0
 }, {
   key: 'queryUT99Server',
   description: '',
   aliases: ['q', 'query'],
-  solo: false
+  solo: 0
 }, {
   key: 'servers',
   description: '',
   aliases: ['servers'],
-  solo: true
+  solo: 1
 }, {
   key: 'addGameType',
   description: '',
   aliases: ['addgametype', 'agm'],
-  solo: false
+  solo: 0
 }, {
   key: 'delGameType',
   description: '',
   aliases: ['delgametype', 'dgm'],
-  solo: false
+  solo: 0
 }, {
   key: 'listGameTypes',
   description: '',
   aliases: ['list', 'ls'],
-  solo: true
+  solo: 2
 }, {
   key: 'listAllCurrentGameTypes',
   description: '',
   aliases: ['lsa'],
-  solo: true
+  solo: 1
 }, {
   key: 'joinGameTypes',
   description: '',
   aliases: ['j', 'join'],
-  solo: false
+  solo: 0
 }, {
   key: 'leaveGameTypes',
   description: '',
   aliases: ['l', 'leave'],
-  solo: false
+  solo: 0
 }, {
   key: 'leaveAllGameTypes',
   description: '',
   aliases: ['lva'],
-  solo: true
+  solo: 1
 }, {
   key: 'addCaptain',
   description: '',
   aliases: ['captain', 'capt'],
-  solo: true
+  solo: 1
 }, {
   key: 'promoteAvailablePugs',
   description: '',
-  aliases: ['p', 'promote'],
-  solo: true
+  aliases: ['promote'],
+  solo: 2
 }, {
   key: 'pickPlayer',
   description: '',
   aliases: ['p', 'pick'],
-  solo: false
+  solo: 0
 }, {
   key: 'pugPicking',
   description: '',
   aliases: ['picking'],
-  solo: true
+  solo: 1
+}, {
+  key: 'checkLastPugs',
+  description: '',
+  aliases: ['last', 'lastt', 'lasttt'],
+  solo: 2
 }, {
   key: 'adminAddPlayer',
   description: '',
   aliases: ['adminadd'],
-  solo: false
+  solo: 0
 }, {
   key: 'adminRemovePlayer',
   description: '',
   aliases: ['adminremove'],
-  solo: false
+  solo: 0
 }, {
   key: 'adminPickPlayer',
   description: '',
   aliases: ['adminpick'],
-  solo: false
+  solo: 0
 }];
 exports.commands = commands;
 //# sourceMappingURL=index.js.map
