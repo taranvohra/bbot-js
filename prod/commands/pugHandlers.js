@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
+exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
 
 var _store = _interopRequireDefault(require("../store"));
 
@@ -1476,27 +1476,48 @@ function () {
     return _ref39.apply(this, arguments);
   };
 }();
+
+exports.checkLastPugs = checkLastPugs;
+
+var resetPug = function resetPug(_ref40, args, serverId, _ref41) {
+  var channel = _ref40.channel;
+  var roles = _ref41.roles;
+  if (!(0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) return;
+
+  var state = _store["default"].getState();
+
+  var _state$pugs$serverId11 = state.pugs[serverId],
+      pugChannel = _state$pugs$serverId11.pugChannel,
+      list = _state$pugs$serverId11.list;
+  if (pugChannel !== channel.id) return channel.send("Active channel for pugs is <#".concat(pugChannel, ">"));
+  var pugName = args[0].toLowerCase();
+  var forWhichPug = list.find(function (p) {
+    return p.name === pugName;
+  });
+  if (!forWhichPug) return channel.send("No Pug found: ".concat(args[0]));
+  if (!forWhichPug.picking) return channel.send("".concat(forWhichPug.name, " is not in picking mode yet")); // reset
+};
 /**
  * A D M I N
  * C O M M A N D S
  */
 
 
-exports.checkLastPugs = checkLastPugs;
+exports.resetPug = resetPug;
 
 var adminAddPlayer =
 /*#__PURE__*/
 function () {
-  var _ref42 = _asyncToGenerator(
+  var _ref44 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee13(_ref40, args, serverId, _ref41) {
+  regeneratorRuntime.mark(function _callee13(_ref42, args, serverId, _ref43) {
     var channel, mentionedUser, roles, state, pugChannel;
     return regeneratorRuntime.wrap(function _callee13$(_context13) {
       while (1) {
         switch (_context13.prev = _context13.next) {
           case 0:
-            channel = _ref40.channel;
-            mentionedUser = _ref41.mentionedUser, roles = _ref41.roles;
+            channel = _ref42.channel;
+            mentionedUser = _ref43.mentionedUser, roles = _ref43.roles;
             _context13.prev = 2;
             state = _store["default"].getState();
             pugChannel = state.pugs[serverId].pugChannel;
@@ -1549,7 +1570,7 @@ function () {
   }));
 
   return function adminAddPlayer(_x51, _x52, _x53, _x54) {
-    return _ref42.apply(this, arguments);
+    return _ref44.apply(this, arguments);
   };
 }();
 
@@ -1558,16 +1579,16 @@ exports.adminAddPlayer = adminAddPlayer;
 var adminRemovePlayer =
 /*#__PURE__*/
 function () {
-  var _ref45 = _asyncToGenerator(
+  var _ref47 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee14(_ref43, args, serverId, _ref44) {
+  regeneratorRuntime.mark(function _callee14(_ref45, args, serverId, _ref46) {
     var channel, mentionedUser, roles, state, pugChannel;
     return regeneratorRuntime.wrap(function _callee14$(_context14) {
       while (1) {
         switch (_context14.prev = _context14.next) {
           case 0:
-            channel = _ref43.channel;
-            mentionedUser = _ref44.mentionedUser, roles = _ref44.roles;
+            channel = _ref45.channel;
+            mentionedUser = _ref46.mentionedUser, roles = _ref46.roles;
             _context14.prev = 2;
             state = _store["default"].getState();
             pugChannel = state.pugs[serverId].pugChannel;
@@ -1620,7 +1641,7 @@ function () {
   }));
 
   return function adminRemovePlayer(_x55, _x56, _x57, _x58) {
-    return _ref45.apply(this, arguments);
+    return _ref47.apply(this, arguments);
   };
 }();
 
@@ -1629,16 +1650,16 @@ exports.adminRemovePlayer = adminRemovePlayer;
 var adminPickPlayer =
 /*#__PURE__*/
 function () {
-  var _ref48 = _asyncToGenerator(
+  var _ref50 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee15(_ref46, args, serverId, _ref47) {
+  regeneratorRuntime.mark(function _callee15(_ref48, args, serverId, _ref49) {
     var channel, mentionedUser, roles, state, pugChannel;
     return regeneratorRuntime.wrap(function _callee15$(_context15) {
       while (1) {
         switch (_context15.prev = _context15.next) {
           case 0:
-            channel = _ref46.channel;
-            mentionedUser = _ref47.mentionedUser, roles = _ref47.roles;
+            channel = _ref48.channel;
+            mentionedUser = _ref49.mentionedUser, roles = _ref49.roles;
             _context15.prev = 2;
             state = _store["default"].getState();
             pugChannel = state.pugs[serverId].pugChannel;
@@ -1691,7 +1712,7 @@ function () {
   }));
 
   return function adminPickPlayer(_x59, _x60, _x61, _x62) {
-    return _ref48.apply(this, arguments);
+    return _ref50.apply(this, arguments);
   };
 }();
 

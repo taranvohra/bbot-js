@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.pugEvents = exports.offline = exports.captainTimeout = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
-var prefix = '~';
+var prefix = '-';
 exports.prefix = prefix;
 var privilegedRoles = ['Admins', 'Moderators'];
 exports.privilegedRoles = privilegedRoles;
