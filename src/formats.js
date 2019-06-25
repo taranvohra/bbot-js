@@ -259,7 +259,10 @@ export const formatPickPlayerStatus = ({ pickedPlayers, finished, pug }) => {
     }, {});
 
   const players = pug.players.reduce((acc, curr, index) => {
-    if (curr.team === null) acc += `**${index + 1}**) *${curr.username}*  `;
+    if (curr.team === null)
+      acc += `**${index + 1}**) *${curr.username}* (${
+        curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2)
+      }) `;
     return acc;
   }, `Players: `);
 
@@ -301,7 +304,10 @@ export const formatPugsInPicking = pugsInPicking => {
       }, {});
 
     const players = pug.players.reduce((acc, curr, index) => {
-      if (curr.team === null) acc += `**${index + 1}**) *${curr.username}*  `;
+      if (curr.team === null)
+        acc += `**${index + 1}**) *${curr.username}* (${
+          curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2)
+        }) `;
       return acc;
     }, `Players: `);
 
