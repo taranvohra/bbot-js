@@ -7,6 +7,7 @@ import {
   getTeamIndex,
 } from './utils';
 import { teams, prefix, captainTimeout } from './constants';
+import { distanceInWordsStrict } from 'date-fns';
 
 const embedColor = '#11806A';
 
@@ -354,13 +355,18 @@ export const formatPromoteAvailablePugs = (pugs, guildName) => {
 };
 
 export const formatLastPugStatus = ({ pug, guildName }, action, timestamp) => {
+  const distanceInWords = distanceInWordsStrict(new Date(), timestamp, {
+    addSuffix: true,
+  });
   const title = `${action.charAt(0).toUpperCase() +
-    action.slice(1)} **${pug.name.toUpperCase()}** at **${guildName}**`;
+    action.slice(
+      1
+    )} **${pug.name.toUpperCase()}** at **${guildName}** (${distanceInWords})`;
 
   const pugTeams = Array(pug.noOfTeams)
     .fill(0)
     .reduce((acc, _, i) => {
-      acc[i] = `**${teams[`team_${i}`]}**: `;
+      acc[i] = `\t**${teams[`team_${i}`]}**: `;
       return acc;
     }, {});
 

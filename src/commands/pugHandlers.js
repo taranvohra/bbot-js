@@ -782,7 +782,15 @@ export const promoteAvailablePugs = async ({ channel }, args, serverId, _) => {
         } <#${pugChannel}>`
       );
 
-    list.length > 0
+    const hasPugMentioned =
+      args[0] && list.find(p => p.name === args[0].toLowerCase());
+
+    if (hasPugMentioned && hasPugMentioned.players.length > 0)
+      return channel.send(
+        formatPromoteAvailablePugs([hasPugMentioned], channel.guild.name)
+      );
+
+    !hasPugMentioned && list.length > 0
       ? channel.send(formatPromoteAvailablePugs(list, channel.guild.name))
       : channel.send('There are no active pugs to promote. Try joining one!');
   } catch (error) {
@@ -799,7 +807,7 @@ export const checkLastPugs = async (
 ) => {
   try {
     const state = store.getState();
-    const { pugChannel, list } = state.pugs[serverId];
+    const { pugChannel, list, gameTypes } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
       return channel.send(
@@ -812,12 +820,26 @@ export const checkLastPugs = async (
       .split('')
       .reduce((acc, curr) => (acc += curr === 't' ? 1 : 0), 0);
 
-    const results = await Pugs.find({ server_id: serverId })
-      .sort({ timestamp: -1 })
-      .limit(howMany)
-      .exec();
+    const pugArg = args[0] && args[0].toLowerCase();
+    let results = null;
+    if (pugArg) {
+      results = await Pugs.find({ server_id: serverId, name: pugArg })
+        .sort({ timestamp: -1 })
+        .limit(howMany)
+        .exec();
+    } else {
+      results = await Pugs.find({ server_id: serverId })
+        .sort({ timestamp: -1 })
+        .limit(howMany)
+        .exec();
+    }
 
-    if (!results) return;
+    if (!results || results.length === 0)
+      return channel.send(
+        `No ${action} pug found ${
+          pugArg ? `for **${pugArg.toUpperCase()}**` : ``
+        }`
+      );
 
     const [found] = results.filter((_, i) => i === howMany - 1);
 
@@ -835,7 +857,7 @@ export const checkLastPugs = async (
   }
 };
 
-export const resetPug = ({ channel }, args, serverId, { roles }) => {
+export const resetPug = async ({ channel }, args, serverId, { roles }) => {
   if (!hasPrivilegedRole(privilegedRoles, roles)) return;
 
   const state = store.getState();
@@ -857,6 +879,51 @@ export const resetPug = ({ channel }, args, serverId, { roles }) => {
 
   forWhichPug.resetPug();
   channel.send(formatBroadcastPug(forWhichPug));
+};
+
+export const decidePromoteOrPick = async (
+  { channel },
+  args,
+  serverId,
+  { id, username, action }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, list } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
+
+    // just p or promote
+    if (['p', 'promote'].includes(action) && !args[0])
+      return promoteAvailablePugs({ channel }, args, serverId, {
+        id,
+        username,
+      });
+
+    // p 4 or pick 7 or p siege5
+    if (['p', 'pick'].includes(action) && args[0]) {
+      // p 4 or p siege5
+      if (action === 'p') {
+        if (isNaN(args[0])) {
+          return promoteAvailablePugs({ channel }, args, serverId, {
+            id,
+            username,
+          });
+        }
+        return pickPlayer({ channel }, args, serverId, { id, username });
+      } else {
+        return pickPlayer({ channel }, args, serverId, { id, username });
+      }
+    }
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
 };
 
 /**

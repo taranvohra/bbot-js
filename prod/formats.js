@@ -11,6 +11,8 @@ var _utils = require("./utils");
 
 var _constants = require("./constants");
 
+var _dateFns = require("date-fns");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
@@ -105,7 +107,7 @@ var formatJoinStatus = function formatJoinStatus(statuses) {
 
     switch (joined) {
       case -1:
-        acc.nf += "No pug found : **".concat(name.toUpperCase(), "**\n");
+        acc.nf += "No pug found: **".concat(name.toUpperCase(), "**\n");
         break;
 
       case 0:
@@ -163,7 +165,7 @@ var formatLeaveStatus = function formatLeaveStatus(statuses, isOffline) {
         break;
 
       case -1:
-        acc.nf += "No pug found : **".concat(name.toUpperCase(), "**\n");
+        acc.nf += "No pug found: **".concat(name.toUpperCase(), "**\n");
         break;
 
       default:
@@ -207,7 +209,7 @@ var formatBroadcastPug = function formatBroadcastPug(toBroadcast) {
     return acc;
   }, "");
   var footer = "Type **".concat(_constants.prefix, "captain** to become a captain for this pug. Random captains will be picked in ").concat(_constants.captainTimeout / 1000, " seconds");
-  return "".concat(title, "\n").concat(body).concat(footer, "\n");
+  return "".concat(title, "\n").concat(body, "\n").concat(footer, "\n");
 };
 
 exports.formatBroadcastPug = formatBroadcastPug;
@@ -354,9 +356,12 @@ exports.formatPromoteAvailablePugs = formatPromoteAvailablePugs;
 var formatLastPugStatus = function formatLastPugStatus(_ref7, action, timestamp) {
   var pug = _ref7.pug,
       guildName = _ref7.guildName;
-  var title = "".concat(action.charAt(0).toUpperCase() + action.slice(1), " **").concat(pug.name.toUpperCase(), "** at **").concat(guildName, "**");
+  var distanceInWords = (0, _dateFns.distanceInWordsStrict)(new Date(), timestamp, {
+    addSuffix: true
+  });
+  var title = "".concat(action.charAt(0).toUpperCase() + action.slice(1), " **").concat(pug.name.toUpperCase(), "** at **").concat(guildName, "** (").concat(distanceInWords, ")");
   var pugTeams = Array(pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
-    acc[i] = "**".concat(_constants.teams["team_".concat(i)], "**: ");
+    acc[i] = "\t**".concat(_constants.teams["team_".concat(i)], "**: ");
     return acc;
   }, {});
 

@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
+exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
 
 var _store = _interopRequireDefault(require("../store"));
 
@@ -266,6 +266,12 @@ function () {
       }
     }
   }, {
+    key: "resetPug",
+    value: function resetPug() {
+      this.stopPug();
+      this.fillPug();
+    }
+  }, {
     key: "stopPug",
     value: function stopPug() {
       this.cleanup();
@@ -507,7 +513,7 @@ function () {
               break;
             }
 
-            return _context3.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+            return _context3.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present")));
 
           case 6:
             tempList = gameTypes.map(function (g) {
@@ -581,7 +587,7 @@ function () {
               break;
             }
 
-            return _context4.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+            return _context4.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
           case 6:
             channel.send((0, _formats.formatListAllCurrentGameTypes)(list, channel.guild.name));
@@ -632,7 +638,7 @@ function () {
               break;
             }
 
-            return _context5.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+            return _context5.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
           case 7:
             if (!isInvisible) {
@@ -833,7 +839,7 @@ function () {
               break;
             }
 
-            return _context6.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+            return _context6.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
           case 7:
             if (id) {
@@ -971,7 +977,7 @@ function () {
               break;
             }
 
-            return _context7.abrupt("return", message.channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+            return _context7.abrupt("return", message.channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
           case 5:
             hasGoneOffline = args[0] === _constants.offline;
@@ -1041,7 +1047,7 @@ function () {
               break;
             }
 
-            return _context8.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+            return _context8.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
           case 7:
             forWhichPug = list.find(function (pug) {
@@ -1134,7 +1140,7 @@ function () {
               break;
             }
 
-            return _context9.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+            return _context9.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
           case 8:
             playerIndex = parseInt(index);
@@ -1305,7 +1311,7 @@ function () {
               break;
             }
 
-            return _context10.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+            return _context10.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
           case 6:
             pugsInPicking = list.filter(function (pug) {
@@ -1351,7 +1357,7 @@ function () {
   var _ref36 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee11(_ref35, args, serverId, _) {
-    var channel, state, _state$pugs$serverId9, pugChannel, list;
+    var channel, state, _state$pugs$serverId9, pugChannel, list, hasPugMentioned;
 
     return regeneratorRuntime.wrap(function _callee11$(_context11) {
       while (1) {
@@ -1367,25 +1373,37 @@ function () {
               break;
             }
 
-            return _context11.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+            return _context11.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
           case 6:
-            list.length > 0 ? channel.send((0, _formats.formatPromoteAvailablePugs)(list, channel.guild.name)) : channel.send('There are no active pugs to promote. Try joining one!');
-            _context11.next = 13;
-            break;
+            hasPugMentioned = args[0] && list.find(function (p) {
+              return p.name === args[0].toLowerCase();
+            });
+
+            if (!(hasPugMentioned && hasPugMentioned.players.length > 0)) {
+              _context11.next = 9;
+              break;
+            }
+
+            return _context11.abrupt("return", channel.send((0, _formats.formatPromoteAvailablePugs)([hasPugMentioned], channel.guild.name)));
 
           case 9:
-            _context11.prev = 9;
+            !hasPugMentioned && list.length > 0 ? channel.send((0, _formats.formatPromoteAvailablePugs)(list, channel.guild.name)) : channel.send('There are no active pugs to promote. Try joining one!');
+            _context11.next = 16;
+            break;
+
+          case 12:
+            _context11.prev = 12;
             _context11.t0 = _context11["catch"](1);
             channel.send('Something went wrong');
             console.log(_context11.t0);
 
-          case 13:
+          case 16:
           case "end":
             return _context11.stop();
         }
       }
-    }, _callee11, null, [[1, 9]]);
+    }, _callee11, null, [[1, 12]]);
   }));
 
   return function promoteAvailablePugs(_x43, _x44, _x45, _x46) {
@@ -1401,7 +1419,7 @@ function () {
   var _ref39 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee12(_ref37, args, serverId, _ref38) {
-    var channel, action, state, _state$pugs$serverId10, pugChannel, list, howMany, results, _results$filter, _results$filter2, found;
+    var channel, action, state, _state$pugs$serverId10, pugChannel, list, gameTypes, howMany, pugArg, results, _results$filter, _results$filter2, found;
 
     return regeneratorRuntime.wrap(function _callee12$(_context12) {
       while (1) {
@@ -1411,37 +1429,60 @@ function () {
             action = _ref38.action;
             _context12.prev = 2;
             state = _store["default"].getState();
-            _state$pugs$serverId10 = state.pugs[serverId], pugChannel = _state$pugs$serverId10.pugChannel, list = _state$pugs$serverId10.list;
+            _state$pugs$serverId10 = state.pugs[serverId], pugChannel = _state$pugs$serverId10.pugChannel, list = _state$pugs$serverId10.list, gameTypes = _state$pugs$serverId10.gameTypes;
 
             if (!(pugChannel !== channel.id)) {
               _context12.next = 7;
               break;
             }
 
-            return _context12.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+            return _context12.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
           case 7:
             howMany = action.split('').reduce(function (acc, curr) {
               return acc += curr === 't' ? 1 : 0;
             }, 0);
-            _context12.next = 10;
+            pugArg = args[0] && args[0].toLowerCase();
+            results = null;
+
+            if (!pugArg) {
+              _context12.next = 16;
+              break;
+            }
+
+            _context12.next = 13;
+            return _models.Pugs.find({
+              server_id: serverId,
+              name: pugArg
+            }).sort({
+              timestamp: -1
+            }).limit(howMany).exec();
+
+          case 13:
+            results = _context12.sent;
+            _context12.next = 19;
+            break;
+
+          case 16:
+            _context12.next = 18;
             return _models.Pugs.find({
               server_id: serverId
             }).sort({
               timestamp: -1
             }).limit(howMany).exec();
 
-          case 10:
+          case 18:
             results = _context12.sent;
 
-            if (results) {
-              _context12.next = 13;
+          case 19:
+            if (!(!results || results.length === 0)) {
+              _context12.next = 21;
               break;
             }
 
-            return _context12.abrupt("return");
+            return _context12.abrupt("return", channel.send("No ".concat(action, " pug found ").concat(pugArg ? "for **".concat(pugArg.toUpperCase(), "**") : "")));
 
-          case 13:
+          case 21:
             _results$filter = results.filter(function (_, i) {
               return i === howMany - 1;
             }), _results$filter2 = _slicedToArray(_results$filter, 1), found = _results$filter2[0];
@@ -1449,21 +1490,21 @@ function () {
               pug: found.pug,
               guildName: channel.guild.name
             }, action, found.timestamp));
-            _context12.next = 21;
+            _context12.next = 29;
             break;
 
-          case 17:
-            _context12.prev = 17;
+          case 25:
+            _context12.prev = 25;
             _context12.t0 = _context12["catch"](2);
             channel.send('Something went wrong');
             console.log(_context12.t0);
 
-          case 21:
+          case 29:
           case "end":
             return _context12.stop();
         }
       }
-    }, _callee12, null, [[2, 17]]);
+    }, _callee12, null, [[2, 25]]);
   }));
 
   return function checkLastPugs(_x47, _x48, _x49, _x50) {
@@ -1473,187 +1514,199 @@ function () {
 
 exports.checkLastPugs = checkLastPugs;
 
-var resetPug = function resetPug(_ref40, args, serverId, _ref41) {
-  var channel = _ref40.channel;
-  var roles = _ref41.roles;
-  if (!(0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) return;
-
-  var state = _store["default"].getState();
-
-  var _state$pugs$serverId11 = state.pugs[serverId],
-      pugChannel = _state$pugs$serverId11.pugChannel,
-      list = _state$pugs$serverId11.list;
-  if (pugChannel !== channel.id) return channel.send("Active channel for pugs is <#".concat(pugChannel, ">"));
-  var pugName = args[0].toLowerCase();
-  var forWhichPug = list.find(function (p) {
-    return p.name === pugName;
-  });
-  if (!forWhichPug) return channel.send("No Pug found: ".concat(args[0]));
-  if (!forWhichPug.picking) return channel.send("".concat(forWhichPug.name, " is not in picking mode yet")); // reset
-};
-/**
- * A D M I N
- * C O M M A N D S
- */
-
-
-exports.resetPug = resetPug;
-
-var adminAddPlayer =
+var resetPug =
 /*#__PURE__*/
 function () {
-  var _ref44 = _asyncToGenerator(
+  var _ref42 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee13(_ref42, args, serverId, _ref43) {
-    var channel, mentionedUser, roles, state, pugChannel;
+  regeneratorRuntime.mark(function _callee13(_ref40, args, serverId, _ref41) {
+    var channel, roles, state, _state$pugs$serverId11, pugChannel, list, pugName, forWhichPug;
+
     return regeneratorRuntime.wrap(function _callee13$(_context13) {
       while (1) {
         switch (_context13.prev = _context13.next) {
           case 0:
-            channel = _ref42.channel;
-            mentionedUser = _ref43.mentionedUser, roles = _ref43.roles;
-            _context13.prev = 2;
-            state = _store["default"].getState();
-            pugChannel = state.pugs[serverId].pugChannel;
+            channel = _ref40.channel;
+            roles = _ref41.roles;
 
-            if (!(pugChannel !== channel.id)) {
-              _context13.next = 7;
-              break;
-            }
-
-            return _context13.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
-
-          case 7:
             if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
-              _context13.next = 9;
+              _context13.next = 4;
               break;
             }
 
             return _context13.abrupt("return");
 
-          case 9:
-            if (mentionedUser) {
-              _context13.next = 11;
+          case 4:
+            state = _store["default"].getState();
+            _state$pugs$serverId11 = state.pugs[serverId], pugChannel = _state$pugs$serverId11.pugChannel, list = _state$pugs$serverId11.list;
+
+            if (!(pugChannel !== channel.id)) {
+              _context13.next = 8;
               break;
             }
 
-            return _context13.abrupt("return", channel.send('No mentioned user'));
+            return _context13.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
-          case 11:
-            joinGameTypes({
-              channel: channel
-            }, args.slice(1), serverId, {
-              id: mentionedUser.id,
-              username: mentionedUser.username
+          case 8:
+            pugName = args[0].toLowerCase();
+            forWhichPug = list.find(function (p) {
+              return p.name === pugName;
             });
-            _context13.next = 18;
-            break;
+
+            if (forWhichPug) {
+              _context13.next = 12;
+              break;
+            }
+
+            return _context13.abrupt("return", channel.send("No Pug found: ".concat(args[0])));
+
+          case 12:
+            if (forWhichPug.picking) {
+              _context13.next = 14;
+              break;
+            }
+
+            return _context13.abrupt("return", channel.send("".concat(forWhichPug.name, " is not in picking mode yet")));
 
           case 14:
-            _context13.prev = 14;
-            _context13.t0 = _context13["catch"](2);
-            channel.send('Something went wrong');
-            console.log(_context13.t0);
+            forWhichPug.resetPug();
+            channel.send((0, _formats.formatBroadcastPug)(forWhichPug));
 
-          case 18:
+          case 16:
           case "end":
             return _context13.stop();
         }
       }
-    }, _callee13, null, [[2, 14]]);
+    }, _callee13);
   }));
 
-  return function adminAddPlayer(_x51, _x52, _x53, _x54) {
-    return _ref44.apply(this, arguments);
+  return function resetPug(_x51, _x52, _x53, _x54) {
+    return _ref42.apply(this, arguments);
   };
 }();
 
-exports.adminAddPlayer = adminAddPlayer;
+exports.resetPug = resetPug;
 
-var adminRemovePlayer =
+var decidePromoteOrPick =
 /*#__PURE__*/
 function () {
-  var _ref47 = _asyncToGenerator(
+  var _ref45 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee14(_ref45, args, serverId, _ref46) {
-    var channel, mentionedUser, roles, state, pugChannel;
+  regeneratorRuntime.mark(function _callee14(_ref43, args, serverId, _ref44) {
+    var channel, id, username, action, state, _state$pugs$serverId12, pugChannel, list;
+
     return regeneratorRuntime.wrap(function _callee14$(_context14) {
       while (1) {
         switch (_context14.prev = _context14.next) {
           case 0:
-            channel = _ref45.channel;
-            mentionedUser = _ref46.mentionedUser, roles = _ref46.roles;
+            channel = _ref43.channel;
+            id = _ref44.id, username = _ref44.username, action = _ref44.action;
             _context14.prev = 2;
             state = _store["default"].getState();
-            pugChannel = state.pugs[serverId].pugChannel;
+            _state$pugs$serverId12 = state.pugs[serverId], pugChannel = _state$pugs$serverId12.pugChannel, list = _state$pugs$serverId12.list;
 
             if (!(pugChannel !== channel.id)) {
               _context14.next = 7;
               break;
             }
 
-            return _context14.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+            return _context14.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
           case 7:
-            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
+            if (!(['p', 'promote'].includes(action) && !args[0])) {
               _context14.next = 9;
               break;
             }
 
-            return _context14.abrupt("return");
+            return _context14.abrupt("return", promoteAvailablePugs({
+              channel: channel
+            }, args, serverId, {
+              id: id,
+              username: username
+            }));
 
           case 9:
-            if (mentionedUser) {
-              _context14.next = 11;
+            if (!(['p', 'pick'].includes(action) && args[0])) {
+              _context14.next = 17;
               break;
             }
 
-            return _context14.abrupt("return", channel.send('No mentioned user'));
+            if (!(action === 'p')) {
+              _context14.next = 16;
+              break;
+            }
 
-          case 11:
-            leaveGameTypes({
+            if (!isNaN(args[0])) {
+              _context14.next = 13;
+              break;
+            }
+
+            return _context14.abrupt("return", promoteAvailablePugs({
               channel: channel
-            }, args.slice(1), serverId, {
-              id: mentionedUser.id,
-              username: mentionedUser.username
-            });
-            _context14.next = 18;
+            }, args, serverId, {
+              id: id,
+              username: username
+            }));
+
+          case 13:
+            return _context14.abrupt("return", pickPlayer({
+              channel: channel
+            }, args, serverId, {
+              id: id,
+              username: username
+            }));
+
+          case 16:
+            return _context14.abrupt("return", pickPlayer({
+              channel: channel
+            }, args, serverId, {
+              id: id,
+              username: username
+            }));
+
+          case 17:
+            _context14.next = 23;
             break;
 
-          case 14:
-            _context14.prev = 14;
+          case 19:
+            _context14.prev = 19;
             _context14.t0 = _context14["catch"](2);
             channel.send('Something went wrong');
             console.log(_context14.t0);
 
-          case 18:
+          case 23:
           case "end":
             return _context14.stop();
         }
       }
-    }, _callee14, null, [[2, 14]]);
+    }, _callee14, null, [[2, 19]]);
   }));
 
-  return function adminRemovePlayer(_x55, _x56, _x57, _x58) {
-    return _ref47.apply(this, arguments);
+  return function decidePromoteOrPick(_x55, _x56, _x57, _x58) {
+    return _ref45.apply(this, arguments);
   };
 }();
+/**
+ * A D M I N
+ * C O M M A N D S
+ */
 
-exports.adminRemovePlayer = adminRemovePlayer;
 
-var adminPickPlayer =
+exports.decidePromoteOrPick = decidePromoteOrPick;
+
+var adminAddPlayer =
 /*#__PURE__*/
 function () {
-  var _ref50 = _asyncToGenerator(
+  var _ref48 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee15(_ref48, args, serverId, _ref49) {
+  regeneratorRuntime.mark(function _callee15(_ref46, args, serverId, _ref47) {
     var channel, mentionedUser, roles, state, pugChannel;
     return regeneratorRuntime.wrap(function _callee15$(_context15) {
       while (1) {
         switch (_context15.prev = _context15.next) {
           case 0:
-            channel = _ref48.channel;
-            mentionedUser = _ref49.mentionedUser, roles = _ref49.roles;
+            channel = _ref46.channel;
+            mentionedUser = _ref47.mentionedUser, roles = _ref47.roles;
             _context15.prev = 2;
             state = _store["default"].getState();
             pugChannel = state.pugs[serverId].pugChannel;
@@ -1663,7 +1716,7 @@ function () {
               break;
             }
 
-            return _context15.abrupt("return", channel.send("Active channel for pugs is <#".concat(pugChannel, ">")));
+            return _context15.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
           case 7:
             if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
@@ -1682,7 +1735,7 @@ function () {
             return _context15.abrupt("return", channel.send('No mentioned user'));
 
           case 11:
-            pickPlayer({
+            joinGameTypes({
               channel: channel
             }, args.slice(1), serverId, {
               id: mentionedUser.id,
@@ -1705,8 +1758,150 @@ function () {
     }, _callee15, null, [[2, 14]]);
   }));
 
-  return function adminPickPlayer(_x59, _x60, _x61, _x62) {
-    return _ref50.apply(this, arguments);
+  return function adminAddPlayer(_x59, _x60, _x61, _x62) {
+    return _ref48.apply(this, arguments);
+  };
+}();
+
+exports.adminAddPlayer = adminAddPlayer;
+
+var adminRemovePlayer =
+/*#__PURE__*/
+function () {
+  var _ref51 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee16(_ref49, args, serverId, _ref50) {
+    var channel, mentionedUser, roles, state, pugChannel;
+    return regeneratorRuntime.wrap(function _callee16$(_context16) {
+      while (1) {
+        switch (_context16.prev = _context16.next) {
+          case 0:
+            channel = _ref49.channel;
+            mentionedUser = _ref50.mentionedUser, roles = _ref50.roles;
+            _context16.prev = 2;
+            state = _store["default"].getState();
+            pugChannel = state.pugs[serverId].pugChannel;
+
+            if (!(pugChannel !== channel.id)) {
+              _context16.next = 7;
+              break;
+            }
+
+            return _context16.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+
+          case 7:
+            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
+              _context16.next = 9;
+              break;
+            }
+
+            return _context16.abrupt("return");
+
+          case 9:
+            if (mentionedUser) {
+              _context16.next = 11;
+              break;
+            }
+
+            return _context16.abrupt("return", channel.send('No mentioned user'));
+
+          case 11:
+            leaveGameTypes({
+              channel: channel
+            }, args.slice(1), serverId, {
+              id: mentionedUser.id,
+              username: mentionedUser.username
+            });
+            _context16.next = 18;
+            break;
+
+          case 14:
+            _context16.prev = 14;
+            _context16.t0 = _context16["catch"](2);
+            channel.send('Something went wrong');
+            console.log(_context16.t0);
+
+          case 18:
+          case "end":
+            return _context16.stop();
+        }
+      }
+    }, _callee16, null, [[2, 14]]);
+  }));
+
+  return function adminRemovePlayer(_x63, _x64, _x65, _x66) {
+    return _ref51.apply(this, arguments);
+  };
+}();
+
+exports.adminRemovePlayer = adminRemovePlayer;
+
+var adminPickPlayer =
+/*#__PURE__*/
+function () {
+  var _ref54 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee17(_ref52, args, serverId, _ref53) {
+    var channel, mentionedUser, roles, state, pugChannel;
+    return regeneratorRuntime.wrap(function _callee17$(_context17) {
+      while (1) {
+        switch (_context17.prev = _context17.next) {
+          case 0:
+            channel = _ref52.channel;
+            mentionedUser = _ref53.mentionedUser, roles = _ref53.roles;
+            _context17.prev = 2;
+            state = _store["default"].getState();
+            pugChannel = state.pugs[serverId].pugChannel;
+
+            if (!(pugChannel !== channel.id)) {
+              _context17.next = 7;
+              break;
+            }
+
+            return _context17.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+
+          case 7:
+            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
+              _context17.next = 9;
+              break;
+            }
+
+            return _context17.abrupt("return");
+
+          case 9:
+            if (mentionedUser) {
+              _context17.next = 11;
+              break;
+            }
+
+            return _context17.abrupt("return", channel.send('No mentioned user'));
+
+          case 11:
+            pickPlayer({
+              channel: channel
+            }, args.slice(1), serverId, {
+              id: mentionedUser.id,
+              username: mentionedUser.username
+            });
+            _context17.next = 18;
+            break;
+
+          case 14:
+            _context17.prev = 14;
+            _context17.t0 = _context17["catch"](2);
+            channel.send('Something went wrong');
+            console.log(_context17.t0);
+
+          case 18:
+          case "end":
+            return _context17.stop();
+        }
+      }
+    }, _callee17, null, [[2, 14]]);
+  }));
+
+  return function adminPickPlayer(_x67, _x68, _x69, _x70) {
+    return _ref54.apply(this, arguments);
   };
 }();
 
