@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.formatLastPugStatus = exports.formatPromoteAvailablePugs = exports.formatBroadcastCaptainsReady = exports.formatPugsInPicking = exports.formatPickPlayerStatus = exports.formatAddCaptainStatus = exports.formatListAllCurrentGameTypes = exports.formatBroadcastPug = exports.formatDeadPugs = exports.formatLeaveStatus = exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
+exports.formatUserStats = exports.formatLastPugStatus = exports.formatPromoteAvailablePugs = exports.formatBroadcastCaptainsReady = exports.formatPugsInPicking = exports.formatPickPlayerStatus = exports.formatAddCaptainStatus = exports.formatListAllCurrentGameTypes = exports.formatBroadcastPug = exports.formatDeadPugs = exports.formatLeaveStatus = exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
 
 var _discord = _interopRequireDefault(require("discord.js"));
 
@@ -14,6 +14,14 @@ var _constants = require("./constants");
 var _dateFns = require("date-fns");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
 
@@ -291,7 +299,7 @@ var formatPugsInPicking = function formatPugsInPicking(pugsInPicking) {
       count++;
     }
 
-    var turn = "<@".concat(next.id, "> pick ").concat(count, " player").concat(count > 0 ? 's' : '', " for **").concat(_constants.teams["team_".concat(next.team)], "**");
+    var turn = "<@".concat(next.id, "> pick ").concat(count, " player").concat(count > 1 ? 's' : '', " for **").concat(_constants.teams["team_".concat(next.team)], "**");
     var pugTeams = Array(pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
       acc[i] = "**".concat(_constants.teams["team_".concat(i)], "**: ");
       return acc;
@@ -345,7 +353,10 @@ exports.formatBroadcastCaptainsReady = formatBroadcastCaptainsReady;
 var formatPromoteAvailablePugs = function formatPromoteAvailablePugs(pugs, guildName) {
   var title = "@here in **".concat(guildName, "**");
   var body = pugs.reduce(function (acc, curr) {
-    acc += "**".concat(curr.noOfPlayers - curr.players.length, "** more needed for **").concat(curr.name.toUpperCase(), "**\n");
+    if (!curr.picking) {
+      acc += "**".concat(curr.noOfPlayers - curr.players.length, "** more needed for **").concat(curr.name.toUpperCase(), "**\n");
+    }
+
     return acc;
   }, "");
   return "".concat(title, "\n").concat(body);
@@ -380,4 +391,50 @@ var formatLastPugStatus = function formatLastPugStatus(_ref7, action, timestamp)
 };
 
 exports.formatLastPugStatus = formatLastPugStatus;
+
+var formatUserStats = function formatUserStats(_ref8) {
+  var username = _ref8.username,
+      stats = _ref8.stats,
+      last_pug = _ref8.last_pug;
+  var totalPugs = Object.values(stats).reduce(function (acc, curr) {
+    return acc += curr.totalPugs || 0;
+  }, 0);
+  var totalCaptains = Object.values(stats).reduce(function (acc, curr) {
+    return acc += curr.totalCaptain || 0;
+  }, 0);
+  var title = ":pencil: Showing stats for **".concat(username, "** :pencil:");
+  var totals = ":video_game: played **".concat(totalPugs, "** pug").concat(totalPugs !== 1 ? 's' : '', " \u2022 :cop: captained **").concat(totalCaptains, "** time").concat(totalCaptains !== 1 ? 's' : '');
+  var distance = (0, _dateFns.distanceInWordsStrict)(new Date(), last_pug.timestamp, {
+    addSuffix: true
+  });
+  var pugTeams = Array(last_pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
+    acc[i] = "\t**".concat(_constants.teams["team_".concat(i)], "**: ");
+    return acc;
+  }, {});
+
+  var currTeams = _toConsumableArray(last_pug.players).sort(function (a, b) {
+    return a.pick - b.pick;
+  }).reduce(function (acc, curr) {
+    if (curr.team !== null) acc[curr.team] += "*".concat(curr.username, "* :small_orange_diamond: ");
+    return acc;
+  }, pugTeams);
+
+  var activeTeams = Object.values(currTeams).reduce(function (acc, curr) {
+    acc += "".concat(curr.slice(0, curr.length - 24), "\n");
+    return acc;
+  }, "");
+  var lastMetaData = "Last pug played was **".concat(last_pug.name.toUpperCase(), "** (").concat(distance, ")");
+  var collectiveStatsTitle = "__**Gametypes**__ [total \u2022 captained \u2022 rating]";
+  var collectiveStatsBody = Object.entries(stats).reduce(function (acc, _ref9, i) {
+    var _ref10 = _slicedToArray(_ref9, 2),
+        pugName = _ref10[0],
+        pugStats = _ref10[1];
+
+    acc += "**".concat(pugName, "** [**").concat(pugStats.totalPugs, "** pug").concat(pugStats.totalPugs !== 1 ? 's' : '', " \u2022 **").concat(pugStats.totalCaptain, "**x captain \u2022 ").concat(pugStats.totalRating === 0 ? "no" : "".concat(pugStats.totalRating), " rating] ").concat(i > 0 ? ':small_blue_diamond: ' : '');
+    return acc;
+  }, "");
+  return "".concat(title, "\n\n").concat(totals, "\n\n").concat(lastMetaData, "\n").concat(activeTeams, "\n").concat(collectiveStatsTitle, "\n").concat(collectiveStatsBody);
+};
+
+exports.formatUserStats = formatUserStats;
 //# sourceMappingURL=formats.js.map

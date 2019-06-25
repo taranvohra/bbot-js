@@ -388,3 +388,59 @@ export const formatLastPugStatus = ({ pug, guildName }, action, timestamp) => {
 
   return `${title}\n\n${activeTeams}`;
 };
+
+export const formatUserStats = ({ username, stats, last_pug }) => {
+  const totalPugs = Object.values(stats).reduce(
+    (acc, curr) => (acc += curr.totalPugs || 0),
+    0
+  );
+  const totalCaptains = Object.values(stats).reduce(
+    (acc, curr) => (acc += curr.totalCaptain || 0),
+    0
+  );
+  const title = `:pencil: Showing stats for **${username}** :pencil:`;
+  const totals = `:video_game: played **${totalPugs}** pug${
+    totalPugs !== 1 ? 's' : ''
+  } • :cop: captained **${totalCaptains}** time${
+    totalCaptains !== 1 ? 's' : ''
+  }`;
+  const distance = distanceInWordsStrict(new Date(), last_pug.timestamp, {
+    addSuffix: true,
+  });
+
+  const pugTeams = Array(last_pug.noOfTeams)
+    .fill(0)
+    .reduce((acc, _, i) => {
+      acc[i] = `\t**${teams[`team_${i}`]}**: `;
+      return acc;
+    }, {});
+
+  const currTeams = [...last_pug.players]
+    .sort((a, b) => a.pick - b.pick)
+    .reduce((acc, curr) => {
+      if (curr.team !== null)
+        acc[curr.team] += `*${curr.username}* :small_orange_diamond: `;
+      return acc;
+    }, pugTeams);
+
+  const activeTeams = Object.values(currTeams).reduce((acc, curr) => {
+    acc += `${curr.slice(0, curr.length - 24)}\n`;
+    return acc;
+  }, ``);
+
+  const lastMetaData = `Last pug played was **${last_pug.name.toUpperCase()}** (${distance})`;
+  const collectiveStatsTitle = `__**Gametypes**__ [total • captained • rating]`;
+  const collectiveStatsBody = Object.entries(stats).reduce(
+    (acc, [pugName, pugStats], i) => {
+      acc += `**${pugName}** [**${pugStats.totalPugs}** pug${
+        pugStats.totalPugs !== 1 ? 's' : ''
+      } • **${pugStats.totalCaptain}**x captain • ${
+        pugStats.totalRating === 0 ? `no` : `${pugStats.totalRating}`
+      } rating] ${i > 0 ? ':small_blue_diamond: ' : ''}`;
+      return acc;
+    },
+    ``
+  );
+
+  return `${title}\n\n${totals}\n\n${lastMetaData}\n${activeTeams}\n${collectiveStatsTitle}\n${collectiveStatsBody}`;
+};

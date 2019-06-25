@@ -24,6 +24,7 @@ import {
   formatPickPlayerStatus,
   formatPromoteAvailablePugs,
   formatLastPugStatus,
+  formatUserStats,
 } from '../formats';
 import { assignGameTypes, addNewPug, removePug } from '../store/actions';
 import events from 'events';
@@ -374,7 +375,7 @@ export const listAllCurrentGameTypes = async ({ channel }, _, serverId, __) => {
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -398,7 +399,7 @@ export const joinGameTypes = async (
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -502,7 +503,7 @@ export const leaveGameTypes = async (
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -565,7 +566,7 @@ export const leaveAllGameTypes = async (message, args, serverId, user) => {
     if (pugChannel !== message.channel.id)
       return message.channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -602,7 +603,7 @@ export const addCaptain = async (
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -649,7 +650,7 @@ export const pickPlayer = async (
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -725,7 +726,7 @@ export const pickPlayer = async (
           {
             $set: {
               username,
-              last_pug: forWhichPug,
+              last_pug: { ...forWhichPug, timestamp: new Date() },
               stats: { ...stats, [forWhichPug.name]: updatedStats },
             },
           },
@@ -751,7 +752,7 @@ export const pugPicking = async ({ channel }, _, serverId, __) => {
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -778,7 +779,7 @@ export const promoteAvailablePugs = async ({ channel }, args, serverId, _) => {
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -812,7 +813,7 @@ export const checkLastPugs = async (
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -837,7 +838,7 @@ export const checkLastPugs = async (
     if (!results || results.length === 0)
       return channel.send(
         `No ${action} pug found ${
-          pugArg ? `for **${pugArg.toUpperCase()}**` : ``
+          pugArg ? `for **${pugArg.toUpperCase()}**` : `not present`
         }`
       );
 
@@ -866,7 +867,7 @@ export const resetPug = async ({ channel }, args, serverId, { roles }) => {
   if (pugChannel !== channel.id)
     return channel.send(
       `Active channel for pugs is ${
-        pugChannel ? `<#${pugChannel}>` : ``
+        pugChannel ? `<#${pugChannel}>` : `not present`
       } <#${pugChannel}>`
     );
 
@@ -897,7 +898,7 @@ export const decidePromoteOrPick = async (
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -923,6 +924,43 @@ export const decidePromoteOrPick = async (
         return pickPlayer({ channel }, args, serverId, { id, username });
       }
     }
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const checkStats = async (
+  { channel },
+  args,
+  serverId,
+  { id, username, mentionedUser }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : `not present`
+        } <#${pugChannel}>`
+      );
+
+    const user = await Users.findOne({
+      server_id: serverId,
+      id: mentionedUser ? mentionedUser.id : id,
+    });
+
+    if (!user) {
+      return channel.send(
+        `There are not stats logged for **${
+          mentionedUser ? mentionedUser.username : username
+        }**`
+      );
+    }
+
+    channel.send(formatUserStats(user));
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);

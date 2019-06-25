@@ -121,6 +121,11 @@ var commands = [{
   aliases: ['reset'],
   solo: 0
 }, {
+  key: 'checkStats',
+  description: '',
+  aliases: ['stats'],
+  solo: 2
+}, {
   key: 'adminAddPlayer',
   description: '',
   aliases: ['adminadd'],
