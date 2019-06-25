@@ -269,7 +269,7 @@ var formatPickPlayerStatus = function formatPickPlayerStatus(_ref5) {
     return acc;
   }, {});
   var players = pug.players.reduce(function (acc, curr, index) {
-    if (curr.team === null) acc += "**".concat(index + 1, "**) *").concat(curr.username, "*  ");
+    if (curr.team === null) acc += "**".concat(index + 1, "**) *").concat(curr.username, "* (").concat(curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2), ") ");
     return acc;
   }, "Players: ");
 
@@ -305,7 +305,7 @@ var formatPugsInPicking = function formatPugsInPicking(pugsInPicking) {
       return acc;
     }, {});
     var players = pug.players.reduce(function (acc, curr, index) {
-      if (curr.team === null) acc += "**".concat(index + 1, "**) *").concat(curr.username, "*  ");
+      if (curr.team === null) acc += "**".concat(index + 1, "**) *").concat(curr.username, "* (").concat(curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2), ") ");
       return acc;
     }, "Players: ");
 
@@ -430,7 +430,7 @@ var formatUserStats = function formatUserStats(_ref8) {
         pugName = _ref10[0],
         pugStats = _ref10[1];
 
-    acc += "**".concat(pugName, "** [**").concat(pugStats.totalPugs, "** pug").concat(pugStats.totalPugs !== 1 ? 's' : '', " \u2022 **").concat(pugStats.totalCaptain, "**x captain \u2022 ").concat(pugStats.totalRating === 0 ? "no" : "".concat(pugStats.totalRating), " rating] ").concat(i > 0 ? ':small_blue_diamond: ' : '');
+    acc += "**".concat(pugName, "** [**").concat(pugStats.totalPugs, "** pug").concat(pugStats.totalPugs !== 1 ? 's' : '', " \u2022 **").concat(pugStats.totalCaptain, "**x captain \u2022 ").concat(pugStats.totalRating === 0 ? "no" : "".concat(pugStats.totalRating.toFixed(2)), " rating] ").concat(i > 0 ? ':small_blue_diamond: ' : '');
     return acc;
   }, "");
   return "".concat(title, "\n\n").concat(totals, "\n\n").concat(lastMetaData, "\n").concat(activeTeams, "\n").concat(collectiveStatsTitle, "\n").concat(collectiveStatsBody);

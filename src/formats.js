@@ -341,7 +341,9 @@ export const formatBroadcastCaptainsReady = ({ players, captains }) => {
   const { pugPlayers } = players.reduce(
     (acc, curr, index) => {
       if (curr.captain === null)
-        acc.pugPlayers += `**${index + 1}**) *${curr.username}*  `;
+        acc.pugPlayers += `**${index + 1}**) *${curr.username}* (${
+          curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2)
+        }) `;
       return acc;
     },
     { pugPlayers: `Players: ` }
@@ -441,7 +443,7 @@ export const formatUserStats = ({ username, stats, last_pug }) => {
       acc += `**${pugName}** [**${pugStats.totalPugs}** pug${
         pugStats.totalPugs !== 1 ? 's' : ''
       } • **${pugStats.totalCaptain}**x captain • ${
-        pugStats.totalRating === 0 ? `no` : `${pugStats.totalRating}`
+        pugStats.totalRating === 0 ? `no` : `${pugStats.totalRating.toFixed(2)}`
       } rating] ${i > 0 ? ':small_blue_diamond: ' : ''}`;
       return acc;
     },
