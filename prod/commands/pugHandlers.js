@@ -267,9 +267,9 @@ function () {
     }
   }, {
     key: "resetPug",
-    value: function resetPug() {
+    value: function resetPug(serverId) {
       this.stopPug();
-      this.fillPug();
+      this.fillPug(serverId);
     }
   }, {
     key: "stopPug",
@@ -1558,7 +1558,7 @@ function () {
               break;
             }
 
-            return _context13.abrupt("return", channel.send("No Pug found: ".concat(args[0])));
+            return _context13.abrupt("return", channel.send("No pug found: **".concat(args[0].toUpperCase(), "**")));
 
           case 12:
             if (forWhichPug.picking) {
@@ -1566,10 +1566,10 @@ function () {
               break;
             }
 
-            return _context13.abrupt("return", channel.send("".concat(forWhichPug.name, " is not in picking mode yet")));
+            return _context13.abrupt("return", channel.send("**".concat(forWhichPug.name.toUpperCase(), "** is not in picking mode yet")));
 
           case 14:
-            forWhichPug.resetPug();
+            forWhichPug.resetPug(serverId);
             channel.send((0, _formats.formatBroadcastPug)(forWhichPug));
 
           case 16:

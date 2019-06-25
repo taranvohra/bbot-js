@@ -213,9 +213,9 @@ class Pug {
     }
   }
 
-  resetPug() {
+  resetPug(serverId) {
     this.stopPug();
-    this.fillPug();
+    this.fillPug(serverId);
   }
 
   stopPug() {
@@ -873,11 +873,14 @@ export const resetPug = async ({ channel }, args, serverId, { roles }) => {
   const pugName = args[0].toLowerCase();
   const forWhichPug = list.find(p => p.name === pugName);
 
-  if (!forWhichPug) return channel.send(`No Pug found: ${args[0]}`);
+  if (!forWhichPug)
+    return channel.send(`No pug found: **${args[0].toUpperCase()}**`);
   if (!forWhichPug.picking)
-    return channel.send(`${forWhichPug.name} is not in picking mode yet`);
+    return channel.send(
+      `**${forWhichPug.name.toUpperCase()}** is not in picking mode yet`
+    );
 
-  forWhichPug.resetPug();
+  forWhichPug.resetPug(serverId);
   channel.send(formatBroadcastPug(forWhichPug));
 };
 

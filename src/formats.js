@@ -290,7 +290,7 @@ export const formatPugsInPicking = pugsInPicking => {
       count++;
     }
     const turn = `<@${next.id}> pick ${count} player${
-      count > 0 ? 's' : ''
+      count > 1 ? 's' : ''
     } for **${teams[`team_${next.team}`]}**`;
 
     const pugTeams = Array(pug.noOfTeams)
@@ -347,8 +347,11 @@ export const formatBroadcastCaptainsReady = ({ players, captains }) => {
 export const formatPromoteAvailablePugs = (pugs, guildName) => {
   const title = `@here in **${guildName}**`;
   const body = pugs.reduce((acc, curr) => {
-    acc += `**${curr.noOfPlayers -
-      curr.players.length}** more needed for **${curr.name.toUpperCase()}**\n`;
+    if (!curr.picking) {
+      acc += `**${curr.noOfPlayers -
+        curr.players
+          .length}** more needed for **${curr.name.toUpperCase()}**\n`;
+    }
     return acc;
   }, ``);
   return `${title}\n${body}`;

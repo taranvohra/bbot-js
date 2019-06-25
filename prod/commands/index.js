@@ -116,6 +116,11 @@ var commands = [{
   aliases: ['last', 'lastt', 'lasttt'],
   solo: 2
 }, {
+  key: 'resetPug',
+  description: '',
+  aliases: ['reset'],
+  solo: 0
+}, {
   key: 'adminAddPlayer',
   description: '',
   aliases: ['adminadd'],
