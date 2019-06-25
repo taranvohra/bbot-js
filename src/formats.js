@@ -105,7 +105,7 @@ export const formatJoinStatus = statuses => {
     (acc, { joined, user, name, activeCount, maxPlayers }) => {
       switch (joined) {
         case -1:
-          acc.nf += `No pug found : **${name.toUpperCase()}**\n`;
+          acc.nf += `No pug found: **${name.toUpperCase()}**\n`;
           break;
         case 0:
           acc.missed += `Sorry, **${name.toUpperCase()}** is already filled\n`;
@@ -155,7 +155,7 @@ export const formatLeaveStatus = (statuses, isOffline) => {
           acc.nj = `Cannot leave pug(s) you haven't joined :head_bandage:`;
           break;
         case -1:
-          acc.nf += `No pug found : **${name.toUpperCase()}**\n`;
+          acc.nf += `No pug found: **${name.toUpperCase()}**\n`;
           break;
         default:
           null;
@@ -196,7 +196,7 @@ export const formatBroadcastPug = toBroadcast => {
   const footer = `Type **${prefix}captain** to become a captain for this pug. Random captains will be picked in ${captainTimeout /
     1000} seconds`;
 
-  return `${title}\n${body}${footer}\n`;
+  return `${title}\n${body}\n${footer}\n`;
 };
 
 export const formatListAllCurrentGameTypes = (list, guildName) => {

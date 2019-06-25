@@ -71,21 +71,25 @@ function () {
             }).save()]);
 
           case 11:
+            _store["default"].dispatch((0, _actions.INIT)({
+              serverId: server_id
+            }));
+
             message.channel.send('Server registered with bBot!');
-            _context.next = 17;
+            _context.next = 18;
             break;
 
-          case 14:
-            _context.prev = 14;
+          case 15:
+            _context.prev = 15;
             _context.t0 = _context["catch"](1);
             message.channel.send('Something went wrong. The developer of this bot has been notified ');
 
-          case 17:
+          case 18:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[1, 14]]);
+    }, _callee, null, [[1, 15]]);
   }));
 
   return function registerServer(_x, _x2, _x3, _x4) {

@@ -107,13 +107,14 @@ class Pug {
           const firstCaptain = poolForCaptains[pair[0]];
           const secondCaptain = poolForCaptains[pair[1]];
 
-          if (firstCaptain.rating >= secondCaptain.rating) {
-            this.fillCaptainSpot(firstCaptain, 0);
-            this.fillCaptainSpot(secondCaptain, 1);
-          } else {
-            this.fillCaptainSpot(firstCaptain, 1);
-            this.fillCaptainSpot(secondCaptain, 0);
-          }
+          this.fillCaptainSpot(
+            firstCaptain,
+            firstCaptain.rating >= secondCaptain.rating ? 0 : 1
+          );
+          this.fillCaptainSpot(
+            secondCaptain,
+            firstCaptain.rating >= secondCaptain.rating ? 1 : 0
+          );
         } else {
           // 1 capt already there
           const firstCaptain = this.players.find(u => u.captain !== null);
@@ -210,6 +211,11 @@ class Pug {
         finished: false,
       };
     }
+  }
+
+  resetPug() {
+    this.stopPug();
+    this.fillPug();
   }
 
   stopPug() {
@@ -325,7 +331,11 @@ export const listGameTypes = async ({ channel }, _, serverId, __) => {
     const { pugChannel, gameTypes, list } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : `not present`
+        }`
+      );
 
     const tempList = gameTypes.map(g => {
       return {
@@ -362,7 +372,11 @@ export const listAllCurrentGameTypes = async ({ channel }, _, serverId, __) => {
     const { pugChannel, list } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
 
     channel.send(formatListAllCurrentGameTypes(list, channel.guild.name));
   } catch (error) {
@@ -382,7 +396,11 @@ export const joinGameTypes = async (
     const { pugChannel, list, gameTypes } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
 
     // TODO args length 0 (default join with .j)
     if (isInvisible)
@@ -482,7 +500,11 @@ export const leaveGameTypes = async (
     const { pugChannel, list, gameTypes } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
 
     if (!id) return channel.send('No user was mentioned');
     if (args.length === 0)
@@ -542,7 +564,9 @@ export const leaveAllGameTypes = async (message, args, serverId, user) => {
 
     if (pugChannel !== message.channel.id)
       return message.channel.send(
-        `Active channel for pugs is <#${pugChannel}>`
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
       );
 
     const hasGoneOffline = args[0] === offline;
@@ -576,7 +600,11 @@ export const addCaptain = async (
     const { pugChannel, list } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
 
     const forWhichPug = list.find(pug => {
       const isCandidate = pug.picking && !pug.areCaptainsDecided();
@@ -619,7 +647,11 @@ export const pickPlayer = async (
     const { pugChannel, list } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
 
     const playerIndex = parseInt(index);
     if (!playerIndex) return;
@@ -717,7 +749,11 @@ export const pugPicking = async ({ channel }, _, serverId, __) => {
     const { pugChannel, list } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
 
     const pugsInPicking = list.filter(
       pug => pug.picking && pug.areCaptainsDecided()
@@ -740,7 +776,11 @@ export const promoteAvailablePugs = async ({ channel }, args, serverId, _) => {
     const { pugChannel, list } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
 
     list.length > 0
       ? channel.send(formatPromoteAvailablePugs(list, channel.guild.name))
@@ -762,7 +802,11 @@ export const checkLastPugs = async (
     const { pugChannel, list } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
 
     const howMany = action
       .split('')
@@ -798,7 +842,11 @@ export const resetPug = ({ channel }, args, serverId, { roles }) => {
   const { pugChannel, list } = state.pugs[serverId];
 
   if (pugChannel !== channel.id)
-    return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+    return channel.send(
+      `Active channel for pugs is ${
+        pugChannel ? `<#${pugChannel}>` : ``
+      } <#${pugChannel}>`
+    );
 
   const pugName = args[0].toLowerCase();
   const forWhichPug = list.find(p => p.name === pugName);
@@ -807,7 +855,8 @@ export const resetPug = ({ channel }, args, serverId, { roles }) => {
   if (!forWhichPug.picking)
     return channel.send(`${forWhichPug.name} is not in picking mode yet`);
 
-  // reset
+  forWhichPug.resetPug();
+  channel.send(formatBroadcastPug(forWhichPug));
 };
 
 /**
@@ -826,7 +875,11 @@ export const adminAddPlayer = async (
     const { pugChannel } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
 
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     if (!mentionedUser) return channel.send('No mentioned user');
@@ -852,7 +905,11 @@ export const adminRemovePlayer = async (
     const { pugChannel } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
 
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     if (!mentionedUser) return channel.send('No mentioned user');
@@ -878,7 +935,11 @@ export const adminPickPlayer = async (
     const { pugChannel } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
-      return channel.send(`Active channel for pugs is <#${pugChannel}>`);
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
 
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     if (!mentionedUser) return channel.send('No mentioned user');

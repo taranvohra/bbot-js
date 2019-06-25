@@ -150,15 +150,9 @@ function () {
             var firstCaptain = poolForCaptains[pair[0]];
             var secondCaptain = poolForCaptains[pair[1]];
 
-            if (firstCaptain.rating >= secondCaptain.rating) {
-              _this.fillCaptainSpot(firstCaptain, 0);
+            _this.fillCaptainSpot(firstCaptain, firstCaptain.rating >= secondCaptain.rating ? 0 : 1);
 
-              _this.fillCaptainSpot(secondCaptain, 1);
-            } else {
-              _this.fillCaptainSpot(firstCaptain, 1);
-
-              _this.fillCaptainSpot(secondCaptain, 0);
-            }
+            _this.fillCaptainSpot(secondCaptain, firstCaptain.rating >= secondCaptain.rating ? 1 : 0);
           } else {
             // 1 capt already there
             var _firstCaptain = _this.players.find(function (u) {

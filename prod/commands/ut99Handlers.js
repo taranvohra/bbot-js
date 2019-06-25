@@ -55,7 +55,7 @@ function () {
   var _ref2 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee(_ref, _, serverId, __) {
-    var channel, state, _state$queryServers$s, queryChannel, list, sortedList;
+    var channel, state, _state$queryServers$s, queryChannel, list, x, _x$achis, j, jj, sortedList;
 
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
@@ -65,33 +65,35 @@ function () {
             _context.prev = 1;
             state = _store["default"].getState();
             _state$queryServers$s = state.queryServers[serverId], queryChannel = _state$queryServers$s.queryChannel, list = _state$queryServers$s.list;
+            x = {};
+            _x$achis = x['achis'], j = _x$achis.j, jj = _x$achis.jj;
 
             if (!(queryChannel !== channel.id)) {
-              _context.next = 6;
+              _context.next = 8;
               break;
             }
 
-            return _context.abrupt("return", channel.send("Active channel for querying is <#".concat(queryChannel, ">")));
+            return _context.abrupt("return", channel.send("Active channel for querying is ".concat(queryChannel ? "<#".concat(queryChannel, ">") : "is not present")));
 
-          case 6:
+          case 8:
             sortedList = list.sort(function (a, b) {
               return a.timestamp - b.timestamp;
             });
             channel.send((0, _formats.formatQueryServers)(sortedList));
-            _context.next = 13;
+            _context.next = 15;
             break;
 
-          case 10:
-            _context.prev = 10;
+          case 12:
+            _context.prev = 12;
             _context.t0 = _context["catch"](1);
             console.log(_context.t0);
 
-          case 13:
+          case 15:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[1, 10]]);
+    }, _callee, null, [[1, 12]]);
   }));
 
   return function servers(_x, _x2, _x3, _x4) {
@@ -303,7 +305,7 @@ function () {
               break;
             }
 
-            return _context4.abrupt("return", channel.send("Active channel for querying is <#".concat(queryChannel, ">")));
+            return _context4.abrupt("return", channel.send("Active channel for querying is ".concat(queryChannel ? "<#".concat(queryChannel, ">") : "is not present")));
 
           case 7:
             sortedList = list.sort(function (a, b) {

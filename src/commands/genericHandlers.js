@@ -1,6 +1,6 @@
 import { DiscordServers, UT99QueryServers, Blocks, GameTypes } from '../models';
 import store from '../store';
-import { setQueryChannel, setPugChannel } from '../store/actions';
+import { INIT, setQueryChannel, setPugChannel } from '../store/actions';
 import { privilegedRoles } from '../constants';
 import { hasPrivilegedRole } from '../utils';
 
@@ -22,7 +22,7 @@ export const registerServer = async (message, _, serverId, { roles }) => {
       new Blocks({ server_id: serverId }).save(),
       new GameTypes({ server_id: serverId }).save(),
     ]);
-
+    store.dispatch(INIT({ serverId: server_id }));
     message.channel.send('Server registered with bBot!');
   } catch (err) {
     message.channel.send(

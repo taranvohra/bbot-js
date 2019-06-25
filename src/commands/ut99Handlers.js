@@ -13,7 +13,11 @@ export const servers = async ({ channel }, _, serverId, __) => {
     const { queryChannel, list } = state.queryServers[serverId];
 
     if (queryChannel !== channel.id)
-      return channel.send(`Active channel for querying is <#${queryChannel}>`);
+      return channel.send(
+        `Active channel for querying is ${
+          queryChannel ? `<#${queryChannel}>` : `is not present`
+        }`
+      );
 
     const sortedList = list.sort((a, b) => a.timestamp - b.timestamp);
     channel.send(formatQueryServers(sortedList));
@@ -108,7 +112,11 @@ export const queryUT99Server = async (
     const { queryChannel, list = [] } = state.queryServers[serverId];
 
     if (queryChannel !== channel.id)
-      return channel.send(`Active channel for querying is <#${queryChannel}>`);
+      return channel.send(
+        `Active channel for querying is ${
+          queryChannel ? `<#${queryChannel}>` : `is not present`
+        }`
+      );
 
     const sortedList = list.sort((a, b) => a.timestamp - b.timestamp);
     const { host, port = 7777 } =
