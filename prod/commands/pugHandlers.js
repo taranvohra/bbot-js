@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.addOrRemoveTag = exports.checkStats = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
+exports.blockPlayer = exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.addOrRemoveTag = exports.checkStats = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
 
 var _store = _interopRequireDefault(require("../store"));
 
@@ -1814,7 +1814,6 @@ function () {
 
           case 11:
             tag = (0, _utils.sanitizeName)(args.join(' '));
-            console.log(tag, args.join(' '));
             whichPugs = list.filter(function (pug) {
               return pug.findPlayer({
                 id: id,
@@ -1823,13 +1822,13 @@ function () {
             });
 
             if (!(whichPugs.length === 0)) {
-              _context16.next = 16;
+              _context16.next = 15;
               break;
             }
 
             return _context16.abrupt("return");
 
-          case 16:
+          case 15:
             whichPugs.forEach(function (pug) {
               isAddingTag ? pug.addTag({
                 id: id,
@@ -1840,21 +1839,21 @@ function () {
               });
             });
             isAddingTag ? channel.send("Your new tag is: **".concat(tag, "**")) : channel.send("Your tag has been removed");
-            _context16.next = 24;
+            _context16.next = 23;
             break;
 
-          case 20:
-            _context16.prev = 20;
+          case 19:
+            _context16.prev = 19;
             _context16.t0 = _context16["catch"](2);
             channel.send('Something went wrong');
             console.log(_context16.t0);
 
-          case 24:
+          case 23:
           case "end":
             return _context16.stop();
         }
       }
-    }, _callee16, null, [[2, 20]]);
+    }, _callee16, null, [[2, 19]]);
   }));
 
   return function addOrRemoveTag(_x63, _x64, _x65, _x66) {
@@ -2081,4 +2080,122 @@ function () {
 }();
 
 exports.adminPickPlayer = adminPickPlayer;
+
+var blockPlayer =
+/*#__PURE__*/
+function () {
+  var _ref63 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee20(_ref61, args, serverId, _ref62) {
+    var channel, id, username, roles, mentionedUser, state, pugChannel, list, _args$slice, _args$slice2, timeframe, reason, _timeframe$match, _timeframe$match2, blockLengthString, _timeframe$match3, _timeframe$match4, blockPeriodString, blockCalculator, blockLength, expirationDate;
+
+    return regeneratorRuntime.wrap(function _callee20$(_context20) {
+      while (1) {
+        switch (_context20.prev = _context20.next) {
+          case 0:
+            channel = _ref61.channel;
+            id = _ref62.id, username = _ref62.username, roles = _ref62.roles, mentionedUser = _ref62.mentionedUser;
+            _context20.prev = 2;
+            state = _store["default"].getState();
+            pugChannel = state.pugs[serverId].pugChannel;
+            list = state.blocks[serverId].list;
+
+            if (!(pugChannel !== channel.id)) {
+              _context20.next = 8;
+              break;
+            }
+
+            return _context20.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+
+          case 8:
+            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
+              _context20.next = 10;
+              break;
+            }
+
+            return _context20.abrupt("return");
+
+          case 10:
+            if (mentionedUser) {
+              _context20.next = 12;
+              break;
+            }
+
+            return _context20.abrupt("return", channel.send('No mentioned user'));
+
+          case 12:
+            if (!list.some(function (u) {
+              return u.id === mentionedUser.id;
+            })) {
+              _context20.next = 14;
+              break;
+            }
+
+            return _context20.abrupt("return", channel.send("".concat(mentionedUser.username, " is already blocked from pugs")));
+
+          case 14:
+            _args$slice = args.slice(1), _args$slice2 = _toArray(_args$slice), timeframe = _args$slice2[0], reason = _args$slice2.slice(1);
+            _timeframe$match = timeframe.match(/[0-9]+/g), _timeframe$match2 = _slicedToArray(_timeframe$match, 1), blockLengthString = _timeframe$match2[0];
+            _timeframe$match3 = timeframe.match(/[m|h|d]/g), _timeframe$match4 = _slicedToArray(_timeframe$match3, 1), blockPeriodString = _timeframe$match4[0];
+
+            if (!(!blockLengthString || !blockPeriodString)) {
+              _context20.next = 19;
+              break;
+            }
+
+            return _context20.abrupt("return");
+
+          case 19:
+            blockCalculator = {
+              m: function m(minutes) {
+                var dt = new Date();
+                dt.setMinutes(dt.getMinutes() + minutes);
+                return dt;
+              },
+              h: function h(hours) {
+                var dt = new Date();
+                dt.setHours(dt.getHours() + hours);
+                return dt;
+              },
+              d: function d(days) {
+                var dt = new Date();
+                dt.setHours(dt.getHours() + days * 24);
+                return dt;
+              }
+            };
+            blockLength = parseInt(blockLengthString);
+
+            if (!(blockLength < 0)) {
+              _context20.next = 23;
+              break;
+            }
+
+            return _context20.abrupt("return");
+
+          case 23:
+            expirationDate = blockCalculator[blockPeriodString](blockLength);
+            console.log(expirationDate, reason);
+            _context20.next = 31;
+            break;
+
+          case 27:
+            _context20.prev = 27;
+            _context20.t0 = _context20["catch"](2);
+            channel.send('Something went wrong');
+            console.log(_context20.t0);
+
+          case 31:
+          case "end":
+            return _context20.stop();
+        }
+      }
+    }, _callee20, null, [[2, 27]]);
+  }));
+
+  return function blockPlayer(_x79, _x80, _x81, _x82) {
+    return _ref63.apply(this, arguments);
+  };
+}();
+
+exports.blockPlayer = blockPlayer;
 //# sourceMappingURL=pugHandlers.js.map

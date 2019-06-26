@@ -157,6 +157,18 @@ const commands = [
     aliases: ['adminpick'],
     solo: 0,
   },
+  {
+    key: 'blockPlayer',
+    description: '',
+    aliases: ['block'],
+    solo: 0,
+  },
+  {
+    key: 'unblockPlayer',
+    description: '',
+    aliases: ['unblock'],
+    solo: 0,
+  },
 ];
 
 export { commands, handlers, emitters };

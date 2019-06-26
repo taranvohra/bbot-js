@@ -5,9 +5,10 @@ const schema = mongoose.Schema({
   blocked_users: [
     {
       id: String,
-      name: String,
+      username: String,
       blocked_on: Date,
       expires_at: Date,
+      reason: String,
     },
   ],
 });

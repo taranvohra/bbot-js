@@ -1,5 +1,5 @@
 import store from '../store';
-import { GameTypes, Pugs, Users } from '../models';
+import { GameTypes, Pugs, Users, Blocks } from '../models';
 import {
   computePickingOrder,
   hasPrivilegedRole,
@@ -28,7 +28,13 @@ import {
   formatLastPugStatus,
   formatUserStats,
 } from '../formats';
-import { assignGameTypes, addNewPug, removePug } from '../store/actions';
+import {
+  assignGameTypes,
+  addNewPug,
+  removePug,
+  addBlock,
+  removeBlock,
+} from '../store/actions';
 import events from 'events';
 
 export const pugEventEmitter = new events.EventEmitter();
@@ -1120,6 +1126,78 @@ export const adminPickPlayer = async (
       id: mentionedUser.id,
       username: mentionedUser.username,
     });
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const blockPlayer = async (
+  { channel },
+  args,
+  serverId,
+  { id, username, roles, mentionedUser }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel } = state.pugs[serverId];
+    const { list } = state.blocks[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
+
+    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
+    if (!mentionedUser) return channel.send('No mentioned user');
+
+    if (list.some(u => u.id === mentionedUser.id))
+      return channel.send(
+        `${mentionedUser.username} is already blocked from pugs`
+      );
+
+    const [timeframe, ...reason] = args.slice(1);
+    const [blockLengthString] = timeframe.match(/[0-9]+/g);
+    const [blockPeriodString] = timeframe.match(/[m|h|d]/g);
+    if (!blockLengthString || !blockPeriodString) return;
+
+    const blockCalculator = {
+      m: minutes => {
+        const dt = new Date();
+        dt.setMinutes(dt.getMinutes() + minutes);
+        return dt;
+      },
+      h: hours => {
+        const dt = new Date();
+        dt.setHours(dt.getHours() + hours);
+        return dt;
+      },
+      d: days => {
+        const dt = new Date();
+        dt.setHours(dt.getHours() + days * 24);
+        return dt;
+      },
+    };
+    const blockLength = parseInt(blockLengthString);
+    if (blockLength < 0) return;
+
+    const expirationDate = blockCalculator[blockPeriodString](blockLength);
+    const newBlockedUser = {
+      id: mentionedUser.id,
+      username: mentionedUser.username,
+      blocked_on: new Date(),
+      expires_at: expirationDate,
+      reason: reason.join(' ') || '',
+    };
+
+    await Blocks.findOneAndUpdate(
+      { server_id: serverId },
+      { $set: { blocked_users: newBlockedUser } },
+      { upsert: true }
+    );
+    store.dispatch(addBlock({ serverId, blockedUser: newBlockedUser }));
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);

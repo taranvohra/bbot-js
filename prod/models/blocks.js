@@ -15,7 +15,8 @@ var schema = _mongoose["default"].Schema({
     id: String,
     name: String,
     blocked_on: Date,
-    expires_at: Date
+    expires_at: Date,
+    reason: String
   }]
 });
 

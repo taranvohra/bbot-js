@@ -145,6 +145,16 @@ var commands = [{
   description: '',
   aliases: ['adminpick'],
   solo: 0
+}, {
+  key: 'blockPlayer',
+  description: '',
+  aliases: ['block'],
+  solo: 0
+}, {
+  key: 'unblockPlayer',
+  description: '',
+  aliases: ['unblock'],
+  solo: 0
 }];
 exports.commands = commands;
 //# sourceMappingURL=index.js.map

@@ -42,3 +42,13 @@ export const removePug = data => ({
   type: 'REMOVE_PUG',
   payload: data,
 });
+
+export const addBlock = data => ({
+  type: 'ADD_BLOCK',
+  payload: data,
+});
+
+export const removeBlock = data => ({
+  type: 'REMOVE_BLOCK',
+  payload: data,
+});

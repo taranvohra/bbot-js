@@ -9,6 +9,17 @@ const blocks = (state = {}, { type, payload }) => {
         },
       };
     }
+    case 'ADD_BLOCK': {
+      const { list = [] } = state[payload.serverId];
+      return {
+        ...state,
+        [payload.serverId]: {
+          list: [...list, payload.blockedUser],
+        },
+      };
+    }
+    case 'REMOVE_BLOCK': {
+    }
     default:
       return state;
   }
