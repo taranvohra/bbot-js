@@ -260,9 +260,9 @@ export const formatPickPlayerStatus = ({ pickedPlayers, finished, pug }) => {
 
   const players = pug.players.reduce((acc, curr, index) => {
     if (curr.team === null)
-      acc += `**${index + 1}**) *${curr.username}* (${
+      acc += `**${index + 1})** *${curr.username}* (${
         curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2)
-      }) `;
+      }) ${curr.tag ? `[${curr.tag}] ` : ''}`;
     return acc;
   }, `Players: `);
 
@@ -305,9 +305,9 @@ export const formatPugsInPicking = pugsInPicking => {
 
     const players = pug.players.reduce((acc, curr, index) => {
       if (curr.team === null)
-        acc += `**${index + 1}**) *${curr.username}* (${
+        acc += `**${index + 1})** *${curr.username}* (${
           curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2)
-        }) `;
+        }) ${curr.tag ? `[${curr.tag}] ` : ''}`;
       return acc;
     }, `Players: `);
 
@@ -341,9 +341,9 @@ export const formatBroadcastCaptainsReady = ({ players, captains }) => {
   const { pugPlayers } = players.reduce(
     (acc, curr, index) => {
       if (curr.captain === null)
-        acc.pugPlayers += `**${index + 1}**) *${curr.username}* (${
+        acc.pugPlayers += `**${index + 1})** *${curr.username}* (${
           curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2)
-        }) `;
+        }) ${curr.tag ? `[${curr.tag}] ` : ''}`;
       return acc;
     },
     { pugPlayers: `Players: ` }

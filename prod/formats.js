@@ -269,7 +269,7 @@ var formatPickPlayerStatus = function formatPickPlayerStatus(_ref5) {
     return acc;
   }, {});
   var players = pug.players.reduce(function (acc, curr, index) {
-    if (curr.team === null) acc += "**".concat(index + 1, "**) *").concat(curr.username, "* (").concat(curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2), ") ");
+    if (curr.team === null) acc += "**".concat(index + 1, ")** *").concat(curr.username, "* (").concat(curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2), ") ").concat(curr.tag ? "[".concat(curr.tag, "] ") : '');
     return acc;
   }, "Players: ");
 
@@ -305,7 +305,7 @@ var formatPugsInPicking = function formatPugsInPicking(pugsInPicking) {
       return acc;
     }, {});
     var players = pug.players.reduce(function (acc, curr, index) {
-      if (curr.team === null) acc += "**".concat(index + 1, "**) *").concat(curr.username, "* (").concat(curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2), ") ");
+      if (curr.team === null) acc += "**".concat(index + 1, ")** *").concat(curr.username, "* (").concat(curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2), ") ").concat(curr.tag ? "[".concat(curr.tag, "] ") : '');
       return acc;
     }, "Players: ");
 
@@ -338,7 +338,7 @@ var formatBroadcastCaptainsReady = function formatBroadcastCaptainsReady(_ref6) 
   var turn = "<@".concat(captains[0].id, "> pick 1 player for **").concat(_constants.teams["team_0"], "**");
 
   var _players$reduce = players.reduce(function (acc, curr, index) {
-    if (curr.captain === null) acc.pugPlayers += "**".concat(index + 1, "**) *").concat(curr.username, "*  ");
+    if (curr.captain === null) acc.pugPlayers += "**".concat(index + 1, ")** *").concat(curr.username, "* (").concat(curr.rating === 0 ? 'no rating' : curr.rating.toFixed(2), ") ").concat(curr.tag ? "[".concat(curr.tag, "] ") : '');
     return acc;
   }, {
     pugPlayers: "Players: "

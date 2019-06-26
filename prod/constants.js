@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.pugEvents = exports.offline = exports.captainTimeout = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
+exports.pugEvents = exports.offline = exports.captainTimeout = exports.tagLength = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
 var prefix = '.';
 exports.prefix = prefix;
 var privilegedRoles = ['Admins', 'Moderators'];
@@ -17,6 +17,8 @@ var teams = {
   spec: 'Spectators'
 };
 exports.teams = teams;
+var tagLength = 30;
+exports.tagLength = tagLength;
 var captainTimeout = 15000;
 exports.captainTimeout = captainTimeout;
 var offline = 'unplugged';

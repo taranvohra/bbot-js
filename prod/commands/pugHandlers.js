@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.checkStats = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
+exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.addOrRemoveTag = exports.checkStats = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
 
 var _store = _interopRequireDefault(require("../store"));
 
@@ -264,6 +264,24 @@ function () {
           finished: false
         };
       }
+    }
+  }, {
+    key: "addTag",
+    value: function addTag(user, tag) {
+      this.players.forEach(function (u) {
+        if (u.id === user.id) {
+          u.tag = tag;
+        }
+      });
+    }
+  }, {
+    key: "removeTag",
+    value: function removeTag(user) {
+      this.players.forEach(function (u) {
+        if (u.id === user.id) {
+          u.tag = null;
+        }
+      });
     }
   }, {
     key: "resetPug",
@@ -1730,7 +1748,7 @@ function () {
               break;
             }
 
-            return _context15.abrupt("return", channel.send("There are not stats logged for **".concat(mentionedUser ? mentionedUser.username : username, "**")));
+            return _context15.abrupt("return", channel.send("There are no stats logged for **".concat(mentionedUser ? mentionedUser.username : username, "**")));
 
           case 12:
             channel.send((0, _formats.formatUserStats)(user));
@@ -1755,86 +1773,103 @@ function () {
     return _ref48.apply(this, arguments);
   };
 }();
-/**
- * A D M I N
- * C O M M A N D S
- */
-
 
 exports.checkStats = checkStats;
 
-var adminAddPlayer =
+var addOrRemoveTag =
 /*#__PURE__*/
 function () {
   var _ref51 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee16(_ref49, args, serverId, _ref50) {
-    var channel, mentionedUser, roles, state, pugChannel;
+    var channel, id, username, state, _state$pugs$serverId13, pugChannel, list, tag, isAddingTag, whichPugs;
+
     return regeneratorRuntime.wrap(function _callee16$(_context16) {
       while (1) {
         switch (_context16.prev = _context16.next) {
           case 0:
             channel = _ref49.channel;
-            mentionedUser = _ref50.mentionedUser, roles = _ref50.roles;
+            id = _ref50.id, username = _ref50.username;
             _context16.prev = 2;
             state = _store["default"].getState();
-            pugChannel = state.pugs[serverId].pugChannel;
+            _state$pugs$serverId13 = state.pugs[serverId], pugChannel = _state$pugs$serverId13.pugChannel, list = _state$pugs$serverId13.list;
 
             if (!(pugChannel !== channel.id)) {
               _context16.next = 7;
               break;
             }
 
-            return _context16.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+            return _context16.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
 
           case 7:
-            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
-              _context16.next = 9;
+            tag = '';
+            isAddingTag = Boolean(args[0]);
+
+            if (!(isAddingTag && args.join(' ').length > _constants.tagLength)) {
+              _context16.next = 11;
+              break;
+            }
+
+            return _context16.abrupt("return", channel.send("Tags must be shorter than ".concat(_constants.tagLength, " characters")));
+
+          case 11:
+            tag = (0, _utils.sanitizeName)(args.join(' '));
+            console.log(tag, args.join(' '));
+            whichPugs = list.filter(function (pug) {
+              return pug.findPlayer({
+                id: id,
+                username: username
+              });
+            });
+
+            if (!(whichPugs.length === 0)) {
+              _context16.next = 16;
               break;
             }
 
             return _context16.abrupt("return");
 
-          case 9:
-            if (mentionedUser) {
-              _context16.next = 11;
-              break;
-            }
-
-            return _context16.abrupt("return", channel.send('No mentioned user'));
-
-          case 11:
-            joinGameTypes({
-              channel: channel
-            }, args.slice(1), serverId, {
-              id: mentionedUser.id,
-              username: mentionedUser.username
+          case 16:
+            whichPugs.forEach(function (pug) {
+              isAddingTag ? pug.addTag({
+                id: id,
+                username: username
+              }, tag) : pug.removeTag({
+                id: id,
+                username: username
+              });
             });
-            _context16.next = 18;
+            isAddingTag ? channel.send("Your new tag is: **".concat(tag, "**")) : channel.send("Your tag has been removed");
+            _context16.next = 24;
             break;
 
-          case 14:
-            _context16.prev = 14;
+          case 20:
+            _context16.prev = 20;
             _context16.t0 = _context16["catch"](2);
             channel.send('Something went wrong');
             console.log(_context16.t0);
 
-          case 18:
+          case 24:
           case "end":
             return _context16.stop();
         }
       }
-    }, _callee16, null, [[2, 14]]);
+    }, _callee16, null, [[2, 20]]);
   }));
 
-  return function adminAddPlayer(_x63, _x64, _x65, _x66) {
+  return function addOrRemoveTag(_x63, _x64, _x65, _x66) {
     return _ref51.apply(this, arguments);
   };
 }();
+/**
+ * A D M I N
+ * C O M M A N D S
+ */
 
-exports.adminAddPlayer = adminAddPlayer;
 
-var adminRemovePlayer =
+exports.addOrRemoveTag = addOrRemoveTag;
+
+var adminAddPlayer =
 /*#__PURE__*/
 function () {
   var _ref54 = _asyncToGenerator(
@@ -1875,7 +1910,7 @@ function () {
             return _context17.abrupt("return", channel.send('No mentioned user'));
 
           case 11:
-            leaveGameTypes({
+            joinGameTypes({
               channel: channel
             }, args.slice(1), serverId, {
               id: mentionedUser.id,
@@ -1898,14 +1933,14 @@ function () {
     }, _callee17, null, [[2, 14]]);
   }));
 
-  return function adminRemovePlayer(_x67, _x68, _x69, _x70) {
+  return function adminAddPlayer(_x67, _x68, _x69, _x70) {
     return _ref54.apply(this, arguments);
   };
 }();
 
-exports.adminRemovePlayer = adminRemovePlayer;
+exports.adminAddPlayer = adminAddPlayer;
 
-var adminPickPlayer =
+var adminRemovePlayer =
 /*#__PURE__*/
 function () {
   var _ref57 = _asyncToGenerator(
@@ -1946,7 +1981,7 @@ function () {
             return _context18.abrupt("return", channel.send('No mentioned user'));
 
           case 11:
-            pickPlayer({
+            leaveGameTypes({
               channel: channel
             }, args.slice(1), serverId, {
               id: mentionedUser.id,
@@ -1969,8 +2004,79 @@ function () {
     }, _callee18, null, [[2, 14]]);
   }));
 
-  return function adminPickPlayer(_x71, _x72, _x73, _x74) {
+  return function adminRemovePlayer(_x71, _x72, _x73, _x74) {
     return _ref57.apply(this, arguments);
+  };
+}();
+
+exports.adminRemovePlayer = adminRemovePlayer;
+
+var adminPickPlayer =
+/*#__PURE__*/
+function () {
+  var _ref60 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee19(_ref58, args, serverId, _ref59) {
+    var channel, mentionedUser, roles, state, pugChannel;
+    return regeneratorRuntime.wrap(function _callee19$(_context19) {
+      while (1) {
+        switch (_context19.prev = _context19.next) {
+          case 0:
+            channel = _ref58.channel;
+            mentionedUser = _ref59.mentionedUser, roles = _ref59.roles;
+            _context19.prev = 2;
+            state = _store["default"].getState();
+            pugChannel = state.pugs[serverId].pugChannel;
+
+            if (!(pugChannel !== channel.id)) {
+              _context19.next = 7;
+              break;
+            }
+
+            return _context19.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+
+          case 7:
+            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
+              _context19.next = 9;
+              break;
+            }
+
+            return _context19.abrupt("return");
+
+          case 9:
+            if (mentionedUser) {
+              _context19.next = 11;
+              break;
+            }
+
+            return _context19.abrupt("return", channel.send('No mentioned user'));
+
+          case 11:
+            pickPlayer({
+              channel: channel
+            }, args.slice(1), serverId, {
+              id: mentionedUser.id,
+              username: mentionedUser.username
+            });
+            _context19.next = 18;
+            break;
+
+          case 14:
+            _context19.prev = 14;
+            _context19.t0 = _context19["catch"](2);
+            channel.send('Something went wrong');
+            console.log(_context19.t0);
+
+          case 18:
+          case "end":
+            return _context19.stop();
+        }
+      }
+    }, _callee19, null, [[2, 14]]);
+  }));
+
+  return function adminPickPlayer(_x75, _x76, _x77, _x78) {
+    return _ref60.apply(this, arguments);
   };
 }();
 

@@ -5,12 +5,14 @@ import {
   hasPrivilegedRole,
   shuffle,
   getRandomInt,
+  sanitizeName,
 } from '../utils';
 import {
   privilegedRoles,
   captainTimeout,
   offline,
   pugEvents,
+  tagLength,
 } from '../constants';
 import {
   formatListGameTypes,
@@ -212,6 +214,22 @@ class Pug {
         finished: false,
       };
     }
+  }
+
+  addTag(user, tag) {
+    this.players.forEach(u => {
+      if (u.id === user.id) {
+        u.tag = tag;
+      }
+    });
+  }
+
+  removeTag(user) {
+    this.players.forEach(u => {
+      if (u.id === user.id) {
+        u.tag = null;
+      }
+    });
   }
 
   resetPug(serverId) {
@@ -956,13 +974,57 @@ export const checkStats = async (
 
     if (!user) {
       return channel.send(
-        `There are not stats logged for **${
+        `There are no stats logged for **${
           mentionedUser ? mentionedUser.username : username
         }**`
       );
     }
 
     channel.send(formatUserStats(user));
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const addOrRemoveTag = async (
+  { channel },
+  args,
+  serverId,
+  { id, username }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, list } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : `not present`
+        } <#${pugChannel}>`
+      );
+
+    let tag = '';
+    const isAddingTag = Boolean(args[0]);
+
+    if (isAddingTag && args.join(' ').length > tagLength)
+      return channel.send(`Tags must be shorter than ${tagLength} characters`);
+
+    tag = sanitizeName(args.join(' '));
+
+    const whichPugs = list.filter(pug => pug.findPlayer({ id, username }));
+
+    if (whichPugs.length === 0) return;
+
+    whichPugs.forEach(pug => {
+      isAddingTag
+        ? pug.addTag({ id, username }, tag)
+        : pug.removeTag({ id, username });
+    });
+
+    isAddingTag
+      ? channel.send(`Your new tag is: **${tag}**`)
+      : channel.send(`Your tag has been removed`);
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);

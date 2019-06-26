@@ -11,6 +11,7 @@ export const teams = {
   spec: 'Spectators',
 };
 
+export const tagLength = 30;
 export const captainTimeout = 15000;
 export const offline = 'unplugged';
 export const pugEvents = {

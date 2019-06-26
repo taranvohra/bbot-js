@@ -86,7 +86,7 @@ exports.createAlternatingObject = createAlternatingObject;
 
 var sanitizeName = function sanitizeName(name) {
   return name.replace(/(\*|`|:|_|~)/g, function (c) {
-    return "\\" + c;
+    return "\\".concat(c);
   });
 };
 /**

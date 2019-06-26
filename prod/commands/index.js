@@ -126,6 +126,11 @@ var commands = [{
   aliases: ['stats'],
   solo: 2
 }, {
+  key: 'addOrRemoveTag',
+  description: '',
+  aliases: ['tag'],
+  solo: 2
+}, {
   key: 'adminAddPlayer',
   description: '',
   aliases: ['adminadd'],
