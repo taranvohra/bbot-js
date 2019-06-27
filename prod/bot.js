@@ -22,6 +22,8 @@ var _constants = require("./constants");
 
 var _formats = require("./formats");
 
+var _dateFns = require("date-fns");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toArray(arr) { return _arrayWithHoles(arr) || _iterableToArray(arr) || _nonIterableRest(); }
@@ -132,6 +134,7 @@ function _onMessage() {
 
 bBot.on('ready', function () {
   console.log("Bot started running at ".concat(new Date().toUTCString()));
+  checkIfUserNeedsUnblock();
 });
 bBot.on('message', onMessage);
 bBot.on('presenceUpdate', function (_, _ref) {
@@ -310,4 +313,38 @@ _commands.emitters.pugEventEmitter.on(_constants.pugEvents.captainsReady, functi
   });
   bBot.channels.get(pugChannel).send((0, _formats.formatBroadcastCaptainsReady)(pug));
 });
+
+var checkIfUserNeedsUnblock = function checkIfUserNeedsUnblock() {
+  setInterval(function () {
+    var state = _store["default"].getState();
+
+    Object.entries(state.blocks).forEach(function (_ref11) {
+      var _ref12 = _slicedToArray(_ref11, 2),
+          serverId = _ref12[0],
+          list = _ref12[1].list;
+
+      if (list.length > 0) {
+        var guild = bBot.guilds.get(serverId.toString());
+        var pugChannel = state.pugs[serverId].pugChannel;
+        var channel = guild.channels.get(pugChannel);
+        list.forEach(function (user) {
+          var mentionedUser = {
+            id: user.id,
+            username: user.username
+          };
+
+          if ((0, _dateFns.compareAsc)(new Date(), user.expires_at) >= 0) {
+            _commands.handlers['unblockPlayer']({
+              channel: channel
+            }, null, serverId, {
+              mentionedUser: mentionedUser,
+              isBot: true,
+              roles: []
+            });
+          }
+        });
+      }
+    });
+  }, 10000);
+}; // TODO Remove from store if bot gets removed
 //# sourceMappingURL=bot.js.map

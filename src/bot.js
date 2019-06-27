@@ -14,8 +14,9 @@ import {
 import { DiscordServers, UT99QueryServers, GameTypes, Blocks } from './models';
 import { handlers, commands, emitters } from './commands';
 import { sanitizeName } from './utils';
-import { prefix, offline, pugEvents } from './constants';
+import { prefix, offline, pugEvents, privilegedRoles } from './constants';
 import { formatBroadcastCaptainsReady } from './formats';
+import { compareAsc } from 'date-fns';
 
 dotenv.config();
 
@@ -74,6 +75,7 @@ async function onMessage(message) {
 
 bBot.on('ready', () => {
   console.log(`Bot started running at ${new Date().toUTCString()}`);
+  checkIfUserNeedsUnblock();
 });
 
 bBot.on('message', onMessage);
@@ -186,3 +188,29 @@ emitters.pugEventEmitter.on(pugEvents.captainsReady, (serverId, name) => {
 
   bBot.channels.get(pugChannel).send(formatBroadcastCaptainsReady(pug));
 });
+
+const checkIfUserNeedsUnblock = () => {
+  setInterval(() => {
+    const state = store.getState();
+    Object.entries(state.blocks).forEach(([serverId, { list }]) => {
+      if (list.length > 0) {
+        const guild = bBot.guilds.get(serverId.toString());
+        const { pugChannel } = state.pugs[serverId];
+        const channel = guild.channels.get(pugChannel);
+
+        list.forEach(user => {
+          const mentionedUser = { id: user.id, username: user.username };
+          if (compareAsc(new Date(), user.expires_at) >= 0) {
+            handlers['unblockPlayer']({ channel }, null, serverId, {
+              mentionedUser,
+              isBot: true,
+              roles: [],
+            });
+          }
+        });
+      }
+    });
+  }, 300000);
+};
+
+// TODO Remove from store if bot gets removed

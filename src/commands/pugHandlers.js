@@ -1242,11 +1242,11 @@ export const unblockPlayer = async (
   { channel },
   args,
   serverId,
-  { id, username, roles, mentionedUser }
+  { id, username, roles, mentionedUser, isBot }
 ) => {
   try {
     const state = store.getState();
-    const { pugChannel, list: pugList } = state.pugs[serverId];
+    const { pugChannel } = state.pugs[serverId];
     const { list } = state.blocks[serverId];
 
     if (pugChannel !== channel.id)
@@ -1256,7 +1256,7 @@ export const unblockPlayer = async (
         } <#${pugChannel}>`
       );
 
-    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
+    if (!hasPrivilegedRole(privilegedRoles, roles) && !isBot) return;
     if (!mentionedUser) return channel.send('No mentioned user');
 
     if (!list.some(u => u.id === mentionedUser.id))

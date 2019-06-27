@@ -2280,17 +2280,16 @@ function () {
   var _ref66 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee21(_ref64, args, serverId, _ref65) {
-    var channel, id, username, roles, mentionedUser, state, _state$pugs$serverId15, pugChannel, pugList, list, newBlockedList;
-
+    var channel, id, username, roles, mentionedUser, isBot, state, pugChannel, list, newBlockedList;
     return regeneratorRuntime.wrap(function _callee21$(_context21) {
       while (1) {
         switch (_context21.prev = _context21.next) {
           case 0:
             channel = _ref64.channel;
-            id = _ref65.id, username = _ref65.username, roles = _ref65.roles, mentionedUser = _ref65.mentionedUser;
+            id = _ref65.id, username = _ref65.username, roles = _ref65.roles, mentionedUser = _ref65.mentionedUser, isBot = _ref65.isBot;
             _context21.prev = 2;
             state = _store["default"].getState();
-            _state$pugs$serverId15 = state.pugs[serverId], pugChannel = _state$pugs$serverId15.pugChannel, pugList = _state$pugs$serverId15.list;
+            pugChannel = state.pugs[serverId].pugChannel;
             list = state.blocks[serverId].list;
 
             if (!(pugChannel !== channel.id)) {
@@ -2301,7 +2300,7 @@ function () {
             return _context21.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
           case 8:
-            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
+            if (!(!(0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles) && !isBot)) {
               _context21.next = 10;
               break;
             }
