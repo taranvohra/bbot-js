@@ -607,7 +607,7 @@ export const leaveAllGameTypes = async (message, args, serverId, user) => {
       return acc;
     }, []);
     if (listToLeave.length === 0) {
-      return channel.send(
+      return message.channel.send(
         `Cannot leave pug(s) if you haven't joined any :head_bandage:`
       );
     }
