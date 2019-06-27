@@ -419,6 +419,7 @@ export const joinGameTypes = async (
   try {
     const state = store.getState();
     const { pugChannel, list, gameTypes } = state.pugs[serverId];
+    const { list: blockedList } = state.blocks[serverId];
 
     if (pugChannel !== channel.id)
       return channel.send(
@@ -432,6 +433,9 @@ export const joinGameTypes = async (
       return channel.send(`Cannot use this command while invisible`);
 
     if (!id) return channel.send('No user was mentioned');
+
+    if (blockedList.some(u => u.id === id))
+      return channel.send(`${username} is not allowed to join pugs`);
 
     const isPartOfFilledPug = list.find(
       p => p.picking && p.players.some(u => u.id === id)
@@ -1140,7 +1144,7 @@ export const blockPlayer = async (
 ) => {
   try {
     const state = store.getState();
-    const { pugChannel } = state.pugs[serverId];
+    const { pugChannel, list: pugList } = state.pugs[serverId];
     const { list } = state.blocks[serverId];
 
     if (pugChannel !== channel.id)
@@ -1198,6 +1202,78 @@ export const blockPlayer = async (
       { upsert: true }
     );
     store.dispatch(addBlock({ serverId, blockedUser: newBlockedUser }));
+
+    // remove from pugs if joined
+    let removedMsg = ``;
+    let removedPugs = ``;
+    for (let i = 0; i < pugList.length; i++) {
+      if (pugList[i].findPlayer({ id: mentionedUser.id })) {
+        await leaveGameTypes(
+          { channel },
+          [pugList[i].name],
+          serverId,
+          { id: mentionedUser.id, username: mentionedUser.username },
+          null,
+          true
+        );
+        removedPugs += `**${pugList[i].name.toUpperCase()}** `;
+      }
+    }
+
+    if (removedPugs) {
+      removedMsg = `**${
+        mentionedUser.username
+      }** was removed from ${removedPugs}`;
+    }
+
+    const finalMsg = `**${
+      mentionedUser.username
+    }** has been blocked from joining pugs till ${expirationDate.toGMTString()}\n${removedMsg}`;
+
+    channel.send(finalMsg);
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const unblockPlayer = async (
+  { channel },
+  args,
+  serverId,
+  { id, username, mentionedUser }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, list: pugList } = state.pugs[serverId];
+    const { list } = state.blocks[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
+
+    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
+    if (!mentionedUser) return channel.send('No mentioned user');
+
+    if (!list.some(u => u.id === mentionedUser.id))
+      return channel.send(
+        `cannot unblock **${
+          mentionedUser.username
+        }** if the person isn't blocked in the first place :head_bandage: `
+      );
+
+    const newBlockedList = list.filter(u => u.id !== mentionedUser.id);
+    await Blocks.findOneAndUpdate(
+      { server_id: serverId },
+      { $set: { blocked_users: newBlockedList } },
+      { upsert: true }
+    );
+    store.dispatch(removeBlock({ serverId, blockedUser: newBlockedUser }));
+
+    channel.send(`**${mentionedUser.username}** has been unblocked`);
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);

@@ -2087,7 +2087,7 @@ function () {
   var _ref63 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee20(_ref61, args, serverId, _ref62) {
-    var channel, id, username, roles, mentionedUser, state, pugChannel, list, _args$slice, _args$slice2, timeframe, reason, _timeframe$match, _timeframe$match2, blockLengthString, _timeframe$match3, _timeframe$match4, blockPeriodString, blockCalculator, blockLength, expirationDate;
+    var channel, id, username, roles, mentionedUser, state, _state$pugs$serverId14, pugChannel, pugList, list, _args$slice, _args$slice2, timeframe, reason, _timeframe$match, _timeframe$match2, blockLengthString, _timeframe$match3, _timeframe$match4, blockPeriodString, blockCalculator, blockLength, expirationDate, newBlockedUser, blockedMsg, i;
 
     return regeneratorRuntime.wrap(function _callee20$(_context20) {
       while (1) {
@@ -2097,7 +2097,7 @@ function () {
             id = _ref62.id, username = _ref62.username, roles = _ref62.roles, mentionedUser = _ref62.mentionedUser;
             _context20.prev = 2;
             state = _store["default"].getState();
-            pugChannel = state.pugs[serverId].pugChannel;
+            _state$pugs$serverId14 = state.pugs[serverId], pugChannel = _state$pugs$serverId14.pugChannel, pugList = _state$pugs$serverId14.list;
             list = state.blocks[serverId].list;
 
             if (!(pugChannel !== channel.id)) {
@@ -2174,22 +2174,81 @@ function () {
 
           case 23:
             expirationDate = blockCalculator[blockPeriodString](blockLength);
-            console.log(expirationDate, reason);
-            _context20.next = 31;
-            break;
+            newBlockedUser = {
+              id: mentionedUser.id,
+              username: mentionedUser.username,
+              blocked_on: new Date(),
+              expires_at: expirationDate,
+              reason: reason.join(' ') || ''
+            };
+            _context20.next = 27;
+            return _models.Blocks.findOneAndUpdate({
+              server_id: serverId
+            }, {
+              $set: {
+                blocked_users: newBlockedUser
+              }
+            }, {
+              upsert: true
+            });
 
           case 27:
-            _context20.prev = 27;
+            _store["default"].dispatch((0, _actions.addBlock)({
+              serverId: serverId,
+              blockedUser: newBlockedUser
+            })); // remove from pugs if joined
+
+
+            blockedMsg = "**".concat(mentionedUser.username, "** was removed from ");
+            i = 0;
+
+          case 30:
+            if (!(i < pugList.length)) {
+              _context20.next = 38;
+              break;
+            }
+
+            if (!pugList[i].findPlayer({
+              id: mentionedUser.id
+            })) {
+              _context20.next = 35;
+              break;
+            }
+
+            _context20.next = 34;
+            return leaveGameTypes({
+              channel: channel
+            }, [pugList[i].name], serverId, {
+              id: mentionedUser.id,
+              username: mentionedUser.username
+            }, null, true);
+
+          case 34:
+            blockedMsg += "**".concat(pugList[i].name.toUpperCase(), "** ");
+
+          case 35:
+            i++;
+            _context20.next = 30;
+            break;
+
+          case 38:
+            blockedMsg += "because the person got blocked";
+            channel.send(blockedMsg);
+            _context20.next = 46;
+            break;
+
+          case 42:
+            _context20.prev = 42;
             _context20.t0 = _context20["catch"](2);
             channel.send('Something went wrong');
             console.log(_context20.t0);
 
-          case 31:
+          case 46:
           case "end":
             return _context20.stop();
         }
       }
-    }, _callee20, null, [[2, 27]]);
+    }, _callee20, null, [[2, 42]]);
   }));
 
   return function blockPlayer(_x79, _x80, _x81, _x82) {
