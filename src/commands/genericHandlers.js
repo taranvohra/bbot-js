@@ -22,7 +22,7 @@ export const registerServer = async (message, _, serverId, { roles }) => {
       new Blocks({ server_id: serverId }).save(),
       new GameTypes({ server_id: serverId }).save(),
     ]);
-    store.dispatch(INIT({ serverId: server_id }));
+    store.dispatch(INIT({ serverId }));
     message.channel.send('Server registered with bBot!');
   } catch (err) {
     message.channel.send('Something went wrong');
