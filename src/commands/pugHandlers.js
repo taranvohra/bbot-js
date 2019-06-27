@@ -868,7 +868,7 @@ export const checkLastPugs = async (
     if (!results || results.length === 0)
       return channel.send(
         `No ${action} pug found ${
-          pugArg ? `for **${pugArg.toUpperCase()}**` : `not present`
+          pugArg ? `for **${pugArg.toUpperCase()}**` : ``
         }`
       );
 
