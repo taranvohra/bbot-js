@@ -25,9 +25,8 @@ export const registerServer = async (message, _, serverId, { roles }) => {
     store.dispatch(INIT({ serverId: server_id }));
     message.channel.send('Server registered with bBot!');
   } catch (err) {
-    message.channel.send(
-      'Something went wrong. The developer of this bot has been notified '
-    );
+    message.channel.send('Something went wrong');
+    console.log(err);
   }
 };
 
@@ -56,9 +55,8 @@ export const registerQueryChannel = async (message, _, serverId, { roles }) => {
       `<#${message.channel.id}> has been set as the query channel`
     );
   } catch (err) {
-    message.channel.send(
-      'Something went wrong. The developer of this bot has been notified '
-    );
+    message.channel.send('Something went wrong');
+    console.log(err);
   }
 };
 
@@ -85,8 +83,7 @@ export const registerPugChannel = async (message, _, serverId, { roles }) => {
       `<#${message.channel.id}> has been set as the pug channel`
     );
   } catch (err) {
-    message.channel.send(
-      'Something went wrong. The developer of this bot has been notified '
-    );
+    message.channel.send('Something went wrong');
+    console.log(err);
   }
 };
