@@ -218,21 +218,22 @@ function () {
   var _ref4 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee2() {
-    var _ref5, _ref6, dServers, qServers, gameTypes;
+    var _ref5, _ref6, dServers, qServers, gameTypes, blocks;
 
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
             _context2.next = 2;
-            return Promise.all([_models.DiscordServers.find({}).exec(), _models.UT99QueryServers.find({}).exec(), _models.GameTypes.find({}).exec()]);
+            return Promise.all([_models.DiscordServers.find({}).exec(), _models.UT99QueryServers.find({}).exec(), _models.GameTypes.find({}).exec(), _models.Blocks.find({}).exec()]);
 
           case 2:
             _ref5 = _context2.sent;
-            _ref6 = _slicedToArray(_ref5, 3);
+            _ref6 = _slicedToArray(_ref5, 4);
             dServers = _ref6[0];
             qServers = _ref6[1];
             gameTypes = _ref6[2];
+            blocks = _ref6[3];
             dServers.forEach(function (_ref7) {
               var server_id = _ref7.server_id,
                   pug_channel = _ref7.pug_channel,
@@ -270,8 +271,17 @@ function () {
                 gameTypes: Array.from(game_types)
               }));
             });
+            blocks.forEach(function (_ref10) {
+              var server_id = _ref10.server_id,
+                  blocked_users = _ref10.blocked_users;
 
-          case 10:
+              _store["default"].dispatch((0, _actions.assignBlocks)({
+                serverId: server_id,
+                blockedUsers: Array.from(blocked_users)
+              }));
+            });
+
+          case 12:
           case "end":
             return _context2.stop();
         }

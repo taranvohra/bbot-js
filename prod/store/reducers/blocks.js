@@ -33,17 +33,35 @@ var blocks = function blocks() {
         }));
       }
 
+    case 'ASSIGN_BLOCKS':
+      {
+        return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
+          list: payload.blockedUsers
+        })));
+      }
+
     case 'ADD_BLOCK':
       {
         var _state$payload$server = state[payload.serverId].list,
             list = _state$payload$server === void 0 ? [] : _state$payload$server;
-        return _objectSpread({}, state, _defineProperty({}, payload.serverId, {
+        return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
           list: [].concat(_toConsumableArray(list), [payload.blockedUser])
-        }));
+        })));
       }
 
     case 'REMOVE_BLOCK':
-      {}
+      {
+        var _state$payload$server2 = state[payload.serverId].list,
+            _list = _state$payload$server2 === void 0 ? [] : _state$payload$server2;
+
+        var updatedList = _list.filter(function (u) {
+          return u.id !== payload.unblockedUserId;
+        });
+
+        return _objectSpread({}, state, _defineProperty({}, payload.serverId, _objectSpread({}, state[payload.serverId], {
+          list: updatedList
+        })));
+      }
 
     default:
       return state;

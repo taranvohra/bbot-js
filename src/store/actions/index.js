@@ -43,6 +43,11 @@ export const removePug = data => ({
   payload: data,
 });
 
+export const assignBlocks = data => ({
+  type: 'ASSIGN_BLOCKS',
+  payload: data,
+});
+
 export const addBlock = data => ({
   type: 'ADD_BLOCK',
   payload: data,

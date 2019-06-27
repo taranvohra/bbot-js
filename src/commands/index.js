@@ -169,6 +169,12 @@ const commands = [
     aliases: ['unblock'],
     solo: 0,
   },
+  {
+    key: 'showBlockedUsers',
+    description: '',
+    aliases: ['showblocked'],
+    solo: 1,
+  },
 ];
 
 export { commands, handlers, emitters };

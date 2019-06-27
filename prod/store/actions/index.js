@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.removeBlock = exports.addBlock = exports.removePug = exports.addNewPug = exports.assignGameTypes = exports.assignQueryServers = exports.removeQueryServer = exports.pushQueryServer = exports.setPugChannel = exports.setQueryChannel = exports.INIT = void 0;
+exports.removeBlock = exports.addBlock = exports.assignBlocks = exports.removePug = exports.addNewPug = exports.assignGameTypes = exports.assignQueryServers = exports.removeQueryServer = exports.pushQueryServer = exports.setPugChannel = exports.setQueryChannel = exports.INIT = void 0;
 
 var INIT = function INIT(data) {
   return {
@@ -85,6 +85,15 @@ var removePug = function removePug(data) {
 };
 
 exports.removePug = removePug;
+
+var assignBlocks = function assignBlocks(data) {
+  return {
+    type: 'ASSIGN_BLOCKS',
+    payload: data
+  };
+};
+
+exports.assignBlocks = assignBlocks;
 
 var addBlock = function addBlock(data) {
   return {

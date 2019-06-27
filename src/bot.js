@@ -9,8 +9,9 @@ import {
   setPugChannel,
   assignQueryServers,
   assignGameTypes,
+  assignBlocks,
 } from './store/actions';
-import { DiscordServers, UT99QueryServers, GameTypes } from './models';
+import { DiscordServers, UT99QueryServers, GameTypes, Blocks } from './models';
 import { handlers, commands, emitters } from './commands';
 import { sanitizeName } from './utils';
 import { prefix, offline, pugEvents } from './constants';
@@ -126,10 +127,11 @@ bBot.on('presenceUpdate', (_, { user, guild, presence: { status } }) => {
 })();
 
 const hydrateStore = async () => {
-  const [dServers, qServers, gameTypes] = await Promise.all([
+  const [dServers, qServers, gameTypes, blocks] = await Promise.all([
     DiscordServers.find({}).exec(),
     UT99QueryServers.find({}).exec(),
     GameTypes.find({}).exec(),
+    Blocks.find({}).exec(),
   ]);
 
   dServers.forEach(({ server_id, pug_channel, query_channel }) => {
@@ -159,6 +161,15 @@ const hydrateStore = async () => {
       assignGameTypes({
         serverId: server_id,
         gameTypes: Array.from(game_types),
+      })
+    );
+  });
+
+  blocks.forEach(({ server_id, blocked_users }) => {
+    store.dispatch(
+      assignBlocks({
+        serverId: server_id,
+        blockedUsers: Array.from(blocked_users),
       })
     );
   });

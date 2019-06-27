@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.blockPlayer = exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.addOrRemoveTag = exports.checkStats = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
+exports.showBlockedUsers = exports.unblockPlayer = exports.blockPlayer = exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.addOrRemoveTag = exports.checkStats = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
 
 var _store = _interopRequireDefault(require("../store"));
 
@@ -639,7 +639,7 @@ function () {
   var _ref18 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee5(_ref16, args, serverId, _ref17) {
-    var channel, id, username, roles, isInvisible, state, _state$pugs$serverId3, pugChannel, list, gameTypes, isPartOfFilledPug, db_user, toBroadcast, user, statuses, allLeaveMsgs, i, op, allPugLeaveMsgs, j, player, msg;
+    var channel, id, username, roles, isInvisible, state, _state$pugs$serverId3, pugChannel, list, gameTypes, blockedList, isPartOfFilledPug, db_user, toBroadcast, user, statuses, allLeaveMsgs, i, op, allPugLeaveMsgs, j, player, msg;
 
     return regeneratorRuntime.wrap(function _callee5$(_context5) {
       while (1) {
@@ -650,31 +650,42 @@ function () {
             _context5.prev = 2;
             state = _store["default"].getState();
             _state$pugs$serverId3 = state.pugs[serverId], pugChannel = _state$pugs$serverId3.pugChannel, list = _state$pugs$serverId3.list, gameTypes = _state$pugs$serverId3.gameTypes;
+            blockedList = state.blocks[serverId].list;
 
             if (!(pugChannel !== channel.id)) {
-              _context5.next = 7;
+              _context5.next = 8;
               break;
             }
 
             return _context5.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
 
-          case 7:
+          case 8:
             if (!isInvisible) {
-              _context5.next = 9;
+              _context5.next = 10;
               break;
             }
 
             return _context5.abrupt("return", channel.send("Cannot use this command while invisible"));
 
-          case 9:
+          case 10:
             if (id) {
-              _context5.next = 11;
+              _context5.next = 12;
               break;
             }
 
             return _context5.abrupt("return", channel.send('No user was mentioned'));
 
-          case 11:
+          case 12:
+            if (!blockedList.some(function (u) {
+              return u.id === id;
+            })) {
+              _context5.next = 14;
+              break;
+            }
+
+            return _context5.abrupt("return", channel.send("Not allowed to join pugs"));
+
+          case 14:
             isPartOfFilledPug = list.find(function (p) {
               return p.picking && p.players.some(function (u) {
                 return u.id === id;
@@ -682,20 +693,20 @@ function () {
             });
 
             if (!isPartOfFilledPug) {
-              _context5.next = 14;
+              _context5.next = 17;
               break;
             }
 
             return _context5.abrupt("return", channel.send("Please leave **".concat(isPartOfFilledPug.name.toUpperCase(), "** first to join other pugs")));
 
-          case 14:
-            _context5.next = 16;
+          case 17:
+            _context5.next = 19;
             return _models.Users.findOne({
               server_id: serverId,
               id: id
             }).exec();
 
-          case 16:
+          case 19:
             db_user = _context5.sent;
             toBroadcast = null;
             user = {
@@ -747,84 +758,84 @@ function () {
             channel.send((0, _formats.formatJoinStatus)(statuses.filter(Boolean)));
 
             if (!toBroadcast) {
-              _context5.next = 45;
+              _context5.next = 48;
               break;
             }
 
             allLeaveMsgs = "";
             i = 0;
 
-          case 24:
+          case 27:
             if (!(i < list.length)) {
-              _context5.next = 43;
+              _context5.next = 46;
               break;
             }
 
             op = list[i];
 
             if (!(op.name !== toBroadcast.name)) {
-              _context5.next = 40;
+              _context5.next = 43;
               break;
             }
 
             allPugLeaveMsgs = "";
             j = 0;
 
-          case 29:
+          case 32:
             if (!(j < toBroadcast.players.length)) {
-              _context5.next = 39;
+              _context5.next = 42;
               break;
             }
 
             player = toBroadcast.players[j];
 
             if (!op.findPlayer(player)) {
-              _context5.next = 36;
+              _context5.next = 39;
               break;
             }
 
-            _context5.next = 34;
+            _context5.next = 37;
             return leaveGameTypes({
               channel: channel
             }, [op.name], serverId, player, null, true);
 
-          case 34:
+          case 37:
             msg = _context5.sent;
             allPugLeaveMsgs += "".concat(msg, " ");
 
-          case 36:
+          case 39:
             j++;
-            _context5.next = 29;
+            _context5.next = 32;
             break;
 
-          case 39:
+          case 42:
             allLeaveMsgs += "".concat(allPugLeaveMsgs, " \n");
 
-          case 40:
+          case 43:
             i++;
-            _context5.next = 24;
+            _context5.next = 27;
             break;
 
-          case 43:
+          case 46:
             allLeaveMsgs && channel.send(allLeaveMsgs);
             channel.send((0, _formats.formatBroadcastPug)(toBroadcast));
 
-          case 45:
-            _context5.next = 51;
+          case 48:
+            _context5.next = 54;
             break;
 
-          case 47:
-            _context5.prev = 47;
+          case 50:
+            _context5.prev = 50;
             _context5.t0 = _context5["catch"](2);
             channel.send('Something went wrong');
             console.log(_context5.t0);
 
-          case 51:
+          case 54:
           case "end":
             return _context5.stop();
         }
       }
-    }, _callee5, null, [[2, 47]]);
+    }, _callee5, null, [[2, 50]]);
   }));
 
   return function joinGameTypes(_x17, _x18, _x19, _x20) {
@@ -2087,7 +2098,7 @@ function () {
   var _ref63 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee20(_ref61, args, serverId, _ref62) {
-    var channel, id, username, roles, mentionedUser, state, _state$pugs$serverId14, pugChannel, pugList, list, _args$slice, _args$slice2, timeframe, reason, _timeframe$match, _timeframe$match2, blockLengthString, _timeframe$match3, _timeframe$match4, blockPeriodString, blockCalculator, blockLength, expirationDate, newBlockedUser, blockedMsg, i;
+    var channel, id, username, roles, mentionedUser, state, _state$pugs$serverId14, pugChannel, pugList, list, _args$slice, _args$slice2, timeframe, reason, _timeframe$match, _timeframe$match2, blockLengthString, _timeframe$match3, _timeframe$match4, blockPeriodString, blockCalculator, blockLength, expirationDate, newBlockedUser, removedMsg, removedPugs, i, finalMsg;
 
     return regeneratorRuntime.wrap(function _callee20$(_context20) {
       while (1) {
@@ -2143,7 +2154,7 @@ function () {
               break;
             }
 
-            return _context20.abrupt("return");
+            return _context20.abrupt("return", channel.send('Please mention the length of the block'));
 
           case 19:
             blockCalculator = {
@@ -2199,23 +2210,24 @@ function () {
             })); // remove from pugs if joined
 
 
-            blockedMsg = "**".concat(mentionedUser.username, "** was removed from ");
+            removedMsg = "";
+            removedPugs = "";
             i = 0;
 
-          case 30:
+          case 31:
             if (!(i < pugList.length)) {
-              _context20.next = 38;
+              _context20.next = 39;
               break;
             }
 
             if (!pugList[i].findPlayer({
               id: mentionedUser.id
             })) {
-              _context20.next = 35;
+              _context20.next = 36;
               break;
             }
 
-            _context20.next = 34;
+            _context20.next = 35;
             return leaveGameTypes({
               channel: channel
             }, [pugList[i].name], serverId, {
@@ -2223,32 +2235,36 @@ function () {
               username: mentionedUser.username
             }, null, true);
 
-          case 34:
-            blockedMsg += "**".concat(pugList[i].name.toUpperCase(), "** ");
-
           case 35:
+            removedPugs += "**".concat(pugList[i].name.toUpperCase(), "** ");
+
+          case 36:
             i++;
-            _context20.next = 30;
+            _context20.next = 31;
             break;
 
-          case 38:
-            blockedMsg += "because the person got blocked";
-            channel.send(blockedMsg);
-            _context20.next = 46;
+          case 39:
+            if (removedPugs) {
+              removedMsg = "**".concat(mentionedUser.username, "** was removed from ").concat(removedPugs);
+            }
+
+            finalMsg = ":hammer: **".concat(mentionedUser.username, "** has been blocked from joining pugs till __**").concat(expirationDate.toGMTString(), "**__ :hammer:\n").concat(removedMsg);
+            channel.send(finalMsg);
+            _context20.next = 48;
             break;
 
-          case 42:
-            _context20.prev = 42;
+          case 44:
+            _context20.prev = 44;
             _context20.t0 = _context20["catch"](2);
             channel.send('Something went wrong');
             console.log(_context20.t0);
 
-          case 46:
+          case 48:
           case "end":
             return _context20.stop();
         }
       }
-    }, _callee20, null, [[2, 42]]);
+    }, _callee20, null, [[2, 44]]);
   }));
 
   return function blockPlayer(_x79, _x80, _x81, _x82) {
@@ -2257,4 +2273,166 @@ function () {
 }();
 
 exports.blockPlayer = blockPlayer;
+
+var unblockPlayer =
+/*#__PURE__*/
+function () {
+  var _ref66 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee21(_ref64, args, serverId, _ref65) {
+    var channel, id, username, roles, mentionedUser, state, _state$pugs$serverId15, pugChannel, pugList, list, newBlockedList;
+
+    return regeneratorRuntime.wrap(function _callee21$(_context21) {
+      while (1) {
+        switch (_context21.prev = _context21.next) {
+          case 0:
+            channel = _ref64.channel;
+            id = _ref65.id, username = _ref65.username, roles = _ref65.roles, mentionedUser = _ref65.mentionedUser;
+            _context21.prev = 2;
+            state = _store["default"].getState();
+            _state$pugs$serverId15 = state.pugs[serverId], pugChannel = _state$pugs$serverId15.pugChannel, pugList = _state$pugs$serverId15.list;
+            list = state.blocks[serverId].list;
+
+            if (!(pugChannel !== channel.id)) {
+              _context21.next = 8;
+              break;
+            }
+
+            return _context21.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+
+          case 8:
+            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
+              _context21.next = 10;
+              break;
+            }
+
+            return _context21.abrupt("return");
+
+          case 10:
+            if (mentionedUser) {
+              _context21.next = 12;
+              break;
+            }
+
+            return _context21.abrupt("return", channel.send('No mentioned user'));
+
+          case 12:
+            if (list.some(function (u) {
+              return u.id === mentionedUser.id;
+            })) {
+              _context21.next = 14;
+              break;
+            }
+
+            return _context21.abrupt("return", channel.send("cannot unblock **".concat(mentionedUser.username, "** if the person isn't blocked in the first place :head_bandage: ")));
+
+          case 14:
+            newBlockedList = list.filter(function (u) {
+              return u.id !== mentionedUser.id;
+            });
+            _context21.next = 17;
+            return _models.Blocks.findOneAndUpdate({
+              server_id: serverId
+            }, {
+              $set: {
+                blocked_users: newBlockedList
+              }
+            }, {
+              upsert: true
+            });
+
+          case 17:
+            _store["default"].dispatch((0, _actions.removeBlock)({
+              serverId: serverId,
+              unblockedUserId: mentionedUser.id
+            }));
+
+            channel.send("**".concat(mentionedUser.username, "** has been unblocked"));
+            _context21.next = 25;
+            break;
+
+          case 21:
+            _context21.prev = 21;
+            _context21.t0 = _context21["catch"](2);
+            channel.send('Something went wrong');
+            console.log(_context21.t0);
+
+          case 25:
+          case "end":
+            return _context21.stop();
+        }
+      }
+    }, _callee21, null, [[2, 21]]);
+  }));
+
+  return function unblockPlayer(_x83, _x84, _x85, _x86) {
+    return _ref66.apply(this, arguments);
+  };
+}();
+
+exports.unblockPlayer = unblockPlayer;
+
+var showBlockedUsers =
+/*#__PURE__*/
+function () {
+  var _ref69 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee22(_ref67, _, serverId, _ref68) {
+    var channel, id, username, state, pugChannel, _state$blocks$serverI, list, msg;
+
+    return regeneratorRuntime.wrap(function _callee22$(_context22) {
+      while (1) {
+        switch (_context22.prev = _context22.next) {
+          case 0:
+            channel = _ref67.channel;
+            id = _ref68.id, username = _ref68.username;
+            _context22.prev = 2;
+            state = _store["default"].getState();
+            pugChannel = state.pugs[serverId].pugChannel;
+            _state$blocks$serverI = state.blocks[serverId].list, list = _state$blocks$serverI === void 0 ? [] : _state$blocks$serverI;
+
+            if (!(pugChannel !== channel.id)) {
+              _context22.next = 8;
+              break;
+            }
+
+            return _context22.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+
+          case 8:
+            if (!(list.length === 0)) {
+              _context22.next = 10;
+              break;
+            }
+
+            return _context22.abrupt("return", channel.send('There are no blocked users'));
+
+          case 10:
+            msg = list.reduce(function (acc, curr, i) {
+              acc += "".concat(i > 0 ? ' • ' : '', " **").concat(curr.username, "** ").concat(curr.reason ? "(".concat(curr.reason, ") ") : "", "block expires on *").concat(curr.expires_at.toGMTString(), "*");
+              return acc;
+            }, "");
+            channel.send(":hammer: __List of Blocked Users__ :hammer:\n".concat(msg));
+            _context22.next = 18;
+            break;
+
+          case 14:
+            _context22.prev = 14;
+            _context22.t0 = _context22["catch"](2);
+            channel.send('Something went wrong');
+            console.log(_context22.t0);
+
+          case 18:
+          case "end":
+            return _context22.stop();
+        }
+      }
+    }, _callee22, null, [[2, 14]]);
+  }));
+
+  return function showBlockedUsers(_x87, _x88, _x89, _x90) {
+    return _ref69.apply(this, arguments);
+  };
+}();
+
+exports.showBlockedUsers = showBlockedUsers;
 //# sourceMappingURL=pugHandlers.js.map

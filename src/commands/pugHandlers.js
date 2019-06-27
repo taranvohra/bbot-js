@@ -435,7 +435,7 @@ export const joinGameTypes = async (
     if (!id) return channel.send('No user was mentioned');
 
     if (blockedList.some(u => u.id === id))
-      return channel.send(`${username} is not allowed to join pugs`);
+      return channel.send(`Not allowed to join pugs`);
 
     const isPartOfFilledPug = list.find(
       p => p.picking && p.players.some(u => u.id === id)
@@ -1165,7 +1165,8 @@ export const blockPlayer = async (
     const [timeframe, ...reason] = args.slice(1);
     const [blockLengthString] = timeframe.match(/[0-9]+/g);
     const [blockPeriodString] = timeframe.match(/[m|h|d]/g);
-    if (!blockLengthString || !blockPeriodString) return;
+    if (!blockLengthString || !blockPeriodString)
+      return channel.send('Please mention the length of the block');
 
     const blockCalculator = {
       m: minutes => {
@@ -1226,9 +1227,9 @@ export const blockPlayer = async (
       }** was removed from ${removedPugs}`;
     }
 
-    const finalMsg = `**${
+    const finalMsg = `:hammer: **${
       mentionedUser.username
-    }** has been blocked from joining pugs till ${expirationDate.toGMTString()}\n${removedMsg}`;
+    }** has been blocked from joining pugs till __**${expirationDate.toGMTString()}**__ :hammer:\n${removedMsg}`;
 
     channel.send(finalMsg);
   } catch (error) {
@@ -1241,7 +1242,7 @@ export const unblockPlayer = async (
   { channel },
   args,
   serverId,
-  { id, username, mentionedUser }
+  { id, username, roles, mentionedUser }
 ) => {
   try {
     const state = store.getState();
@@ -1271,9 +1272,44 @@ export const unblockPlayer = async (
       { $set: { blocked_users: newBlockedList } },
       { upsert: true }
     );
-    store.dispatch(removeBlock({ serverId, blockedUser: newBlockedUser }));
+    store.dispatch(
+      removeBlock({ serverId, unblockedUserId: mentionedUser.id })
+    );
 
     channel.send(`**${mentionedUser.username}** has been unblocked`);
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const showBlockedUsers = async (
+  { channel },
+  _,
+  serverId,
+  { id, username }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel } = state.pugs[serverId];
+    const { list = [] } = state.blocks[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : ``
+        } <#${pugChannel}>`
+      );
+
+    if (list.length === 0) return channel.send('There are no blocked users');
+    const msg = list.reduce((acc, curr, i) => {
+      acc += `${i > 0 ? ' • ' : ''} **${curr.username}** ${
+        curr.reason ? `(${curr.reason}) ` : ``
+      }block expires on *${curr.expires_at.toGMTString()}*`;
+      return acc;
+    }, ``);
+
+    channel.send(`:hammer: __List of Blocked Users__ :hammer:\n${msg}`);
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);

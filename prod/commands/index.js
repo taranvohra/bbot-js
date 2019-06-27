@@ -155,6 +155,11 @@ var commands = [{
   description: '',
   aliases: ['unblock'],
   solo: 0
+}, {
+  key: 'showBlockedUsers',
+  description: '',
+  aliases: ['showblocked'],
+  solo: 1
 }];
 exports.commands = commands;
 //# sourceMappingURL=index.js.map
