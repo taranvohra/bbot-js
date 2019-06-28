@@ -1,4 +1,4 @@
-export const prefix = '-';
+export const prefix = '.';
 
 export const privilegedRoles = ['Admins', 'Moderators'];
 
@@ -12,7 +12,7 @@ export const teams = {
 };
 
 export const tagLength = 30;
-export const captainTimeout = 15000;
+export const captainTimeout = 30000;
 export const offline = 'unplugged';
 export const pugEvents = {
   captainsReady: 'captainsReady',
