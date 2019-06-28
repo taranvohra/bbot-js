@@ -13,6 +13,7 @@ import {
   offline,
   pugEvents,
   tagLength,
+  prefix,
 } from '../constants';
 import {
   formatListGameTypes,
@@ -449,7 +450,11 @@ export const joinGameTypes = async (
     const db_user = await Users.findOne({ server_id: serverId, id: id }).exec();
 
     let toBroadcast = null;
-    const user = { id, username, stats: db_user ? db_user.stats : {} };
+    const user = {
+      id,
+      username,
+      stats: db_user && db_user.stats ? db_user.stats : {},
+    };
     const statuses = args.map(a => {
       if (!toBroadcast) {
         const game = a.toLowerCase();
@@ -526,6 +531,108 @@ export const joinGameTypes = async (
         }
       });
     }
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const setDefaultJoin = async (
+  { channel },
+  args,
+  serverId,
+  { id, username }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, gameTypes } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : `not present`
+        } <#${pugChannel}>`
+      );
+
+    const allJoins = args.map(a => {
+      const game = a.toLowerCase();
+      const gameType = gameTypes.find(g => g.name === game);
+
+      if (!gameType) return -1;
+      return game;
+    });
+
+    const defaultJoins = allJoins.filter(Boolean);
+    if (defaultJoins.length > 0) {
+      await Users.findOneAndUpdate(
+        { id, server_id: serverId },
+        {
+          $set: {
+            server_id: serverId,
+            default_joins: defaultJoins,
+            id,
+            username,
+          },
+        },
+        {
+          upsert: true,
+        }
+      ).exec();
+
+      channel.send('Default join set!');
+    }
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const decideDefaultOrJoin = async (
+  { channel },
+  args,
+  serverId,
+  { id, username, roles, isInvisible, client }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, list } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : `not present`
+        } <#${pugChannel}>`
+      );
+    // like .j siege5 or .join 4way
+    if (args.length > 0) {
+      return joinGameTypes({ channel }, args, serverId, {
+        id,
+        username,
+        roles,
+        isInvisible,
+        client,
+      });
+    }
+
+    // just .j case
+    const db_user = await Users.findOne({ server_id: serverId, id: id }).exec();
+
+    if (
+      !db_user ||
+      !db_user.default_joins ||
+      db_user.default_joins.length === 0
+    )
+      return channel.send(
+        `No defaultjoin set. Type **${prefix}defaultjoin gametypes** to set it!`
+      );
+
+    return joinGameTypes({ channel }, db_user.default_joins, serverId, {
+      id,
+      username,
+      roles,
+      isInvisible,
+      client,
+    });
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);
@@ -996,7 +1103,7 @@ export const checkStats = async (
     const user = await Users.findOne({
       server_id: serverId,
       id: mentionedUser ? mentionedUser.id : id,
-    });
+    }).exec();
 
     if (!user) {
       return channel.send(

@@ -215,3 +215,4 @@ const checkIfUserNeedsUnblock = () => {
 };
 
 // TODO Remove from store if bot gets removed
+// TODO Remove from pugs if user is kicked/banned/leaves server

@@ -81,10 +81,10 @@ var commands = [{
   aliases: ['lsa'],
   solo: 1
 }, {
-  key: 'joinGameTypes',
+  key: 'decideDefaultOrJoin',
   description: '',
   aliases: ['j', 'join'],
-  solo: 0
+  solo: 2
 }, {
   key: 'leaveGameTypes',
   description: '',
@@ -160,6 +160,11 @@ var commands = [{
   description: '',
   aliases: ['showblocked'],
   solo: 1
+}, {
+  key: 'setDefaultJoin',
+  description: '',
+  aliases: ['defaultjoin'],
+  solo: 0
 }];
 exports.commands = commands;
 //# sourceMappingURL=index.js.map

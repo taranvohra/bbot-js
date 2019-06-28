@@ -348,4 +348,5 @@ var checkIfUserNeedsUnblock = function checkIfUserNeedsUnblock() {
     });
   }, 60000);
 }; // TODO Remove from store if bot gets removed
+// TODO Remove from pugs if user is kicked/banned/leaves server
 //# sourceMappingURL=bot.js.map

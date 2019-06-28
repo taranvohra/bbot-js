@@ -13,6 +13,7 @@ var schema = _mongoose["default"].Schema({
   id: String,
   username: String,
   server_id: String,
+  default_joins: Array,
   last_pug: Object,
   stats: Object
 });
