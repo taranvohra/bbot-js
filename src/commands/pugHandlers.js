@@ -1182,7 +1182,7 @@ export const adminAddPlayer = async (
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -1213,7 +1213,7 @@ export const adminRemovePlayer = async (
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -1243,7 +1243,7 @@ export const adminPickPlayer = async (
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -1274,7 +1274,7 @@ export const blockPlayer = async (
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -1376,7 +1376,7 @@ export const unblockPlayer = async (
     if (pugChannel !== channel.id)
       return channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
@@ -1421,7 +1421,7 @@ export const showBlockedUsers = async (
     if (pugChannel !== message.channel.id)
       return message.channel.send(
         `Active channel for pugs is ${
-          pugChannel ? `<#${pugChannel}>` : ``
+          pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
 
