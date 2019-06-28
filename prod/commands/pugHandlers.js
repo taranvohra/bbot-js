@@ -639,14 +639,14 @@ function () {
   var _ref18 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee5(_ref16, args, serverId, _ref17) {
-    var channel, id, username, roles, isInvisible, state, _state$pugs$serverId3, pugChannel, list, gameTypes, blockedList, isPartOfFilledPug, db_user, toBroadcast, user, statuses, allLeaveMsgs, i, op, allPugLeaveMsgs, j, player, msg;
+    var channel, id, username, roles, isInvisible, client, state, _state$pugs$serverId3, pugChannel, list, gameTypes, blockedList, isPartOfFilledPug, db_user, toBroadcast, user, statuses, allLeaveMsgs, i, op, allPugLeaveMsgs, j, player, msg, DM_title, DM_body;
 
     return regeneratorRuntime.wrap(function _callee5$(_context5) {
       while (1) {
         switch (_context5.prev = _context5.next) {
           case 0:
             channel = _ref16.channel;
-            id = _ref17.id, username = _ref17.username, roles = _ref17.roles, isInvisible = _ref17.isInvisible;
+            id = _ref17.id, username = _ref17.username, roles = _ref17.roles, isInvisible = _ref17.isInvisible, client = _ref17.client;
             _context5.prev = 2;
             state = _store["default"].getState();
             _state$pugs$serverId3 = state.pugs[serverId], pugChannel = _state$pugs$serverId3.pugChannel, list = _state$pugs$serverId3.list, gameTypes = _state$pugs$serverId3.gameTypes;
@@ -758,7 +758,7 @@ function () {
             channel.send((0, _formats.formatJoinStatus)(statuses.filter(Boolean)));
 
             if (!toBroadcast) {
-              _context5.next = 48;
+              _context5.next = 51;
               break;
             }
 
@@ -818,24 +818,37 @@ function () {
 
           case 46:
             allLeaveMsgs && channel.send(allLeaveMsgs);
-            channel.send((0, _formats.formatBroadcastPug)(toBroadcast));
+            channel.send((0, _formats.formatBroadcastPug)(toBroadcast)); // Send DM to each user
 
-          case 48:
-            _context5.next = 54;
+            DM_title = "**".concat(toBroadcast.name.toUpperCase(), "** filled in **").concat(channel.guild.name, "**. Players are,");
+            DM_body = toBroadcast.players.reduce(function (acc, curr) {
+              acc += curr.username + ' ';
+              return acc;
+            }, "");
+            toBroadcast.players.forEach(function (player) {
+              var user = client.users.get(player.id);
+
+              if (user) {
+                user.send("".concat(DM_title, "\n").concat(DM_body));
+              }
+            });
+
+          case 51:
+            _context5.next = 57;
             break;
 
-          case 50:
-            _context5.prev = 50;
+          case 53:
+            _context5.prev = 53;
             _context5.t0 = _context5["catch"](2);
             channel.send('Something went wrong');
             console.log(_context5.t0);
 
-          case 54:
+          case 57:
           case "end":
             return _context5.stop();
         }
       }
-    }, _callee5, null, [[2, 50]]);
+    }, _callee5, null, [[2, 53]]);
   }));
 
   return function joinGameTypes(_x17, _x18, _x19, _x20) {
@@ -1025,7 +1038,7 @@ function () {
               break;
             }
 
-            return _context7.abrupt("return", channel.send("Cannot leave pug(s) if you haven't joined any :head_bandage:"));
+            return _context7.abrupt("return", message.channel.send("Cannot leave pug(s) if you haven't joined any :head_bandage:"));
 
           case 9:
             leaveGameTypes(message, listToLeave, serverId, user, hasGoneOffline);
@@ -1096,7 +1109,7 @@ function () {
               break;
             }
 
-            return _context8.abrupt("return", channel.send('There was no filled pug for howMany you could captain'));
+            return _context8.abrupt("return", channel.send('There was no filled pug for which you could captain'));
 
           case 10:
             if (forWhichPug.players.some(function (u) {
@@ -1511,7 +1524,7 @@ function () {
               break;
             }
 
-            return _context12.abrupt("return", channel.send("No ".concat(action, " pug found ").concat(pugArg ? "for **".concat(pugArg.toUpperCase(), "**") : "not present")));
+            return _context12.abrupt("return", channel.send("No ".concat(action, " pug found ").concat(pugArg ? "for **".concat(pugArg.toUpperCase(), "**") : "")));
 
           case 21:
             _results$filter = results.filter(function (_, i) {
@@ -1885,13 +1898,13 @@ function () {
   var _ref54 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee17(_ref52, args, serverId, _ref53) {
-    var channel, mentionedUser, roles, state, pugChannel;
+    var channel, mentionedUser, roles, client, state, pugChannel;
     return regeneratorRuntime.wrap(function _callee17$(_context17) {
       while (1) {
         switch (_context17.prev = _context17.next) {
           case 0:
             channel = _ref52.channel;
-            mentionedUser = _ref53.mentionedUser, roles = _ref53.roles;
+            mentionedUser = _ref53.mentionedUser, roles = _ref53.roles, client = _ref53.client;
             _context17.prev = 2;
             state = _store["default"].getState();
             pugChannel = state.pugs[serverId].pugChannel;
@@ -1924,7 +1937,8 @@ function () {
               channel: channel
             }, args.slice(1), serverId, {
               id: mentionedUser.id,
-              username: mentionedUser.username
+              username: mentionedUser.username,
+              client: client
             });
             _context17.next = 18;
             break;
@@ -2374,62 +2388,71 @@ exports.unblockPlayer = unblockPlayer;
 var showBlockedUsers =
 /*#__PURE__*/
 function () {
-  var _ref69 = _asyncToGenerator(
+  var _ref68 = _asyncToGenerator(
   /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee22(_ref67, _, serverId, _ref68) {
-    var channel, id, username, state, pugChannel, _state$blocks$serverI, list, msg;
+  regeneratorRuntime.mark(function _callee22(message, _, serverId, _ref67) {
+    var id, username, roles, state, pugChannel, _state$blocks$serverI, list, msg;
 
     return regeneratorRuntime.wrap(function _callee22$(_context22) {
       while (1) {
         switch (_context22.prev = _context22.next) {
           case 0:
-            channel = _ref67.channel;
-            id = _ref68.id, username = _ref68.username;
-            _context22.prev = 2;
+            id = _ref67.id, username = _ref67.username, roles = _ref67.roles;
+            _context22.prev = 1;
             state = _store["default"].getState();
             pugChannel = state.pugs[serverId].pugChannel;
             _state$blocks$serverI = state.blocks[serverId].list, list = _state$blocks$serverI === void 0 ? [] : _state$blocks$serverI;
 
-            if (!(pugChannel !== channel.id)) {
-              _context22.next = 8;
+            if (!(pugChannel !== message.channel.id)) {
+              _context22.next = 7;
               break;
             }
 
-            return _context22.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+            return _context22.abrupt("return", message.channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
 
-          case 8:
+          case 7:
+            if (!(!(0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles) && !isBot)) {
+              _context22.next = 9;
+              break;
+            }
+
+            return _context22.abrupt("return");
+
+          case 9:
             if (!(list.length === 0)) {
-              _context22.next = 10;
+              _context22.next = 12;
               break;
             }
 
-            return _context22.abrupt("return", channel.send('There are no blocked users'));
+            message.author.send('There are no blocked users');
+            return _context22.abrupt("return", message.channel.send('You have received a DM'));
 
-          case 10:
+          case 12:
             msg = list.reduce(function (acc, curr, i) {
-              acc += "".concat(i > 0 ? ' • ' : '', " **").concat(curr.username, "** ").concat(curr.reason ? "(".concat(curr.reason, ") ") : "", "block expires on *").concat(curr.expires_at.toGMTString(), "*");
+              acc += "".concat(i > 0 ? ' • ' : '', " **").concat(curr.username, "** ").concat(curr.reason ? "(".concat(curr.reason, ") ") : "", "block expires on **").concat(curr.expires_at.toGMTString(), "**");
               return acc;
             }, "");
-            channel.send(":hammer: __List of Blocked Users__ :hammer:\n".concat(msg));
-            _context22.next = 18;
+            message.author.send(":hammer: __List of Blocked Users__ :hammer:\n".concat(msg));
+            message.channel.send('You have received a DM');
+            _context22.next = 21;
             break;
 
-          case 14:
-            _context22.prev = 14;
-            _context22.t0 = _context22["catch"](2);
-            channel.send('Something went wrong');
+          case 17:
+            _context22.prev = 17;
+            _context22.t0 = _context22["catch"](1);
+            message.channel.send('Something went wrong');
             console.log(_context22.t0);
 
-          case 18:
+          case 21:
           case "end":
             return _context22.stop();
         }
       }
-    }, _callee22, null, [[2, 14]]);
+    }, _callee22, null, [[1, 17]]);
   }));
 
   return function showBlockedUsers(_x87, _x88, _x89, _x90) {
-    return _ref69.apply(this, arguments);
+    return _ref68.apply(this, arguments);
   };
 }();
 

@@ -85,7 +85,7 @@ var createAlternatingObject = function createAlternatingObject(array) {
 exports.createAlternatingObject = createAlternatingObject;
 
 var sanitizeName = function sanitizeName(name) {
-  return name.replace(/(\*|`|:|_|~)/g, function (c) {
+  return name.replace(/(\*|`|:|_|~|\|)/g, function (c) {
     return "\\".concat(c);
   });
 };

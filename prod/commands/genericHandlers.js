@@ -72,19 +72,20 @@ function () {
 
           case 11:
             _store["default"].dispatch((0, _actions.INIT)({
-              serverId: server_id
+              serverId: serverId
             }));
 
             message.channel.send('Server registered with bBot!');
-            _context.next = 18;
+            _context.next = 19;
             break;
 
           case 15:
             _context.prev = 15;
             _context.t0 = _context["catch"](1);
-            message.channel.send('Something went wrong. The developer of this bot has been notified ');
+            message.channel.send('Something went wrong');
+            console.log(_context.t0);
 
-          case 18:
+          case 19:
           case "end":
             return _context.stop();
         }
@@ -151,15 +152,16 @@ function () {
             }));
 
             message.channel.send("<#".concat(message.channel.id, "> has been set as the query channel"));
-            _context2.next = 18;
+            _context2.next = 19;
             break;
 
           case 15:
             _context2.prev = 15;
             _context2.t0 = _context2["catch"](1);
-            message.channel.send('Something went wrong. The developer of this bot has been notified ');
+            message.channel.send('Something went wrong');
+            console.log(_context2.t0);
 
-          case 18:
+          case 19:
           case "end":
             return _context2.stop();
         }
@@ -226,15 +228,16 @@ function () {
             }));
 
             message.channel.send("<#".concat(message.channel.id, "> has been set as the pug channel"));
-            _context3.next = 18;
+            _context3.next = 19;
             break;
 
           case 15:
             _context3.prev = 15;
             _context3.t0 = _context3["catch"](1);
-            message.channel.send('Something went wrong. The developer of this bot has been notified ');
+            message.channel.send('Something went wrong');
+            console.log(_context3.t0);
 
-          case 18:
+          case 19:
           case "end":
             return _context3.stop();
         }

@@ -119,7 +119,8 @@ function _onMessage() {
               username: (0, _utils.sanitizeName)(username),
               mentionedUser: mentionedUser,
               isInvisible: isInvisible,
-              action: action
+              action: action,
+              client: bBot
             }));
 
           case 18:
@@ -345,6 +346,6 @@ var checkIfUserNeedsUnblock = function checkIfUserNeedsUnblock() {
         });
       }
     });
-  }, 10000);
+  }, 60000);
 }; // TODO Remove from store if bot gets removed
 //# sourceMappingURL=bot.js.map

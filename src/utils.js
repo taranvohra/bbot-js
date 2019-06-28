@@ -57,7 +57,7 @@ export const createAlternatingObject = array =>
  * @returns {String}
  */
 export const sanitizeName = name =>
-  name.replace(/(\*|`|:|_|~)/g, c => `\\${c}`);
+  name.replace(/(\*|`|:|_|~|\|)/g, c => `\\${c}`);
 
 /**
  * @param {Number} time

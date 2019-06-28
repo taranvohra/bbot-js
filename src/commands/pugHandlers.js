@@ -414,7 +414,7 @@ export const joinGameTypes = async (
   { channel },
   args,
   serverId,
-  { id, username, roles, isInvisible }
+  { id, username, roles, isInvisible, client }
 ) => {
   try {
     const state = store.getState();
@@ -509,6 +509,22 @@ export const joinGameTypes = async (
 
       allLeaveMsgs && channel.send(allLeaveMsgs);
       channel.send(formatBroadcastPug(toBroadcast));
+
+      // Send DM to each user
+      const DM_title = `**${toBroadcast.name.toUpperCase()}** filled in **${
+        channel.guild.name
+      }**. Players are,`;
+      const DM_body = toBroadcast.players.reduce((acc, curr) => {
+        acc += `:small_blue_diamond: ${curr.username} `;
+        return acc;
+      }, ``);
+
+      toBroadcast.players.forEach(player => {
+        const user = client.users.get(player.id);
+        if (user) {
+          user.send(`${DM_title}\n${DM_body}`);
+        }
+      });
     }
   } catch (error) {
     channel.send('Something went wrong');
@@ -1050,7 +1066,7 @@ export const adminAddPlayer = async (
   { channel },
   args,
   serverId,
-  { mentionedUser, roles }
+  { mentionedUser, roles, client }
 ) => {
   try {
     const state = store.getState();
@@ -1069,6 +1085,7 @@ export const adminAddPlayer = async (
     joinGameTypes({ channel }, args.slice(1), serverId, {
       id: mentionedUser.id,
       username: mentionedUser.username,
+      client,
     });
   } catch (error) {
     channel.send('Something went wrong');
@@ -1284,34 +1301,41 @@ export const unblockPlayer = async (
 };
 
 export const showBlockedUsers = async (
-  { channel },
+  message,
   _,
   serverId,
-  { id, username }
+  { id, username, roles }
 ) => {
   try {
     const state = store.getState();
     const { pugChannel } = state.pugs[serverId];
     const { list = [] } = state.blocks[serverId];
 
-    if (pugChannel !== channel.id)
-      return channel.send(
+    if (pugChannel !== message.channel.id)
+      return message.channel.send(
         `Active channel for pugs is ${
           pugChannel ? `<#${pugChannel}>` : ``
         } <#${pugChannel}>`
       );
 
-    if (list.length === 0) return channel.send('There are no blocked users');
+    if (!hasPrivilegedRole(privilegedRoles, roles) && !isBot) return;
+
+    if (list.length === 0) {
+      message.author.send('There are no blocked users');
+      return message.channel.send('You have received a DM');
+    }
+
     const msg = list.reduce((acc, curr, i) => {
       acc += `${i > 0 ? ' • ' : ''} **${curr.username}** ${
         curr.reason ? `(${curr.reason}) ` : ``
-      }block expires on *${curr.expires_at.toGMTString()}*`;
+      }block expires on **${curr.expires_at.toGMTString()}**`;
       return acc;
     }, ``);
 
-    channel.send(`:hammer: __List of Blocked Users__ :hammer:\n${msg}`);
+    message.author.send(`:hammer: __List of Blocked Users__ :hammer:\n${msg}`);
+    message.channel.send('You have received a DM');
   } catch (error) {
-    channel.send('Something went wrong');
+    message.channel.send('Something went wrong');
     console.log(error);
   }
 };

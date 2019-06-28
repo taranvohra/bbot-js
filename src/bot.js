@@ -63,6 +63,7 @@ async function onMessage(message) {
       mentionedUser,
       isInvisible,
       action,
+      client: bBot,
     });
   }
   // message.channel.send(`Command not found`);
@@ -210,7 +211,7 @@ const checkIfUserNeedsUnblock = () => {
         });
       }
     });
-  }, 300000);
+  }, 60000);
 };
 
 // TODO Remove from store if bot gets removed
