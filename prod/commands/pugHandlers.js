@@ -889,7 +889,7 @@ function () {
               var gameType = gameTypes.find(function (g) {
                 return g.name === game;
               });
-              if (!gameType) return -1;
+              if (!gameType) return undefined;
               return game;
             });
             defaultJoins = allJoins.filter(Boolean);

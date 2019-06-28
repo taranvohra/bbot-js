@@ -558,7 +558,7 @@ export const setDefaultJoin = async (
       const game = a.toLowerCase();
       const gameType = gameTypes.find(g => g.name === game);
 
-      if (!gameType) return -1;
+      if (!gameType) return undefined;
       return game;
     });
 
