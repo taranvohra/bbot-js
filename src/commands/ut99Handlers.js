@@ -47,7 +47,6 @@ export const addQueryServer = async (
       .update(hp)
       .digest('hex');
 
-    console.log(key, list);
     if (list.some(s => s.key === key))
       return channel.send('Query Server already exists!');
 
