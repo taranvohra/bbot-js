@@ -645,7 +645,7 @@ export const addCaptain = async (
 
     if (!forWhichPug)
       return channel.send(
-        'There was no filled pug for howMany you could captain'
+        'There was no filled pug for which you could captain'
       );
 
     if (!forWhichPug.players.some(u => u.id === id && u.captain === null))
