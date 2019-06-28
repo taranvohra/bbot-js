@@ -1105,7 +1105,7 @@ export const checkStats = async (
       id: mentionedUser ? mentionedUser.id : id,
     }).exec();
 
-    if (!user) {
+    if (!user || !user.stats) {
       return channel.send(
         `There are no stats logged for **${
           mentionedUser ? mentionedUser.username : username
