@@ -1425,7 +1425,7 @@ export const showBlockedUsers = async (
         } <#${pugChannel}>`
       );
 
-    if (!hasPrivilegedRole(privilegedRoles, roles) && !isBot) return;
+    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
 
     if (list.length === 0) {
       message.author.send('There are no blocked users');
