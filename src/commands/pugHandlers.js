@@ -939,7 +939,11 @@ export const promoteAvailablePugs = async ({ channel }, args, serverId, _) => {
     const hasPugMentioned =
       args[0] && list.find(p => p.name === args[0].toLowerCase());
 
-    if (hasPugMentioned && hasPugMentioned.players.length > 0)
+    if (
+      hasPugMentioned &&
+      hasPugMentioned.players.length > 0 &&
+      !hasPugMentioned.picking
+    )
       return channel.send(
         formatPromoteAvailablePugs([hasPugMentioned], channel.guild.name)
       );
