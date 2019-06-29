@@ -246,7 +246,7 @@ export const formatPickPlayerStatus = ({ pickedPlayers, finished, pug }) => {
   }
 
   const turn = finished
-    ? `**Picking has finished** :fire:`
+    ? `:fire: **Picking has finished** :fire:`
     : `<@${next.id}> pick ${count} player${count > 1 ? 's' : ''} for **${
         teams[`team_${next.team}`]
       }**`;
