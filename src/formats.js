@@ -377,7 +377,7 @@ export const formatLastPugStatus = ({ pug, guildName }, action, timestamp) => {
   const pugTeams = Array(pug.noOfTeams)
     .fill(0)
     .reduce((acc, _, i) => {
-      acc[i] = `\t**${teams[`team_${i}`]}**: `;
+      acc[i] = `**${teams[`team_${i}`]}**: `;
       return acc;
     }, {});
 
