@@ -120,6 +120,7 @@ var formatJoinStatus = function formatJoinStatus(statuses) {
 
       case 0:
         acc.missed += "Sorry, **".concat(name.toUpperCase(), "** is already filled\n");
+        break;
 
       case 1:
         acc.joined += "**".concat(name.toUpperCase(), "** (").concat(activeCount, "/").concat(maxPlayers, ") :small_orange_diamond: ");
@@ -263,7 +264,7 @@ var formatPickPlayerStatus = function formatPickPlayerStatus(_ref5) {
     }
   }
 
-  var turn = finished ? "**Picking has finished** :fire:" : "<@".concat(next.id, "> pick ").concat(count, " player").concat(count > 1 ? 's' : '', " for **").concat(_constants.teams["team_".concat(next.team)], "**");
+  var turn = finished ? ":fire: **Picking has finished** :fire:" : "<@".concat(next.id, "> pick ").concat(count, " player").concat(count > 1 ? 's' : '', " for **").concat(_constants.teams["team_".concat(next.team)], "**");
   var pugTeams = Array(pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
     acc[i] = "**".concat(_constants.teams["team_".concat(i)], "**: ");
     return acc;
@@ -372,7 +373,7 @@ var formatLastPugStatus = function formatLastPugStatus(_ref7, action, timestamp)
   });
   var title = "".concat(action.charAt(0).toUpperCase() + action.slice(1), " **").concat(pug.name.toUpperCase(), "** at **").concat(guildName, "** (").concat(distanceInWords, ")");
   var pugTeams = Array(pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
-    acc[i] = "\t**".concat(_constants.teams["team_".concat(i)], "**: ");
+    acc[i] = "**".concat(_constants.teams["team_".concat(i)], "**: ");
     return acc;
   }, {});
 

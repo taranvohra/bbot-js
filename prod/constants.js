@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.pugEvents = exports.offline = exports.captainTimeout = exports.tagLength = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
-var prefix = '-';
+var prefix = '.';
 exports.prefix = prefix;
 var privilegedRoles = ['Admins', 'Moderators'];
 exports.privilegedRoles = privilegedRoles;
@@ -19,7 +19,7 @@ var teams = {
 exports.teams = teams;
 var tagLength = 30;
 exports.tagLength = tagLength;
-var captainTimeout = 15000;
+var captainTimeout = 30000;
 exports.captainTimeout = captainTimeout;
 var offline = 'unplugged';
 exports.offline = offline;

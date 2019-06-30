@@ -732,7 +732,7 @@ function () {
                 var pug = existingPug || new Pug(gameType);
                 var hasFilledBeforeJoining = pug.picking;
                 var joined = pug.addPlayer(user);
-                pug.players.length === pug.noOfPlayers ? pug.fillPug(serverId) : null;
+                pug.players.length === pug.noOfPlayers && !pug.picking ? pug.fillPug(serverId) : null;
                 var hasFilledAfterJoining = pug.picking;
 
                 if (!hasFilledBeforeJoining && hasFilledAfterJoining) {
@@ -1598,7 +1598,7 @@ function () {
               return p.name === args[0].toLowerCase();
             });
 
-            if (!(hasPugMentioned && hasPugMentioned.players.length > 0)) {
+            if (!(hasPugMentioned && hasPugMentioned.players.length > 0 && !hasPugMentioned.picking)) {
               _context13.next = 9;
               break;
             }
@@ -1941,7 +1941,7 @@ function () {
           case 9:
             user = _context17.sent;
 
-            if (user) {
+            if (!(!user || !user.stats)) {
               _context17.next = 12;
               break;
             }
@@ -2088,7 +2088,7 @@ function () {
               break;
             }
 
-            return _context19.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+            return _context19.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
 
           case 7:
             if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
@@ -2160,7 +2160,7 @@ function () {
               break;
             }
 
-            return _context20.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+            return _context20.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
 
           case 7:
             if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
@@ -2231,7 +2231,7 @@ function () {
               break;
             }
 
-            return _context21.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+            return _context21.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
 
           case 7:
             if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
@@ -2304,7 +2304,7 @@ function () {
               break;
             }
 
-            return _context22.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+            return _context22.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
 
           case 8:
             if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
@@ -2485,7 +2485,7 @@ function () {
               break;
             }
 
-            return _context23.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+            return _context23.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
 
           case 8:
             if (!(!(0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles) && !isBot)) {
@@ -2582,10 +2582,10 @@ function () {
               break;
             }
 
-            return _context24.abrupt("return", message.channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "", " <#").concat(pugChannel, ">")));
+            return _context24.abrupt("return", message.channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
 
           case 7:
-            if (!(!(0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles) && !isBot)) {
+            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
               _context24.next = 9;
               break;
             }

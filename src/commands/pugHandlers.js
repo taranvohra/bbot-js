@@ -467,7 +467,9 @@ export const joinGameTypes = async (
 
         const hasFilledBeforeJoining = pug.picking;
         const joined = pug.addPlayer(user);
-        pug.players.length === pug.noOfPlayers ? pug.fillPug(serverId) : null;
+        pug.players.length === pug.noOfPlayers && !pug.picking
+          ? pug.fillPug(serverId)
+          : null;
         const hasFilledAfterJoining = pug.picking;
 
         if (!hasFilledBeforeJoining && hasFilledAfterJoining) {

@@ -142,18 +142,17 @@ function () {
 
           case 12:
             key = _crypto["default"].createHash('sha256').update(hp).digest('hex');
-            console.log(key, list);
 
             if (!list.some(function (s) {
               return s.key === key;
             })) {
-              _context2.next = 16;
+              _context2.next = 15;
               break;
             }
 
             return _context2.abrupt("return", channel.send('Query Server already exists!'));
 
-          case 16:
+          case 15:
             newServer = {
               key: key,
               name: name,
@@ -161,7 +160,7 @@ function () {
               port: port,
               timestamp: Date.now()
             };
-            _context2.next = 19;
+            _context2.next = 18;
             return _models.UT99QueryServers.findOneAndUpdate({
               server_id: serverId
             }, {
@@ -170,27 +169,27 @@ function () {
               }
             }).exec();
 
-          case 19:
+          case 18:
             _store["default"].dispatch((0, _actions.pushQueryServer)({
               serverId: serverId,
               queryServer: newServer
             }));
 
             channel.send('Query Server added');
-            _context2.next = 26;
+            _context2.next = 25;
             break;
 
-          case 23:
-            _context2.prev = 23;
+          case 22:
+            _context2.prev = 22;
             _context2.t0 = _context2["catch"](3);
             console.log(_context2.t0);
 
-          case 26:
+          case 25:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[3, 23]]);
+    }, _callee2, null, [[3, 22]]);
   }));
 
   return function addQueryServer(_x5, _x6, _x7, _x8) {

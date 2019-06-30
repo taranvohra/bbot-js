@@ -110,6 +110,7 @@ export const formatJoinStatus = statuses => {
           break;
         case 0:
           acc.missed += `Sorry, **${name.toUpperCase()}** is already filled\n`;
+          break;
         case 1:
           acc.joined += `**${name.toUpperCase()}** (${activeCount}/${maxPlayers}) :small_orange_diamond: `;
           break;
