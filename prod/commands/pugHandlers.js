@@ -237,11 +237,9 @@ function () {
         var pickedPlayers = [{
           player: this.players[playerIndex],
           team: team
-        }];
-        console.log(this.turn); // last pick automatically goes
+        }]; // last pick automatically goes
 
         if (this.turn === this.pickingOrder.length - 1) {
-          console.log('in');
           var lastPlayerIndex = this.players.findIndex(function (u) {
             return u.team === null;
           });
@@ -1452,13 +1450,13 @@ function () {
                 if (!existingStats) {
                   updatedStats = {
                     totalRating: pick,
-                    totalCaptain: captain ? 1 : 0,
+                    totalCaptain: captain !== null ? 1 : 0,
                     totalPugs: 1
                   };
                 } else {
                   updatedStats = {
-                    totalRating: captain ? existingStats.totalRating : (existingStats.totalRating + pick) / 2,
-                    totalCaptain: captain ? existingStats.totalCaptain + 1 : existingStats.totalCaptain,
+                    totalRating: captain !== null ? existingStats.totalRating : (existingStats.totalRating + pick) / 2,
+                    totalCaptain: captain !== null ? existingStats.totalCaptain + 1 : existingStats.totalCaptain,
                     totalPugs: existingStats.totalPugs + 1
                   };
                 }
