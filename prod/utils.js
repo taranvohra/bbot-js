@@ -175,7 +175,7 @@ var computePickingOrder = function computePickingOrder(noOfPlayers, noOfTeams) {
     pickingOrder.push(idx);
     wholeRound.push(idx);
 
-    if (wholeRound.length === noOfTeams) {
+    if (wholeRound.length === noOfTeams && pickingOrder.length !== noOfPlayers - noOfTeams) {
       pickingOrder = [].concat(_toConsumableArray(pickingOrder), _toConsumableArray(wholeRound.reverse()));
       wholeRound = [];
       idx = 0;

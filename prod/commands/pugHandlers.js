@@ -237,9 +237,11 @@ function () {
         var pickedPlayers = [{
           player: this.players[playerIndex],
           team: team
-        }]; // last pick automatically goes
+        }];
+        console.log(this.turn); // last pick automatically goes
 
         if (this.turn === this.pickingOrder.length - 1) {
+          console.log('in');
           var lastPlayerIndex = this.players.findIndex(function (u) {
             return u.team === null;
           });

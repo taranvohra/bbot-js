@@ -122,7 +122,10 @@ export const computePickingOrder = (noOfPlayers, noOfTeams) => {
   while (remainingPlayers > 0) {
     pickingOrder.push(idx);
     wholeRound.push(idx);
-    if (wholeRound.length === noOfTeams) {
+    if (
+      wholeRound.length === noOfTeams &&
+      pickingOrder.length !== noOfPlayers - noOfTeams
+    ) {
       pickingOrder = [...pickingOrder, ...wholeRound.reverse()];
       wholeRound = [];
       idx = 0;

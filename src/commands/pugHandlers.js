@@ -197,8 +197,10 @@ class Pug {
       this.players[playerIndex].pick = this.turn;
 
       let pickedPlayers = [{ player: this.players[playerIndex], team }];
+      console.log(this.turn);
       // last pick automatically goes
       if (this.turn === this.pickingOrder.length - 1) {
+        console.log('in');
         const lastPlayerIndex = this.players.findIndex(u => u.team === null);
         const lastPlayerTeam = this.pickingOrder[this.turn];
 
