@@ -1455,7 +1455,7 @@ function () {
                   };
                 } else {
                   updatedStats = {
-                    totalRating: captain !== null ? existingStats.totalRating : (existingStats.totalRating + pick) / 2,
+                    totalRating: captain !== null ? existingStats.totalRating : (existingStats.totalRating * (existingStats.totalPugs - existingStats.totalCaptain) + pick) / (existingStats.totalPugs + 1),
                     totalCaptain: captain !== null ? existingStats.totalCaptain + 1 : existingStats.totalCaptain,
                     totalPugs: existingStats.totalPugs + 1
                   };
