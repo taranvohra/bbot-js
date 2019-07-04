@@ -872,7 +872,7 @@ export const pickPlayer = async (
                 : (existingStats.totalRating *
                     (existingStats.totalPugs - existingStats.totalCaptain) +
                     pick) /
-                  (existingStats.totalPugs + 1),
+                  (existingStats.totalPugs - existingStats.totalCaptain + 1),
             totalCaptain:
               captain !== null
                 ? existingStats.totalCaptain + 1
