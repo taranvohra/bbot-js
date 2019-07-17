@@ -109,7 +109,7 @@ export const formatJoinStatus = statuses => {
           acc.nf += `No pug found: **${name.toUpperCase()}**\n`;
           break;
         case 0:
-          acc.missed += `Sorry, **${name.toUpperCase()}** is already filled\n`;
+          acc.missed += `Sorry, **${name.toUpperCase()}** is already filled <:tears:593432204986548235>\n`;
           break;
         case 1:
           acc.joined += `**${name.toUpperCase()}** (${activeCount}/${maxPlayers}) :small_orange_diamond: `;
@@ -154,7 +154,7 @@ export const formatLeaveStatus = (statuses, isOffline) => {
           acc.user = user;
           break;
         case 0:
-          acc.nj = `Cannot leave pug(s) you haven't joined :head_bandage:`;
+          acc.nj = `Cannot leave pug(s) you haven't joined <:smart:601094351770353664>`;
           break;
         case -1:
           acc.nf += `No pug found: **${name.toUpperCase()}**\n`;
@@ -170,7 +170,9 @@ export const formatLeaveStatus = (statuses, isOffline) => {
   const body = `${
     left.length > 0
       ? `${user.username} left  ${left} ${
-          isOffline ? `because the person went offline` : ``
+          isOffline
+            ? `because the user went offline <:residentsleeper:601092229343215646>`
+            : ``
         }`
       : ``
   }${nj.length > 0 ? `\n${nj}` : ``}${nf.length > 0 ? `\n${nf}` : ``}`;
@@ -181,9 +183,9 @@ export const formatDeadPugs = deadPugs => {
   const body = deadPugs.reduce((acc, { pug, user }, i) => {
     acc += `${
       i > 0 ? `\n` : ``
-    } :joy_cat: **${pug.name.toUpperCase()}** was stopped because **${
+    } <:tearddy:601092340865564673> **${pug.name.toUpperCase()}** was stopped because **${
       user.username
-    }** left :joy_cat: `;
+    }** left <:tearddy:601092340865564673> `;
     return acc;
   }, ``);
   return body;

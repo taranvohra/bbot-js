@@ -558,7 +558,7 @@ function () {
 
               return acc;
             }, []);
-            channel.send((0, _formats.formatListGameTypes)(channel.guild.name, gamesList));
+            channel.send('<:tearddy:601090213787336736>' + '\n' + (0, _formats.formatListGameTypes)(channel.guild.name, gamesList));
             _context3.next = 15;
             break;
 
@@ -1455,7 +1455,7 @@ function () {
                   };
                 } else {
                   updatedStats = {
-                    totalRating: captain !== null ? existingStats.totalRating : (existingStats.totalRating * (existingStats.totalPugs - existingStats.totalCaptain) + pick) / (existingStats.totalPugs + 1),
+                    totalRating: captain !== null ? existingStats.totalRating : (existingStats.totalRating * (existingStats.totalPugs - existingStats.totalCaptain) + pick) / (existingStats.totalPugs - existingStats.totalCaptain + 1),
                     totalCaptain: captain !== null ? existingStats.totalCaptain + 1 : existingStats.totalCaptain,
                     totalPugs: existingStats.totalPugs + 1
                   };
