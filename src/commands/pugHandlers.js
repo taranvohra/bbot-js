@@ -14,6 +14,7 @@ import {
   pugEvents,
   tagLength,
   prefix,
+  emojis,
 } from '../constants';
 import {
   formatListGameTypes,
@@ -733,7 +734,7 @@ export const leaveAllGameTypes = async (message, args, serverId, user) => {
     }, []);
     if (listToLeave.length === 0) {
       return message.channel.send(
-        `Cannot leave pug(s) if you haven't joined any <:smart:601094351770353664>`
+        `Cannot leave pug(s) if you haven't joined any ${emojis.smart}`
       );
     }
     leaveGameTypes(message, listToLeave, serverId, user, hasGoneOffline);
@@ -819,7 +820,7 @@ export const pickPlayer = async (
 
     if (!forWhichPug)
       return channel.send(
-        'Cannot pick if you are not a captain in a pug <:smart:601094351770353664> '
+        `Cannot pick if you are not a captain in a pug ${emojis.smart} `
       );
 
     if (!forWhichPug.areCaptainsDecided())
@@ -1362,9 +1363,11 @@ export const blockPlayer = async (
       }** was removed from ${removedPugs}`;
     }
 
-    const finalMsg = `<:bannechu:601092624962682881> **${
+    const finalMsg = `${emojis.bannechu} **${
       mentionedUser.username
-    }** has been blocked from joining pugs till __**${expirationDate.toGMTString()}**__ <:bannechu:601092624962682881>\n${removedMsg}`;
+    }** has been blocked from joining pugs till __**${expirationDate.toGMTString()}**__ ${
+      emojis.bannechu
+    }\n${removedMsg}`;
 
     channel.send(finalMsg);
   } catch (error) {
@@ -1398,7 +1401,7 @@ export const unblockPlayer = async (
       return channel.send(
         `cannot unblock **${
           mentionedUser.username
-        }** if the person isn't blocked in the first place <:smart:601094351770353664> `
+        }** if the user isn't blocked in the first place ${emojis.smart} `
       );
 
     const newBlockedList = list.filter(u => u.id !== mentionedUser.id);
@@ -1451,7 +1454,7 @@ export const showBlockedUsers = async (
     }, ``);
 
     message.author.send(
-      `<:bannechu:601092624962682881> List of Blocked Users <:bannechu:601092624962682881>\n${msg}`
+      `${emojis.bannechu} List of Blocked Users ${emojis.bannechu}\n${msg}`
     );
     message.channel.send('You have received a DM');
   } catch (error) {

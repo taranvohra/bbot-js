@@ -119,7 +119,7 @@ var formatJoinStatus = function formatJoinStatus(statuses) {
         break;
 
       case 0:
-        acc.missed += "Sorry, **".concat(name.toUpperCase(), "** is already filled\n");
+        acc.missed += "Sorry, **".concat(name.toUpperCase(), "** is already filled ").concat(_constants.emojis.tearddy, "\n");
         break;
 
       case 1:
@@ -170,7 +170,7 @@ var formatLeaveStatus = function formatLeaveStatus(statuses, isOffline) {
         break;
 
       case 0:
-        acc.nj = "Cannot leave pug(s) you haven't joined :head_bandage:";
+        acc.nj = "Cannot leave pug(s) you haven't joined ".concat(_constants.emojis.smart);
         break;
 
       case -1:
@@ -193,7 +193,7 @@ var formatLeaveStatus = function formatLeaveStatus(statuses, isOffline) {
       nf = _statuses$reduce2.nf,
       user = _statuses$reduce2.user;
 
-  var body = "".concat(left.length > 0 ? "".concat(user.username, " left  ").concat(left, " ").concat(isOffline ? "because the person went offline" : "") : "").concat(nj.length > 0 ? "\n".concat(nj) : "").concat(nf.length > 0 ? "\n".concat(nf) : "");
+  var body = "".concat(left.length > 0 ? "".concat(user.username, " left  ").concat(left, " ").concat(isOffline ? "because the user went offline ".concat(_constants.emojis.residentsleeper).concat(_constants.emojis.pupcurn) : "") : "").concat(nj.length > 0 ? "\n".concat(nj) : "").concat(nf.length > 0 ? "\n".concat(nf) : "");
   return body;
 };
 
@@ -203,7 +203,7 @@ var formatDeadPugs = function formatDeadPugs(deadPugs) {
   var body = deadPugs.reduce(function (acc, _ref3, i) {
     var pug = _ref3.pug,
         user = _ref3.user;
-    acc += "".concat(i > 0 ? "\n" : "", " :joy_cat: **").concat(pug.name.toUpperCase(), "** was stopped because **").concat(user.username, "** left :joy_cat: ");
+    acc += "".concat(i > 0 ? "\n" : "", " ").concat(_constants.emojis.trumpXD, " **").concat(pug.name.toUpperCase(), "** was stopped because **").concat(user.username, "** left ").concat(_constants.emojis.trumpXD);
     return acc;
   }, "");
   return body;
@@ -212,7 +212,7 @@ var formatDeadPugs = function formatDeadPugs(deadPugs) {
 exports.formatDeadPugs = formatDeadPugs;
 
 var formatBroadcastPug = function formatBroadcastPug(toBroadcast) {
-  var title = "**".concat(toBroadcast.name.toUpperCase(), "** has been filled!");
+  var title = "".concat(_constants.emojis.moskva, " :mega: **").concat(toBroadcast.name.toUpperCase(), "** has been filled!");
   var body = toBroadcast.players.reduce(function (acc, player) {
     acc += "<@".concat(player.id, "> ");
     return acc;

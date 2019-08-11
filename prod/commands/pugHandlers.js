@@ -558,7 +558,7 @@ function () {
 
               return acc;
             }, []);
-            channel.send('<:tearddy:601090213787336736>' + '\n' + (0, _formats.formatListGameTypes)(channel.guild.name, gamesList));
+            channel.send((0, _formats.formatListGameTypes)(channel.guild.name, gamesList));
             _context3.next = 15;
             break;
 
@@ -1212,7 +1212,7 @@ function () {
               break;
             }
 
-            return _context9.abrupt("return", message.channel.send("Cannot leave pug(s) if you haven't joined any :head_bandage:"));
+            return _context9.abrupt("return", message.channel.send("Cannot leave pug(s) if you haven't joined any ".concat(_constants.emojis.smart)));
 
           case 9:
             leaveGameTypes(message, listToLeave, serverId, user, hasGoneOffline);
@@ -1384,7 +1384,7 @@ function () {
               break;
             }
 
-            return _context11.abrupt("return", channel.send('Cannot pick if you are not a captain in a pug :head_bandage: '));
+            return _context11.abrupt("return", channel.send("Cannot pick if you are not a captain in a pug ".concat(_constants.emojis.smart, " ")));
 
           case 14:
             if (forWhichPug.areCaptainsDecided()) {
@@ -2436,7 +2436,7 @@ function () {
               removedMsg = "**".concat(mentionedUser.username, "** was removed from ").concat(removedPugs);
             }
 
-            finalMsg = ":hammer: **".concat(mentionedUser.username, "** has been blocked from joining pugs till __**").concat(expirationDate.toGMTString(), "**__ :hammer:\n").concat(removedMsg);
+            finalMsg = "".concat(_constants.emojis.bannechu, " **").concat(mentionedUser.username, "** has been blocked from joining pugs till __**").concat(expirationDate.toGMTString(), "**__ ").concat(_constants.emojis.bannechu, "\n").concat(removedMsg);
             channel.send(finalMsg);
             _context22.next = 48;
             break;
@@ -2511,7 +2511,7 @@ function () {
               break;
             }
 
-            return _context23.abrupt("return", channel.send("cannot unblock **".concat(mentionedUser.username, "** if the person isn't blocked in the first place :head_bandage: ")));
+            return _context23.abrupt("return", channel.send("cannot unblock **".concat(mentionedUser.username, "** if the user isn't blocked in the first place ").concat(_constants.emojis.smart, " ")));
 
           case 14:
             newBlockedList = list.filter(function (u) {
@@ -2606,7 +2606,7 @@ function () {
               acc += "".concat(i > 0 ? ' • ' : '', " **").concat(curr.username, "** ").concat(curr.reason ? "(".concat(curr.reason, ") ") : "", "block expires on **").concat(curr.expires_at.toGMTString(), "**");
               return acc;
             }, "");
-            message.author.send(":hammer: __List of Blocked Users__ :hammer:\n".concat(msg));
+            message.author.send("".concat(_constants.emojis.bannechu, " List of Blocked Users ").concat(_constants.emojis.bannechu, "\n").concat(msg));
             message.channel.send('You have received a DM');
             _context24.next = 21;
             break;
