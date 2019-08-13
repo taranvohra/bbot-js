@@ -1,4 +1,4 @@
-export const prefix = '.';
+export const prefix = '-';
 
 export const privilegedRoles = ['Admins', 'Moderators'];
 
@@ -9,6 +9,13 @@ export const teams = {
   team_3: 'Gold Team',
   team_255: 'Players',
   spec: 'Spectators',
+};
+
+export const teamEmojis = {
+  team_0: '<:AGONY:610820370617991198>',
+  team_1: '<:FROSTAGONY:610820381778903052>',
+  team_2: '<:DISGUSTAGONY:610820391786774546>',
+  team_3: '<:GOLDENAGONY:610826861165150221>',
 };
 
 export const tagLength = 30;

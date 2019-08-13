@@ -6,7 +6,7 @@ import {
   padNumberWithZeros,
   getTeamIndex,
 } from './utils';
-import { teams, prefix, captainTimeout, emojis } from './constants';
+import { teams, prefix, captainTimeout, emojis, teamEmojis } from './constants';
 import { distanceInWordsStrict } from 'date-fns';
 
 const embedColor = '#11806A';
@@ -230,9 +230,9 @@ export const formatListAllCurrentGameTypes = (list, guildName) => {
 };
 
 export const formatAddCaptainStatus = (user, { team }) => {
-  const body = `**${user.username}** became captain for **${teams[
-    `team_${team}`
-  ].toUpperCase()}**`;
+  const body = `**${user.username}** became captain for ${
+    teamEmojis[`team_${team}`]
+  } **${teams[`team_${team}`].toUpperCase()}** ${teamEmojis[`team_${team}`]}`;
   return body;
 };
 
@@ -263,7 +263,7 @@ export const formatPickPlayerStatus = ({ pickedPlayers, finished, pug }) => {
   const pugTeams = Array(pug.noOfTeams)
     .fill(0)
     .reduce((acc, _, i) => {
-      acc[i] = `**${teams[`team_${i}`]}**: `;
+      acc[i] = `**${teams[`team_${i}`]}** ${teamEmojis[`team_${i}`]} `;
       return acc;
     }, {});
 
@@ -308,7 +308,7 @@ export const formatPugsInPicking = pugsInPicking => {
     const pugTeams = Array(pug.noOfTeams)
       .fill(0)
       .reduce((acc, _, i) => {
-        acc[i] = `**${teams[`team_${i}`]}**: `;
+        acc[i] = `**${teams[`team_${i}`]}** ${teamEmojis[`team_${i}`]} `;
         return acc;
       }, {});
 
@@ -342,7 +342,9 @@ export const formatPugsInPicking = pugsInPicking => {
 
 export const formatBroadcastCaptainsReady = ({ players, captains }) => {
   const pugCaptains = captains.reduce((acc, curr, index) => {
-    acc += `<@${curr.id}> is the captain for **${teams[`team_${index}`]}**\n`;
+    acc += `<@${curr.id}> is the captain for ${teamEmojis[`team_${index}`]} **${
+      teams[`team_${index}`]
+    }** ${teamEmojis[`team_${index}`]}\n`;
     return acc;
   }, ``);
 
@@ -386,7 +388,7 @@ export const formatLastPugStatus = ({ pug, guildName }, action, timestamp) => {
   const pugTeams = Array(pug.noOfTeams)
     .fill(0)
     .reduce((acc, _, i) => {
-      acc[i] = `**${teams[`team_${i}`]}**: `;
+      acc[i] = `**${teams[`team_${i}`]}** ${teamEmojis[`team_${i}`]} `;
       return acc;
     }, {});
 
@@ -428,7 +430,9 @@ export const formatUserStats = ({ username, stats, last_pug }) => {
   const pugTeams = Array(last_pug.noOfTeams)
     .fill(0)
     .reduce((acc, _, i) => {
-      acc[i] = `\t**${teams[`team_${i}`]}**: `;
+      acc[i] = `\t ${teamEmojis[`team_${i}`]} **${teams[`team_${i}`]}** ${
+        teamEmojis[`team_${i}`]
+      } `;
       return acc;
     }, {});
 
