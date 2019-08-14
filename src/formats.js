@@ -430,9 +430,7 @@ export const formatUserStats = ({ username, stats, last_pug }) => {
   const pugTeams = Array(last_pug.noOfTeams)
     .fill(0)
     .reduce((acc, _, i) => {
-      acc[i] = `\t ${teamEmojis[`team_${i}`]} **${teams[`team_${i}`]}** ${
-        teamEmojis[`team_${i}`]
-      } `;
+      acc[i] = `\t**${teams[`team_${i}`]}** ${teamEmojis[`team_${i}`]} `;
       return acc;
     }, {});
 
