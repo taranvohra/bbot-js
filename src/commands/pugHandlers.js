@@ -85,9 +85,10 @@ class Pug {
         p => p.captain === null
       );
       const poolForCaptains = shuffle(playersWithoutCaptain)
-        .slice(0, remaining * 0.8)
+        .slice(0, remaining * 0.6)
         .sort((a, b) => a.rating - b.rating);
 
+      console.log(poolForCaptains);
       if (this.noOfTeams === 2) {
         if (this.captains.length === 0) {
           let leastDiff = 0;
