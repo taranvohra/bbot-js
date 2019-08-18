@@ -15,6 +15,7 @@ import {
   tagLength,
   prefix,
   emojis,
+  strongPlayerRatingThreshold,
 } from '../constants';
 import {
   formatListGameTypes,
@@ -119,14 +120,35 @@ class Pug {
           const firstCaptain = poolForCaptains[pair[0]];
           const secondCaptain = poolForCaptains[pair[1]];
 
-          this.fillCaptainSpot(
-            firstCaptain,
-            firstCaptain.rating >= secondCaptain.rating ? 0 : 1
-          );
-          this.fillCaptainSpot(
-            secondCaptain,
-            firstCaptain.rating >= secondCaptain.rating ? 1 : 0
-          );
+          let strongCaptain, weakCaptain; // with respect to each other
+          if (firstCaptain.rating <= secondCaptain.rating) {
+            strongCaptain = firstCaptain;
+            weakCaptain = secondCaptain;
+          } else {
+            strongCaptain = secondCaptain;
+            weakCaptain = firstCaptain;
+          }
+
+          const strongPlayersCount = this.players.reduce((acc, user) => {
+            if (user.rating <= strongPlayerRatingThreshold) acc = acc + 1;
+            return acc;
+          }, 0);
+
+          const strongPlayerPercentage =
+            strongPlayersCount / this.players.length;
+
+          // 4-5 strong players
+          if (strongPlayerPercentage >= 0.4 && strongPlayerPercentage <= 0.5) {
+            this.fillCaptainSpot(strongCaptain, 0);
+            this.fillCaptainSpot(weakCaptain, 1);
+          } else if (
+            strongPlayerPercentage < 0.4 ||
+            strongPlayerPercentage > 0.5
+          ) {
+            // less than 4 strong players total in the pug or more than 5 strong players
+            this.fillCaptainSpot(weakCaptain, 0);
+            this.fillCaptainSpot(strongCaptain, 1);
+          }
         } else {
           // 1 capt already there
           const firstCaptain = this.players.find(u => u.captain !== null);

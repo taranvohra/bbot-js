@@ -18,6 +18,7 @@ export const teamEmojis = {
   team_3: '<:GOLDENAGONY:610826861165150221>',
 };
 
+export const strongPlayerRatingThreshold = 3.5;
 export const tagLength = 30;
 export const captainTimeout = 30000;
 export const offline = 'unplugged';
