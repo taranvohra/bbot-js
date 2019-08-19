@@ -92,7 +92,7 @@ class Pug {
       console.log(poolForCaptains);
       if (this.noOfTeams === 2) {
         if (this.captains.length === 0) {
-          let leastDiff = 0;
+          let leastDiff = Number.MAX_SAFE_INTEGER;
           let pair = [0, 1];
           for (let i = 1; i < poolForCaptains.length - 1; i++) {
             const left = {
