@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.formatUserStats = exports.formatLastPugStatus = exports.formatPromoteAvailablePugs = exports.formatBroadcastCaptainsReady = exports.formatPugsInPicking = exports.formatPickPlayerStatus = exports.formatAddCaptainStatus = exports.formatListAllCurrentGameTypes = exports.formatBroadcastPug = exports.formatDeadPugs = exports.formatLeaveStatus = exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
+exports.formatUserStats = exports.formatLastPugStatus = exports.formatPromoteAvailablePugs = exports.formatBroadcastCaptainsReady = exports.formatPugsInPicking = exports.formatPickPlayerStatus = exports.formatAddCaptainStatus = exports.formatListAllCurrentGameTypes = exports.formatListGameType = exports.formatBroadcastPug = exports.formatDeadPugs = exports.formatLeaveStatus = exports.formatJoinStatus = exports.formatListGameTypes = exports.formatQueryServerStatus = exports.formatQueryServers = void 0;
 
 var _discord = _interopRequireDefault(require("discord.js"));
 
@@ -223,6 +223,17 @@ var formatBroadcastPug = function formatBroadcastPug(toBroadcast) {
 
 exports.formatBroadcastPug = formatBroadcastPug;
 
+var formatListGameType = function formatListGameType(pug) {
+  var title = "**".concat(pug.name.toUpperCase(), "** (").concat(pug.players.length, "/").concat(pug.noOfPlayers, ")");
+  var players = pug.players.reduce(function (acc, u) {
+    acc += ":small_orange_diamond: ".concat(u.username, " ");
+    return acc;
+  }, "");
+  return "".concat(title).concat(players);
+};
+
+exports.formatListGameType = formatListGameType;
+
 var formatListAllCurrentGameTypes = function formatListAllCurrentGameTypes(list, guildName) {
   var body = list.reduce(function (prev, curr) {
     var base = "**".concat(curr.name.toUpperCase(), "** (").concat(curr.players.length, "/").concat(curr.noOfPlayers, ") ");
@@ -240,7 +251,7 @@ exports.formatListAllCurrentGameTypes = formatListAllCurrentGameTypes;
 
 var formatAddCaptainStatus = function formatAddCaptainStatus(user, _ref4) {
   var team = _ref4.team;
-  var body = "**".concat(user.username, "** became captain for **").concat(_constants.teams["team_".concat(team)].toUpperCase(), "**");
+  var body = "**".concat(user.username, "** became captain for ").concat(_constants.teamEmojis["team_".concat(team)], " **").concat(_constants.teams["team_".concat(team)].toUpperCase(), "** ").concat(_constants.teamEmojis["team_".concat(team)]);
   return body;
 };
 
@@ -266,7 +277,7 @@ var formatPickPlayerStatus = function formatPickPlayerStatus(_ref5) {
 
   var turn = finished ? ":fire: **Picking has finished** :fire:" : "<@".concat(next.id, "> pick ").concat(count, " player").concat(count > 1 ? 's' : '', " for **").concat(_constants.teams["team_".concat(next.team)], "**");
   var pugTeams = Array(pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
-    acc[i] = "**".concat(_constants.teams["team_".concat(i)], "**: ");
+    acc[i] = "**".concat(_constants.teams["team_".concat(i)], "** ").concat(_constants.teamEmojis["team_".concat(i)], " ");
     return acc;
   }, {});
   var players = pug.players.reduce(function (acc, curr, index) {
@@ -302,7 +313,7 @@ var formatPugsInPicking = function formatPugsInPicking(pugsInPicking) {
 
     var turn = "<@".concat(next.id, "> pick ").concat(count, " player").concat(count > 1 ? 's' : '', " for **").concat(_constants.teams["team_".concat(next.team)], "**");
     var pugTeams = Array(pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
-      acc[i] = "**".concat(_constants.teams["team_".concat(i)], "**: ");
+      acc[i] = "**".concat(_constants.teams["team_".concat(i)], "** ").concat(_constants.teamEmojis["team_".concat(i)], " ");
       return acc;
     }, {});
     var players = pug.players.reduce(function (acc, curr, index) {
@@ -333,7 +344,7 @@ var formatBroadcastCaptainsReady = function formatBroadcastCaptainsReady(_ref6) 
   var players = _ref6.players,
       captains = _ref6.captains;
   var pugCaptains = captains.reduce(function (acc, curr, index) {
-    acc += "<@".concat(curr.id, "> is the captain for **").concat(_constants.teams["team_".concat(index)], "**\n");
+    acc += "<@".concat(curr.id, "> is the captain for ").concat(_constants.teamEmojis["team_".concat(index)], " **").concat(_constants.teams["team_".concat(index)], "** ").concat(_constants.teamEmojis["team_".concat(index)], "\n");
     return acc;
   }, "");
   var turn = "<@".concat(captains[0].id, "> pick 1 player for **").concat(_constants.teams["team_0"], "**");
@@ -373,7 +384,7 @@ var formatLastPugStatus = function formatLastPugStatus(_ref7, action, timestamp)
   });
   var title = "".concat(action.charAt(0).toUpperCase() + action.slice(1), " **").concat(pug.name.toUpperCase(), "** at **").concat(guildName, "** (").concat(distanceInWords, ")");
   var pugTeams = Array(pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
-    acc[i] = "**".concat(_constants.teams["team_".concat(i)], "**: ");
+    acc[i] = "**".concat(_constants.teams["team_".concat(i)], "** ").concat(_constants.teamEmojis["team_".concat(i)], " ");
     return acc;
   }, {});
 
@@ -409,7 +420,7 @@ var formatUserStats = function formatUserStats(_ref8) {
     addSuffix: true
   });
   var pugTeams = Array(last_pug.noOfTeams).fill(0).reduce(function (acc, _, i) {
-    acc[i] = "\t**".concat(_constants.teams["team_".concat(i)], "**: ");
+    acc[i] = "\t**".concat(_constants.teams["team_".concat(i)], "** ").concat(_constants.teamEmojis["team_".concat(i)], " ");
     return acc;
   }, {});
 

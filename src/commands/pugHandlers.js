@@ -30,6 +30,7 @@ import {
   formatPromoteAvailablePugs,
   formatLastPugStatus,
   formatUserStats,
+  formatListGameType,
 } from '../formats';
 import {
   assignGameTypes,
@@ -375,7 +376,7 @@ export const delGameType = async (
   }
 };
 
-export const listGameTypes = async ({ channel }, _, serverId, __) => {
+export const listGameTypes = async ({ channel }, [gameType], serverId, __) => {
   try {
     const state = store.getState();
     const { pugChannel, gameTypes, list } = state.pugs[serverId];
@@ -387,29 +388,45 @@ export const listGameTypes = async ({ channel }, _, serverId, __) => {
         }`
       );
 
-    const tempList = gameTypes.map(g => {
-      return {
-        name: g.name,
-        players: 0,
-        maxPlayers: g.noOfPlayers,
-      };
-    });
+    if (gameType) {
+      const validGameType = gameTypes.find(
+        g => g.name === gameType.toLowerCase()
+      );
+      if (!validGameType)
+        return channel.send(`There is no such active pug ${gameType}`);
 
-    const gamesList = tempList.reduce((acc, curr) => {
-      const existingPug = list.find(p => p.name === curr.name);
-      if (existingPug) {
-        acc.push({
-          name: existingPug.name,
-          maxPlayers: existingPug.noOfPlayers,
-          players: existingPug.players.length,
-        });
-      } else {
-        acc.push(curr);
-      }
-      return acc;
-    }, []);
+      const existingPug = list.find(p => p.name === gameType.toLowerCase());
+      if (!existingPug)
+        return channel.send(
+          `**${gameType.toUpperCase()}** (0/${validGameType.noOfPlayers})`
+        );
 
-    channel.send(formatListGameTypes(channel.guild.name, gamesList));
+      channel.send(formatListGameType(existingPug));
+    } else {
+      const tempList = gameTypes.map(g => {
+        return {
+          name: g.name,
+          players: 0,
+          maxPlayers: g.noOfPlayers,
+        };
+      });
+
+      const gamesList = tempList.reduce((acc, curr) => {
+        const existingPug = list.find(p => p.name === curr.name);
+        if (existingPug) {
+          acc.push({
+            name: existingPug.name,
+            maxPlayers: existingPug.noOfPlayers,
+            players: existingPug.players.length,
+          });
+        } else {
+          acc.push(curr);
+        }
+        return acc;
+      }, []);
+
+      channel.send(formatListGameTypes(channel.guild.name, gamesList));
+    }
   } catch (error) {
     channel.send('Something went wrong');
     console.log(error);
@@ -1381,9 +1398,7 @@ export const blockPlayer = async (
     }
 
     if (removedPugs) {
-      removedMsg = `**${
-        mentionedUser.username
-      }** was removed from ${removedPugs}`;
+      removedMsg = `**${mentionedUser.username}** was removed from ${removedPugs}`;
     }
 
     const finalMsg = `${emojis.bannechu} **${
@@ -1422,9 +1437,7 @@ export const unblockPlayer = async (
 
     if (!list.some(u => u.id === mentionedUser.id))
       return channel.send(
-        `cannot unblock **${
-          mentionedUser.username
-        }** if the user isn't blocked in the first place ${emojis.smart} `
+        `cannot unblock **${mentionedUser.username}** if the user isn't blocked in the first place ${emojis.smart} `
       );
 
     const newBlockedList = list.filter(u => u.id !== mentionedUser.id);

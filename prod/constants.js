@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.emojis = exports.pugEvents = exports.offline = exports.captainTimeout = exports.tagLength = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
+exports.emojis = exports.pugEvents = exports.offline = exports.captainTimeout = exports.tagLength = exports.strongPlayerRatingThreshold = exports.teamEmojis = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
 var prefix = '-';
 exports.prefix = prefix;
 var privilegedRoles = ['Admins', 'Moderators'];
@@ -17,6 +17,15 @@ var teams = {
   spec: 'Spectators'
 };
 exports.teams = teams;
+var teamEmojis = {
+  team_0: '<:AGONY:610820370617991198>',
+  team_1: '<:FROSTAGONY:610820381778903052>',
+  team_2: '<:DISGUSTAGONY:610820391786774546>',
+  team_3: '<:GOLDENAGONY:610826861165150221>'
+};
+exports.teamEmojis = teamEmojis;
+var strongPlayerRatingThreshold = 3.5;
+exports.strongPlayerRatingThreshold = strongPlayerRatingThreshold;
 var tagLength = 30;
 exports.tagLength = tagLength;
 var captainTimeout = 30000;

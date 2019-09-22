@@ -173,9 +173,7 @@ export const formatLeaveStatus = (statuses, isOffline) => {
     left.length > 0
       ? `${user.username} left  ${left} ${
           isOffline
-            ? `because the user went offline ${emojis.residentsleeper}${
-                emojis.pupcurn
-              }`
+            ? `because the user went offline ${emojis.residentsleeper}${emojis.pupcurn}`
             : ``
         }`
       : ``
@@ -207,6 +205,19 @@ export const formatBroadcastPug = toBroadcast => {
     1000} seconds`;
 
   return `${title}\n${body}\n${footer}\n`;
+};
+
+export const formatListGameType = pug => {
+  const title = `**${pug.name.toUpperCase()}** (${pug.players.length}/${
+    pug.noOfPlayers
+  })`;
+
+  const players = pug.players.reduce((acc, u) => {
+    acc += `:small_orange_diamond: ${u.username} `;
+    return acc;
+  }, ``);
+
+  return `${title}${players}`;
 };
 
 export const formatListAllCurrentGameTypes = (list, guildName) => {
