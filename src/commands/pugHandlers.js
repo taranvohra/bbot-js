@@ -91,7 +91,6 @@ class Pug {
         .slice(0, remaining * 0.6)
         .sort((a, b) => a.rating - b.rating);
 
-      console.log(poolForCaptains);
       if (this.noOfTeams === 2) {
         if (this.captains.length === 0) {
           let leastDiff = Number.MAX_SAFE_INTEGER;
@@ -1065,7 +1064,8 @@ export const checkLastPugs = async (
         formatLastPugStatus(
           { pug: found.pug, guildName: channel.guild.name },
           action,
-          found.timestamp
+          found.timestamp,
+          { winner: found.winner }
         )
       );
   } catch (error) {
@@ -1554,10 +1554,17 @@ export const declareWinner = async (
     const found = results[howMany - 1];
     if (!found) return channel.send(`No **${which}** pug found`);
 
+    let changeWinner = false;
     const { pug } = found;
     const winningTeam = teamIndexes[wTeam.toLowerCase()];
+
     if (winningTeam === undefined || winningTeam > pug.noOfTeams - 1)
       return channel.send('Invalid winning team');
+
+    if (found.winner === winningTeam)
+      return channel.send('Pug winner already set');
+
+    if (found.winner !== undefined) changeWinner = true; // change the previously set winner
 
     const updatedPug = await Pugs.findOneAndUpdate(
       { _id: found.id },
@@ -1583,8 +1590,18 @@ export const declareWinner = async (
       const presentLosses = existingStats.lost || 0;
       updatedStats = {
         ...existingStats,
-        won: player.team === winningTeam ? presentWins + 1 : presentWins,
-        lost: player.team !== winningTeam ? presentLosses + 1 : presentLosses,
+        won:
+          player.team === winningTeam
+            ? presentWins + 1
+            : changeWinner
+            ? presentWins - 1
+            : presentWins,
+        lost:
+          player.team !== winningTeam
+            ? presentLosses + 1
+            : changeWinner
+            ? presentLosses - 1
+            : presentLosses,
       };
 
       Users.findOneAndUpdate(
@@ -1597,6 +1614,15 @@ export const declareWinner = async (
         }
       ).exec();
     }
+
+    channel.send(
+      formatLastPugStatus(
+        { pug: updatedPug.pug, guildName: channel.guild.name },
+        which,
+        found.timestamp,
+        { winner: winningTeam, updated: true }
+      )
+    );
   } catch (error) {
     console.log(error);
     message.channel.send('Something went wrong');

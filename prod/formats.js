@@ -376,9 +376,11 @@ var formatPromoteAvailablePugs = function formatPromoteAvailablePugs(pugs, guild
 
 exports.formatPromoteAvailablePugs = formatPromoteAvailablePugs;
 
-var formatLastPugStatus = function formatLastPugStatus(_ref7, action, timestamp) {
+var formatLastPugStatus = function formatLastPugStatus(_ref7, action, timestamp, _ref8) {
   var pug = _ref7.pug,
       guildName = _ref7.guildName;
+  var winner = _ref8.winner,
+      updated = _ref8.updated;
   var distanceInWords = (0, _dateFns.distanceInWordsStrict)(new Date(), timestamp, {
     addSuffix: true
   });
@@ -399,15 +401,16 @@ var formatLastPugStatus = function formatLastPugStatus(_ref7, action, timestamp)
     acc += "".concat(curr.slice(0, curr.length - 24), "\n");
     return acc;
   }, "");
-  return "".concat(title, "\n\n").concat(activeTeams);
+  var result = winner !== undefined ? ":trophy: ".concat(_constants.teamEmojis["team_".concat(winner)], " :trophy:") : "";
+  return "".concat(updated ? "Pug Stat Updated\n\n" : "").concat(title, "\n\n").concat(activeTeams, "\n").concat(result);
 };
 
 exports.formatLastPugStatus = formatLastPugStatus;
 
-var formatUserStats = function formatUserStats(_ref8) {
-  var username = _ref8.username,
-      stats = _ref8.stats,
-      last_pug = _ref8.last_pug;
+var formatUserStats = function formatUserStats(_ref9) {
+  var username = _ref9.username,
+      stats = _ref9.stats,
+      last_pug = _ref9.last_pug;
   var totalPugs = Object.values(stats).reduce(function (acc, curr) {
     return acc += curr.totalPugs || 0;
   }, 0);
@@ -436,13 +439,14 @@ var formatUserStats = function formatUserStats(_ref8) {
     return acc;
   }, "");
   var lastMetaData = "Last pug played was **".concat(last_pug.name.toUpperCase(), "** (").concat(distance, ")");
-  var collectiveStatsTitle = "__**Gametypes**__ [total \u2022 captained \u2022 rating]";
-  var collectiveStatsBody = Object.entries(stats).reduce(function (acc, _ref9, i) {
-    var _ref10 = _slicedToArray(_ref9, 2),
-        pugName = _ref10[0],
-        pugStats = _ref10[1];
+  var collectiveStatsTitle = "__**Gametypes**__ [total \u2022 captained \u2022 rating \u2022 win%]";
+  var collectiveStatsBody = Object.entries(stats).reduce(function (acc, _ref10, i) {
+    var _ref11 = _slicedToArray(_ref10, 2),
+        pugName = _ref11[0],
+        pugStats = _ref11[1];
 
-    acc += "**".concat(pugName, "** [**").concat(pugStats.totalPugs, "** pug").concat(pugStats.totalPugs !== 1 ? 's' : '', " \u2022 **").concat(pugStats.totalCaptain, "**x captain \u2022 ").concat(pugStats.totalRating === 0 ? "no" : "".concat(pugStats.totalRating.toFixed(2)), " rating] ").concat(i > 0 ? ':small_blue_diamond: ' : '');
+    var winPercentage = pugStats.won ? pugStats.won / (pugStats.won + pugStats.lost) : 0;
+    acc += "".concat(i > 0 ? ':small_blue_diamond: ' : '', "**").concat(pugName, "** [**").concat(pugStats.totalPugs, "** pug").concat(pugStats.totalPugs !== 1 ? 's' : '', " \u2022 **").concat(pugStats.totalCaptain, "**x captain \u2022 ").concat(pugStats.totalRating === 0 ? "no" : "".concat(pugStats.totalRating.toFixed(2)), " rating \u2022 ").concat((winPercentage * 100).toFixed(2), "%] ");
     return acc;
   }, "");
   return "".concat(title, "\n\n").concat(totals, "\n\n").concat(lastMetaData, "\n").concat(activeTeams, "\n").concat(collectiveStatsTitle, "\n").concat(collectiveStatsBody);

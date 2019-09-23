@@ -1783,7 +1783,9 @@ function () {
             found && channel.send((0, _formats.formatLastPugStatus)({
               pug: found.pug,
               guildName: channel.guild.name
-            }, action, found.timestamp));
+            }, action, found.timestamp, {
+              winner: found.winner
+            }));
             _context14.next = 32;
             break;
 
@@ -2714,7 +2716,7 @@ function () {
   var _ref80 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee25(_ref77, _ref78, serverId, _ref79) {
-    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, pug, winningTeam, updatedPug, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, player, updatedStats, existingPlayer, stats, existingStats, presentWins, presentLosses;
+    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, changeWinner, pug, winningTeam, updatedPug, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, player, updatedStats, existingPlayer, stats, existingStats, presentWins, presentLosses;
 
     return regeneratorRuntime.wrap(function _callee25$(_context25) {
       while (1) {
@@ -2789,18 +2791,29 @@ function () {
             return _context25.abrupt("return", channel.send("No **".concat(which, "** pug found")));
 
           case 22:
+            changeWinner = false;
             pug = found.pug;
             winningTeam = _constants.teamIndexes[wTeam.toLowerCase()];
 
             if (!(winningTeam === undefined || winningTeam > pug.noOfTeams - 1)) {
-              _context25.next = 26;
+              _context25.next = 27;
               break;
             }
 
             return _context25.abrupt("return", channel.send('Invalid winning team'));
 
-          case 26:
-            _context25.next = 28;
+          case 27:
+            if (!(found.winner === winningTeam)) {
+              _context25.next = 29;
+              break;
+            }
+
+            return _context25.abrupt("return", channel.send('Pug winner already set'));
+
+          case 29:
+            if (found.winner !== undefined) changeWinner = true; // change the previously set winner
+
+            _context25.next = 32;
             return _models.Pugs.findOneAndUpdate({
               _id: found.id
             }, {
@@ -2811,43 +2824,33 @@ function () {
               "new": true
             }).exec();
 
-          case 28:
+          case 32:
             updatedPug = _context25.sent;
+            // todo, if same team winner, skip it, if different then reverse wins and loss
             _iteratorNormalCompletion = true;
             _didIteratorError = false;
             _iteratorError = undefined;
-            _context25.prev = 32;
+            _context25.prev = 36;
             _iterator = pug.players[Symbol.iterator]();
 
-          case 34:
+          case 38:
             if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-              _context25.next = 53;
+              _context25.next = 57;
               break;
             }
 
             player = _step.value;
             updatedStats = {};
-            _context25.next = 39;
+            _context25.next = 43;
             return _models.Users.findOne({
               id: player.id,
               server_id: serverId
             }).exec();
 
-          case 39:
+          case 43:
             existingPlayer = _context25.sent;
 
             if (existingPlayer) {
-              _context25.next = 42;
-              break;
-            }
-
-            return _context25.abrupt("return");
-
-          case 42:
-            stats = existingPlayer.stats;
-            existingStats = stats[pug.name];
-
-            if (existingStats) {
               _context25.next = 46;
               break;
             }
@@ -2855,11 +2858,22 @@ function () {
             return _context25.abrupt("return");
 
           case 46:
+            stats = existingPlayer.stats;
+            existingStats = stats[pug.name];
+
+            if (existingStats) {
+              _context25.next = 50;
+              break;
+            }
+
+            return _context25.abrupt("return");
+
+          case 50:
             presentWins = existingStats.won || 0;
             presentLosses = existingStats.lost || 0;
             updatedStats = _objectSpread({}, existingStats, {
-              won: player.team === winningTeam ? presentWins + 1 : presentWins,
-              lost: player.team !== winningTeam ? presentLosses + 1 : presentLosses
+              won: player.team === winningTeam ? presentWins + 1 : changeWinner ? presentWins - 1 : presentWins,
+              lost: player.team !== winningTeam ? presentLosses + 1 : changeWinner ? presentLosses - 1 : presentLosses
             });
 
             _models.Users.findOneAndUpdate({
@@ -2872,61 +2886,68 @@ function () {
               }
             }).exec();
 
-          case 50:
+          case 54:
             _iteratorNormalCompletion = true;
-            _context25.next = 34;
+            _context25.next = 38;
             break;
 
-          case 53:
-            _context25.next = 59;
+          case 57:
+            _context25.next = 63;
             break;
-
-          case 55:
-            _context25.prev = 55;
-            _context25.t0 = _context25["catch"](32);
-            _didIteratorError = true;
-            _iteratorError = _context25.t0;
 
           case 59:
             _context25.prev = 59;
-            _context25.prev = 60;
+            _context25.t0 = _context25["catch"](36);
+            _didIteratorError = true;
+            _iteratorError = _context25.t0;
+
+          case 63:
+            _context25.prev = 63;
+            _context25.prev = 64;
 
             if (!_iteratorNormalCompletion && _iterator["return"] != null) {
               _iterator["return"]();
             }
 
-          case 62:
-            _context25.prev = 62;
+          case 66:
+            _context25.prev = 66;
 
             if (!_didIteratorError) {
-              _context25.next = 65;
+              _context25.next = 69;
               break;
             }
 
             throw _iteratorError;
 
-          case 65:
-            return _context25.finish(62);
+          case 69:
+            return _context25.finish(66);
 
-          case 66:
-            return _context25.finish(59);
+          case 70:
+            return _context25.finish(63);
 
-          case 67:
-            _context25.next = 73;
+          case 71:
+            channel.send((0, _formats.formatLastPugStatus)({
+              pug: updatedPug.pug,
+              guildName: channel.guild.name
+            }, which, found.timestamp, {
+              winner: winningTeam,
+              updated: true
+            }));
+            _context25.next = 78;
             break;
 
-          case 69:
-            _context25.prev = 69;
+          case 74:
+            _context25.prev = 74;
             _context25.t1 = _context25["catch"](3);
             console.log(_context25.t1);
             message.channel.send('Something went wrong');
 
-          case 73:
+          case 78:
           case "end":
             return _context25.stop();
         }
       }
-    }, _callee25, null, [[3, 69], [32, 55, 59, 67], [60,, 62, 66]]);
+    }, _callee25, null, [[3, 74], [36, 59, 63, 71], [64,, 66, 70]]);
   }));
 
   return function declareWinner(_x99, _x100, _x101, _x102) {
