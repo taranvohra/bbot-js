@@ -184,6 +184,12 @@ const commands = [
     aliases: ['defaultjoin'],
     solo: 0,
   },
+  {
+    key: 'declareWinner',
+    description: '',
+    aliases: ['winner'],
+    solo: 0,
+  },
 ];
 
 export { commands, handlers, emitters };
