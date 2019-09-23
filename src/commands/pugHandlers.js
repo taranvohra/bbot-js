@@ -393,7 +393,7 @@ export const listGameTypes = async ({ channel }, [gameType], serverId, __) => {
         g => g.name === gameType.toLowerCase()
       );
       if (!validGameType)
-        return channel.send(`There is no such active pug ${gameType}`);
+        return channel.send(`There is no such active pug: **${gameType}**`);
 
       const existingPug = list.find(p => p.name === gameType.toLowerCase());
       if (!existingPug)
@@ -1022,9 +1022,19 @@ export const checkLastPugs = async (
         } <#${pugChannel}>`
       );
 
-    const howMany = action
-      .split('')
-      .reduce((acc, curr) => (acc += curr === 't' ? 1 : 0), 0);
+    const { tCount, digits } = action.split('').reduce(
+      (acc, curr) => {
+        acc.tCount += curr === 't' ? 1 : 0;
+        acc.digits += curr.match(/\d/g) ? curr : '';
+        return acc;
+      },
+      { tCount: 0, digits: '' }
+    );
+
+    if (tCount > 1 && parseInt(digits) > 0)
+      return channel.send('Invalid command');
+
+    const howMany = parseInt(digits) > 0 ? parseInt(digits) : tCount;
 
     const pugArg = args[0] && args[0].toLowerCase();
     let results = null;
@@ -1047,8 +1057,7 @@ export const checkLastPugs = async (
         }`
       );
 
-    const [found] = results.filter((_, i) => i === howMany - 1);
-
+    const found = results[howMany - 1];
     found &&
       channel.send(
         formatLastPugStatus(

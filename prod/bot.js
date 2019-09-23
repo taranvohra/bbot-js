@@ -105,7 +105,9 @@ function _onMessage() {
             action = first && first.toLowerCase();
             soloType = args[0] === _constants.offline || args.length === 0 ? 1 : 0;
             foundCommand = _commands.commands.find(function (cmd) {
-              return cmd.aliases.includes(action) && (cmd.solo === soloType || cmd.solo === 2);
+              return (!cmd.regex ? cmd.aliases.includes(action) : cmd.aliases.some(function (a) {
+                return cmd.regex(a).test(action);
+              })) && (cmd.solo === soloType || cmd.solo === 2);
             });
 
             if (!foundCommand) {

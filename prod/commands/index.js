@@ -113,8 +113,11 @@ var commands = [{
 }, {
   key: 'checkLastPugs',
   description: '',
-  aliases: ['last', 'lastt', 'lasttt'],
-  solo: 2
+  aliases: ['last'],
+  solo: 2,
+  regex: function regex(action) {
+    return RegExp("^".concat(action, "(d|t)*"), 'g');
+  }
 }, {
   key: 'resetPug',
   description: '',

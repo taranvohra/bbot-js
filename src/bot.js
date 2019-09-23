@@ -52,7 +52,10 @@ async function onMessage(message) {
 
   const foundCommand = commands.find(
     cmd =>
-      cmd.aliases.includes(action) && (cmd.solo === soloType || cmd.solo === 2)
+      (!cmd.regex
+        ? cmd.aliases.includes(action)
+        : cmd.aliases.some(a => cmd.regex(a).test(action))) &&
+      (cmd.solo === soloType || cmd.solo === 2)
   );
 
   if (foundCommand) {

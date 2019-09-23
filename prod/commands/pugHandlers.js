@@ -1698,7 +1698,7 @@ function () {
   var _ref47 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee14(_ref45, args, serverId, _ref46) {
-    var channel, action, state, _state$pugs$serverId12, pugChannel, list, gameTypes, howMany, pugArg, results, _results$filter, _results$filter2, found;
+    var channel, action, state, _state$pugs$serverId12, pugChannel, list, gameTypes, _action$split$reduce, tCount, digits, howMany, pugArg, results, found;
 
     return regeneratorRuntime.wrap(function _callee14$(_context14) {
       while (1) {
@@ -1718,18 +1718,33 @@ function () {
             return _context14.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
 
           case 7:
-            howMany = action.split('').reduce(function (acc, curr) {
-              return acc += curr === 't' ? 1 : 0;
-            }, 0);
+            _action$split$reduce = action.split('').reduce(function (acc, curr) {
+              acc.tCount += curr === 't' ? 1 : 0;
+              acc.digits += curr.match(/\d/g) ? curr : '';
+              return acc;
+            }, {
+              tCount: 0,
+              digits: ''
+            }), tCount = _action$split$reduce.tCount, digits = _action$split$reduce.digits;
+
+            if (!(tCount > 1 && parseInt(digits) > 0)) {
+              _context14.next = 10;
+              break;
+            }
+
+            return _context14.abrupt("return", channel.send('Invalid command'));
+
+          case 10:
+            howMany = parseInt(digits) > 0 ? parseInt(digits) : tCount;
             pugArg = args[0] && args[0].toLowerCase();
             results = null;
 
             if (!pugArg) {
-              _context14.next = 16;
+              _context14.next = 19;
               break;
             }
 
-            _context14.next = 13;
+            _context14.next = 16;
             return _models.Pugs.find({
               server_id: serverId,
               name: pugArg
@@ -1737,53 +1752,52 @@ function () {
               timestamp: -1
             }).limit(howMany).exec();
 
-          case 13:
+          case 16:
             results = _context14.sent;
-            _context14.next = 19;
+            _context14.next = 22;
             break;
 
-          case 16:
-            _context14.next = 18;
+          case 19:
+            _context14.next = 21;
             return _models.Pugs.find({
               server_id: serverId
             }).sort({
               timestamp: -1
             }).limit(howMany).exec();
 
-          case 18:
+          case 21:
             results = _context14.sent;
 
-          case 19:
+          case 22:
             if (!(!results || results.length === 0)) {
-              _context14.next = 21;
+              _context14.next = 24;
               break;
             }
 
             return _context14.abrupt("return", channel.send("No ".concat(action, " pug found ").concat(pugArg ? "for **".concat(pugArg.toUpperCase(), "**") : "")));
 
-          case 21:
-            _results$filter = results.filter(function (_, i) {
-              return i === howMany - 1;
-            }), _results$filter2 = _slicedToArray(_results$filter, 1), found = _results$filter2[0];
+          case 24:
+            found = results[howMany - 1];
+            console.log(found, results, howMany);
             found && channel.send((0, _formats.formatLastPugStatus)({
               pug: found.pug,
               guildName: channel.guild.name
             }, action, found.timestamp));
-            _context14.next = 29;
+            _context14.next = 33;
             break;
 
-          case 25:
-            _context14.prev = 25;
+          case 29:
+            _context14.prev = 29;
             _context14.t0 = _context14["catch"](2);
             channel.send('Something went wrong');
             console.log(_context14.t0);
 
-          case 29:
+          case 33:
           case "end":
             return _context14.stop();
         }
       }
-    }, _callee14, null, [[2, 25]]);
+    }, _callee14, null, [[2, 29]]);
   }));
 
   return function checkLastPugs(_x55, _x56, _x57, _x58) {
