@@ -35,3 +35,10 @@ export const emojis = {
   smart: '<:smart:601094351770353664>',
   bannechu: '<:bannechu:601092624962682881>',
 };
+
+export const teamIndexes = {
+  red: 0,
+  blue: 1,
+  green: 2,
+  gold: 3,
+};

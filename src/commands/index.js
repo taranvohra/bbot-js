@@ -118,8 +118,11 @@ const commands = [
   {
     key: 'checkLastPugs',
     description: '',
-    aliases: ['last', 'lastt', 'lasttt'],
+    aliases: ['last'],
     solo: 2,
+    regex(action) {
+      return RegExp(`^${action}(\d|t)*`, 'g');
+    },
   },
   {
     key: 'resetPug',
@@ -179,6 +182,12 @@ const commands = [
     key: 'setDefaultJoin',
     description: '',
     aliases: ['defaultjoin'],
+    solo: 0,
+  },
+  {
+    key: 'declareWinner',
+    description: '',
+    aliases: ['winner'],
     solo: 0,
   },
 ];

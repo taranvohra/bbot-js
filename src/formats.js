@@ -387,7 +387,12 @@ export const formatPromoteAvailablePugs = (pugs, guildName) => {
   return `${title}\n${body}`;
 };
 
-export const formatLastPugStatus = ({ pug, guildName }, action, timestamp) => {
+export const formatLastPugStatus = (
+  { pug, guildName },
+  action,
+  timestamp,
+  { winner, updated }
+) => {
   const distanceInWords = distanceInWordsStrict(new Date(), timestamp, {
     addSuffix: true,
   });
@@ -416,7 +421,13 @@ export const formatLastPugStatus = ({ pug, guildName }, action, timestamp) => {
     return acc;
   }, ``);
 
-  return `${title}\n\n${activeTeams}`;
+  const result =
+    winner !== undefined
+      ? `:trophy: ${teamEmojis[`team_${winner}`]} :trophy:`
+      : ``;
+  return `${
+    updated ? `Pug Stat Updated\n\n` : ``
+  }${title}\n\n${activeTeams}\n${result}`;
 };
 
 export const formatUserStats = ({ username, stats, last_pug }) => {
@@ -459,14 +470,19 @@ export const formatUserStats = ({ username, stats, last_pug }) => {
   }, ``);
 
   const lastMetaData = `Last pug played was **${last_pug.name.toUpperCase()}** (${distance})`;
-  const collectiveStatsTitle = `__**Gametypes**__ [total • captained • rating]`;
+  const collectiveStatsTitle = `__**Gametypes**__ [total • captained • rating • win%]`;
   const collectiveStatsBody = Object.entries(stats).reduce(
     (acc, [pugName, pugStats], i) => {
-      acc += `**${pugName}** [**${pugStats.totalPugs}** pug${
-        pugStats.totalPugs !== 1 ? 's' : ''
-      } • **${pugStats.totalCaptain}**x captain • ${
+      const winPercentage = pugStats.won
+        ? pugStats.won / (pugStats.won + pugStats.lost)
+        : 0;
+      acc += `${i > 0 ? ':small_blue_diamond: ' : ''}**${pugName}** [**${
+        pugStats.totalPugs
+      }** pug${pugStats.totalPugs !== 1 ? 's' : ''} • **${
+        pugStats.totalCaptain
+      }**x captain • ${
         pugStats.totalRating === 0 ? `no` : `${pugStats.totalRating.toFixed(2)}`
-      } rating] ${i > 0 ? ':small_blue_diamond: ' : ''}`;
+      } rating • ${(winPercentage * 100).toFixed(2)}%] `;
       return acc;
     },
     ``

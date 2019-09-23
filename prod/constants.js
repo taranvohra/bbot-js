@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.emojis = exports.pugEvents = exports.offline = exports.captainTimeout = exports.tagLength = exports.strongPlayerRatingThreshold = exports.teamEmojis = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
+exports.teamIndexes = exports.emojis = exports.pugEvents = exports.offline = exports.captainTimeout = exports.tagLength = exports.strongPlayerRatingThreshold = exports.teamEmojis = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
 var prefix = '-';
 exports.prefix = prefix;
 var privilegedRoles = ['Admins', 'Moderators'];
@@ -46,4 +46,11 @@ var emojis = {
   bannechu: '<:bannechu:601092624962682881>'
 };
 exports.emojis = emojis;
+var teamIndexes = {
+  red: 0,
+  blue: 1,
+  green: 2,
+  gold: 3
+};
+exports.teamIndexes = teamIndexes;
 //# sourceMappingURL=constants.js.map

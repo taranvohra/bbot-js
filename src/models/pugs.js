@@ -5,6 +5,7 @@ const schema = mongoose.Schema({
   name: String,
   timestamp: Date,
   pug: Object,
+  winner: Number,
 });
 
 export default mongoose.model('pugs', schema);

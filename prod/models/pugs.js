@@ -13,7 +13,8 @@ var schema = _mongoose["default"].Schema({
   server_id: String,
   name: String,
   timestamp: Date,
-  pug: Object
+  pug: Object,
+  winner: Number
 });
 
 var _default = _mongoose["default"].model('pugs', schema);

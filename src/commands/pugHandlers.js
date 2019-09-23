@@ -16,6 +16,7 @@ import {
   prefix,
   emojis,
   strongPlayerRatingThreshold,
+  teamIndexes,
 } from '../constants';
 import {
   formatListGameTypes,
@@ -90,7 +91,6 @@ class Pug {
         .slice(0, remaining * 0.6)
         .sort((a, b) => a.rating - b.rating);
 
-      console.log(poolForCaptains);
       if (this.noOfTeams === 2) {
         if (this.captains.length === 0) {
           let leastDiff = Number.MAX_SAFE_INTEGER;
@@ -393,7 +393,7 @@ export const listGameTypes = async ({ channel }, [gameType], serverId, __) => {
         g => g.name === gameType.toLowerCase()
       );
       if (!validGameType)
-        return channel.send(`There is no such active pug ${gameType}`);
+        return channel.send(`There is no such active pug: **${gameType}**`);
 
       const existingPug = list.find(p => p.name === gameType.toLowerCase());
       if (!existingPug)
@@ -907,6 +907,7 @@ export const pickPlayer = async (
           };
         } else {
           updatedStats = {
+            ...existingStats,
             totalRating:
               captain !== null
                 ? existingStats.totalRating
@@ -1022,9 +1023,19 @@ export const checkLastPugs = async (
         } <#${pugChannel}>`
       );
 
-    const howMany = action
-      .split('')
-      .reduce((acc, curr) => (acc += curr === 't' ? 1 : 0), 0);
+    const { tCount, digits } = action.split('').reduce(
+      (acc, curr) => {
+        acc.tCount += curr === 't' ? 1 : 0;
+        acc.digits += curr.match(/\d/g) ? curr : '';
+        return acc;
+      },
+      { tCount: 0, digits: '' }
+    );
+
+    if (tCount > 1 && parseInt(digits) > 0)
+      return channel.send('Invalid command');
+
+    const howMany = parseInt(digits) > 0 ? parseInt(digits) : tCount;
 
     const pugArg = args[0] && args[0].toLowerCase();
     let results = null;
@@ -1047,14 +1058,14 @@ export const checkLastPugs = async (
         }`
       );
 
-    const [found] = results.filter((_, i) => i === howMany - 1);
-
+    const found = results[howMany - 1];
     found &&
       channel.send(
         formatLastPugStatus(
           { pug: found.pug, guildName: channel.guild.name },
           action,
-          found.timestamp
+          found.timestamp,
+          { winner: found.winner }
         )
       );
   } catch (error) {
@@ -1496,5 +1507,124 @@ export const showBlockedUsers = async (
   } catch (error) {
     message.channel.send('Something went wrong');
     console.log(error);
+  }
+};
+
+export const declareWinner = async (
+  { channel },
+  [which, wTeam],
+  serverId,
+  { id, username, roles }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : `not present`
+        } <#${pugChannel}>`
+      );
+
+    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
+
+    const { tCount, digits } = which.split('').reduce(
+      (acc, curr) => {
+        acc.tCount += curr === 't' ? 1 : 0;
+        acc.digits += curr.match(/\d/g) ? curr : '';
+        return acc;
+      },
+      { tCount: 0, digits: '' }
+    );
+
+    if (tCount > 1 && parseInt(digits) > 0)
+      return channel.send('Invalid command');
+
+    const howMany = parseInt(digits) > 0 ? parseInt(digits) : tCount;
+
+    const results = await Pugs.find({ server_id: serverId })
+      .sort({ timestamp: -1 })
+      .limit(howMany)
+      .exec();
+
+    if (!results || results.length === 0)
+      return channel.send(`No **${which}** pug found`);
+
+    const found = results[howMany - 1];
+    if (!found) return channel.send(`No **${which}** pug found`);
+
+    let changeWinner = false;
+    const { pug } = found;
+    const winningTeam = teamIndexes[wTeam.toLowerCase()];
+
+    if (winningTeam === undefined || winningTeam > pug.noOfTeams - 1)
+      return channel.send('Invalid winning team');
+
+    if (found.winner === winningTeam)
+      return channel.send('Pug winner already set');
+
+    if (found.winner !== undefined) changeWinner = true; // change the previously set winner
+
+    const updatedPug = await Pugs.findOneAndUpdate(
+      { _id: found.id },
+      { $set: { winner: winningTeam } },
+      { new: true }
+    ).exec();
+
+    // todo, if same team winner, skip it, if different then reverse wins and loss
+    for (let player of pug.players) {
+      let updatedStats = {};
+      const existingPlayer = await Users.findOne({
+        id: player.id,
+        server_id: serverId,
+      }).exec();
+
+      if (!existingPlayer) return;
+
+      const { stats } = existingPlayer;
+      const existingStats = stats[pug.name];
+
+      if (!existingStats) return;
+      const presentWins = existingStats.won || 0;
+      const presentLosses = existingStats.lost || 0;
+      updatedStats = {
+        ...existingStats,
+        won:
+          player.team === winningTeam
+            ? presentWins + 1
+            : changeWinner
+            ? presentWins - 1
+            : presentWins,
+        lost:
+          player.team !== winningTeam
+            ? presentLosses + 1
+            : changeWinner
+            ? presentLosses - 1
+            : presentLosses,
+      };
+
+      Users.findOneAndUpdate(
+        { id: player.id, server_id: serverId },
+        {
+          $set: {
+            username: player.username,
+            stats: { ...stats, [pug.name]: updatedStats },
+          },
+        }
+      ).exec();
+    }
+
+    channel.send(
+      formatLastPugStatus(
+        { pug: updatedPug.pug, guildName: channel.guild.name },
+        which,
+        found.timestamp,
+        { winner: winningTeam, updated: true }
+      )
+    );
+  } catch (error) {
+    console.log(error);
+    message.channel.send('Something went wrong');
   }
 };

@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.showBlockedUsers = exports.unblockPlayer = exports.blockPlayer = exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.addOrRemoveTag = exports.checkStats = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.decideDefaultOrJoin = exports.setDefaultJoin = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
+exports.declareWinner = exports.showBlockedUsers = exports.unblockPlayer = exports.blockPlayer = exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.addOrRemoveTag = exports.checkStats = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.decideDefaultOrJoin = exports.setDefaultJoin = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
 
 var _store = _interopRequireDefault(require("../store"));
 
@@ -35,7 +35,7 @@ function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArra
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
 
-function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
@@ -43,7 +43,9 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -573,7 +575,7 @@ function () {
               break;
             }
 
-            return _context3.abrupt("return", channel.send("There is no such active pug ".concat(gameType)));
+            return _context3.abrupt("return", channel.send("There is no such active pug: **".concat(gameType, "**")));
 
           case 11:
             existingPug = list.find(function (p) {
@@ -1515,11 +1517,11 @@ function () {
                     totalPugs: 1
                   };
                 } else {
-                  updatedStats = {
+                  updatedStats = _objectSpread({}, existingStats, {
                     totalRating: captain !== null ? existingStats.totalRating : (existingStats.totalRating * (existingStats.totalPugs - existingStats.totalCaptain) + pick) / (existingStats.totalPugs - existingStats.totalCaptain + 1),
                     totalCaptain: captain !== null ? existingStats.totalCaptain + 1 : existingStats.totalCaptain,
                     totalPugs: existingStats.totalPugs + 1
-                  };
+                  });
                 }
 
                 _models.Users.findOneAndUpdate({
@@ -1698,7 +1700,7 @@ function () {
   var _ref47 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee14(_ref45, args, serverId, _ref46) {
-    var channel, action, state, _state$pugs$serverId12, pugChannel, list, gameTypes, howMany, pugArg, results, _results$filter, _results$filter2, found;
+    var channel, action, state, _state$pugs$serverId12, pugChannel, list, gameTypes, _action$split$reduce, tCount, digits, howMany, pugArg, results, found;
 
     return regeneratorRuntime.wrap(function _callee14$(_context14) {
       while (1) {
@@ -1718,18 +1720,33 @@ function () {
             return _context14.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
 
           case 7:
-            howMany = action.split('').reduce(function (acc, curr) {
-              return acc += curr === 't' ? 1 : 0;
-            }, 0);
+            _action$split$reduce = action.split('').reduce(function (acc, curr) {
+              acc.tCount += curr === 't' ? 1 : 0;
+              acc.digits += curr.match(/\d/g) ? curr : '';
+              return acc;
+            }, {
+              tCount: 0,
+              digits: ''
+            }), tCount = _action$split$reduce.tCount, digits = _action$split$reduce.digits;
+
+            if (!(tCount > 1 && parseInt(digits) > 0)) {
+              _context14.next = 10;
+              break;
+            }
+
+            return _context14.abrupt("return", channel.send('Invalid command'));
+
+          case 10:
+            howMany = parseInt(digits) > 0 ? parseInt(digits) : tCount;
             pugArg = args[0] && args[0].toLowerCase();
             results = null;
 
             if (!pugArg) {
-              _context14.next = 16;
+              _context14.next = 19;
               break;
             }
 
-            _context14.next = 13;
+            _context14.next = 16;
             return _models.Pugs.find({
               server_id: serverId,
               name: pugArg
@@ -1737,53 +1754,53 @@ function () {
               timestamp: -1
             }).limit(howMany).exec();
 
-          case 13:
+          case 16:
             results = _context14.sent;
-            _context14.next = 19;
+            _context14.next = 22;
             break;
 
-          case 16:
-            _context14.next = 18;
+          case 19:
+            _context14.next = 21;
             return _models.Pugs.find({
               server_id: serverId
             }).sort({
               timestamp: -1
             }).limit(howMany).exec();
 
-          case 18:
+          case 21:
             results = _context14.sent;
 
-          case 19:
+          case 22:
             if (!(!results || results.length === 0)) {
-              _context14.next = 21;
+              _context14.next = 24;
               break;
             }
 
             return _context14.abrupt("return", channel.send("No ".concat(action, " pug found ").concat(pugArg ? "for **".concat(pugArg.toUpperCase(), "**") : "")));
 
-          case 21:
-            _results$filter = results.filter(function (_, i) {
-              return i === howMany - 1;
-            }), _results$filter2 = _slicedToArray(_results$filter, 1), found = _results$filter2[0];
+          case 24:
+            found = results[howMany - 1];
             found && channel.send((0, _formats.formatLastPugStatus)({
               pug: found.pug,
               guildName: channel.guild.name
-            }, action, found.timestamp));
-            _context14.next = 29;
+            }, action, found.timestamp, {
+              winner: found.winner
+            }));
+            _context14.next = 32;
             break;
 
-          case 25:
-            _context14.prev = 25;
+          case 28:
+            _context14.prev = 28;
             _context14.t0 = _context14["catch"](2);
             channel.send('Something went wrong');
             console.log(_context14.t0);
 
-          case 29:
+          case 32:
           case "end":
             return _context14.stop();
         }
       }
-    }, _callee14, null, [[2, 25]]);
+    }, _callee14, null, [[2, 28]]);
   }));
 
   return function checkLastPugs(_x55, _x56, _x57, _x58) {
@@ -2692,4 +2709,251 @@ function () {
 }();
 
 exports.showBlockedUsers = showBlockedUsers;
+
+var declareWinner =
+/*#__PURE__*/
+function () {
+  var _ref80 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee25(_ref77, _ref78, serverId, _ref79) {
+    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, changeWinner, pug, winningTeam, updatedPug, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, player, updatedStats, existingPlayer, stats, existingStats, presentWins, presentLosses;
+
+    return regeneratorRuntime.wrap(function _callee25$(_context25) {
+      while (1) {
+        switch (_context25.prev = _context25.next) {
+          case 0:
+            channel = _ref77.channel;
+            _ref81 = _slicedToArray(_ref78, 2), which = _ref81[0], wTeam = _ref81[1];
+            id = _ref79.id, username = _ref79.username, roles = _ref79.roles;
+            _context25.prev = 3;
+            state = _store["default"].getState();
+            pugChannel = state.pugs[serverId].pugChannel;
+
+            if (!(pugChannel !== channel.id)) {
+              _context25.next = 8;
+              break;
+            }
+
+            return _context25.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
+
+          case 8:
+            if ((0, _utils.hasPrivilegedRole)(_constants.privilegedRoles, roles)) {
+              _context25.next = 10;
+              break;
+            }
+
+            return _context25.abrupt("return");
+
+          case 10:
+            _which$split$reduce = which.split('').reduce(function (acc, curr) {
+              acc.tCount += curr === 't' ? 1 : 0;
+              acc.digits += curr.match(/\d/g) ? curr : '';
+              return acc;
+            }, {
+              tCount: 0,
+              digits: ''
+            }), tCount = _which$split$reduce.tCount, digits = _which$split$reduce.digits;
+
+            if (!(tCount > 1 && parseInt(digits) > 0)) {
+              _context25.next = 13;
+              break;
+            }
+
+            return _context25.abrupt("return", channel.send('Invalid command'));
+
+          case 13:
+            howMany = parseInt(digits) > 0 ? parseInt(digits) : tCount;
+            _context25.next = 16;
+            return _models.Pugs.find({
+              server_id: serverId
+            }).sort({
+              timestamp: -1
+            }).limit(howMany).exec();
+
+          case 16:
+            results = _context25.sent;
+
+            if (!(!results || results.length === 0)) {
+              _context25.next = 19;
+              break;
+            }
+
+            return _context25.abrupt("return", channel.send("No **".concat(which, "** pug found")));
+
+          case 19:
+            found = results[howMany - 1];
+
+            if (found) {
+              _context25.next = 22;
+              break;
+            }
+
+            return _context25.abrupt("return", channel.send("No **".concat(which, "** pug found")));
+
+          case 22:
+            changeWinner = false;
+            pug = found.pug;
+            winningTeam = _constants.teamIndexes[wTeam.toLowerCase()];
+
+            if (!(winningTeam === undefined || winningTeam > pug.noOfTeams - 1)) {
+              _context25.next = 27;
+              break;
+            }
+
+            return _context25.abrupt("return", channel.send('Invalid winning team'));
+
+          case 27:
+            if (!(found.winner === winningTeam)) {
+              _context25.next = 29;
+              break;
+            }
+
+            return _context25.abrupt("return", channel.send('Pug winner already set'));
+
+          case 29:
+            if (found.winner !== undefined) changeWinner = true; // change the previously set winner
+
+            _context25.next = 32;
+            return _models.Pugs.findOneAndUpdate({
+              _id: found.id
+            }, {
+              $set: {
+                winner: winningTeam
+              }
+            }, {
+              "new": true
+            }).exec();
+
+          case 32:
+            updatedPug = _context25.sent;
+            // todo, if same team winner, skip it, if different then reverse wins and loss
+            _iteratorNormalCompletion = true;
+            _didIteratorError = false;
+            _iteratorError = undefined;
+            _context25.prev = 36;
+            _iterator = pug.players[Symbol.iterator]();
+
+          case 38:
+            if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+              _context25.next = 57;
+              break;
+            }
+
+            player = _step.value;
+            updatedStats = {};
+            _context25.next = 43;
+            return _models.Users.findOne({
+              id: player.id,
+              server_id: serverId
+            }).exec();
+
+          case 43:
+            existingPlayer = _context25.sent;
+
+            if (existingPlayer) {
+              _context25.next = 46;
+              break;
+            }
+
+            return _context25.abrupt("return");
+
+          case 46:
+            stats = existingPlayer.stats;
+            existingStats = stats[pug.name];
+
+            if (existingStats) {
+              _context25.next = 50;
+              break;
+            }
+
+            return _context25.abrupt("return");
+
+          case 50:
+            presentWins = existingStats.won || 0;
+            presentLosses = existingStats.lost || 0;
+            updatedStats = _objectSpread({}, existingStats, {
+              won: player.team === winningTeam ? presentWins + 1 : changeWinner ? presentWins - 1 : presentWins,
+              lost: player.team !== winningTeam ? presentLosses + 1 : changeWinner ? presentLosses - 1 : presentLosses
+            });
+
+            _models.Users.findOneAndUpdate({
+              id: player.id,
+              server_id: serverId
+            }, {
+              $set: {
+                username: player.username,
+                stats: _objectSpread({}, stats, _defineProperty({}, pug.name, updatedStats))
+              }
+            }).exec();
+
+          case 54:
+            _iteratorNormalCompletion = true;
+            _context25.next = 38;
+            break;
+
+          case 57:
+            _context25.next = 63;
+            break;
+
+          case 59:
+            _context25.prev = 59;
+            _context25.t0 = _context25["catch"](36);
+            _didIteratorError = true;
+            _iteratorError = _context25.t0;
+
+          case 63:
+            _context25.prev = 63;
+            _context25.prev = 64;
+
+            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+              _iterator["return"]();
+            }
+
+          case 66:
+            _context25.prev = 66;
+
+            if (!_didIteratorError) {
+              _context25.next = 69;
+              break;
+            }
+
+            throw _iteratorError;
+
+          case 69:
+            return _context25.finish(66);
+
+          case 70:
+            return _context25.finish(63);
+
+          case 71:
+            channel.send((0, _formats.formatLastPugStatus)({
+              pug: updatedPug.pug,
+              guildName: channel.guild.name
+            }, which, found.timestamp, {
+              winner: winningTeam,
+              updated: true
+            }));
+            _context25.next = 78;
+            break;
+
+          case 74:
+            _context25.prev = 74;
+            _context25.t1 = _context25["catch"](3);
+            console.log(_context25.t1);
+            message.channel.send('Something went wrong');
+
+          case 78:
+          case "end":
+            return _context25.stop();
+        }
+      }
+    }, _callee25, null, [[3, 74], [36, 59, 63, 71], [64,, 66, 70]]);
+  }));
+
+  return function declareWinner(_x99, _x100, _x101, _x102) {
+    return _ref80.apply(this, arguments);
+  };
+}();
+
+exports.declareWinner = declareWinner;
 //# sourceMappingURL=pugHandlers.js.map
