@@ -1577,9 +1577,10 @@ export const declareWinner = async (
 
     // todo, if same team winner, skip it, if different then reverse wins and loss
     for (let player of pug.players) {
+      const { id, team, username } = player;
       let updatedStats = {};
       const existingPlayer = await Users.findOne({
-        id: player.id,
+        id,
         server_id: serverId,
       }).exec();
 
@@ -1594,24 +1595,24 @@ export const declareWinner = async (
       updatedStats = {
         ...existingStats,
         won:
-          player.team === winningTeam
+          team === winningTeam
             ? presentWins + 1
             : changeWinner
             ? presentWins - 1
             : presentWins,
         lost:
-          player.team !== winningTeam
+          team !== winningTeam
             ? presentLosses + 1
             : changeWinner
             ? presentLosses - 1
             : presentLosses,
       };
-
+      console.log(username);
       Users.findOneAndUpdate(
-        { id: player.id, server_id: serverId },
+        { id, server_id: serverId },
         {
           $set: {
-            username: player.username,
+            username,
             stats: { ...stats, [pug.name]: updatedStats },
           },
         }

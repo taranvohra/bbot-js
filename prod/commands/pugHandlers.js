@@ -2715,7 +2715,7 @@ function () {
   var _ref80 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee25(_ref77, _ref78, serverId, _ref79) {
-    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, changeWinner, pug, winningTeam, updatedPug, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, player, updatedStats, existingPlayer, stats, existingStats, presentWins, presentLosses;
+    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, changeWinner, pug, winningTeam, updatedPug, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, player, _id, team, _username, updatedStats, existingPlayer, stats, existingStats, presentWins, presentLosses;
 
     return regeneratorRuntime.wrap(function _callee25$(_context25) {
       while (1) {
@@ -2834,97 +2834,99 @@ function () {
 
           case 38:
             if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-              _context25.next = 57;
+              _context25.next = 59;
               break;
             }
 
             player = _step.value;
+            _id = player.id, team = player.team, _username = player.username;
             updatedStats = {};
-            _context25.next = 43;
+            _context25.next = 44;
             return _models.Users.findOne({
-              id: player.id,
+              id: _id,
               server_id: serverId
             }).exec();
 
-          case 43:
+          case 44:
             existingPlayer = _context25.sent;
 
             if (existingPlayer) {
-              _context25.next = 46;
+              _context25.next = 47;
               break;
             }
 
             return _context25.abrupt("return");
 
-          case 46:
+          case 47:
             stats = existingPlayer.stats;
             existingStats = stats[pug.name];
 
             if (existingStats) {
-              _context25.next = 50;
+              _context25.next = 51;
               break;
             }
 
             return _context25.abrupt("return");
 
-          case 50:
+          case 51:
             presentWins = existingStats.won || 0;
             presentLosses = existingStats.lost || 0;
             updatedStats = _objectSpread({}, existingStats, {
-              won: player.team === winningTeam ? presentWins + 1 : changeWinner ? presentWins - 1 : presentWins,
-              lost: player.team !== winningTeam ? presentLosses + 1 : changeWinner ? presentLosses - 1 : presentLosses
+              won: team === winningTeam ? presentWins + 1 : changeWinner ? presentWins - 1 : presentWins,
+              lost: team !== winningTeam ? presentLosses + 1 : changeWinner ? presentLosses - 1 : presentLosses
             });
+            console.log(_username);
 
             _models.Users.findOneAndUpdate({
-              id: player.id,
+              id: _id,
               server_id: serverId
             }, {
               $set: {
-                username: player.username,
+                username: _username,
                 stats: _objectSpread({}, stats, _defineProperty({}, pug.name, updatedStats))
               }
             }).exec();
 
-          case 54:
+          case 56:
             _iteratorNormalCompletion = true;
             _context25.next = 38;
             break;
 
-          case 57:
-            _context25.next = 63;
+          case 59:
+            _context25.next = 65;
             break;
 
-          case 59:
-            _context25.prev = 59;
+          case 61:
+            _context25.prev = 61;
             _context25.t0 = _context25["catch"](36);
             _didIteratorError = true;
             _iteratorError = _context25.t0;
 
-          case 63:
-            _context25.prev = 63;
-            _context25.prev = 64;
+          case 65:
+            _context25.prev = 65;
+            _context25.prev = 66;
 
             if (!_iteratorNormalCompletion && _iterator["return"] != null) {
               _iterator["return"]();
             }
 
-          case 66:
-            _context25.prev = 66;
+          case 68:
+            _context25.prev = 68;
 
             if (!_didIteratorError) {
-              _context25.next = 69;
+              _context25.next = 71;
               break;
             }
 
             throw _iteratorError;
 
-          case 69:
-            return _context25.finish(66);
-
-          case 70:
-            return _context25.finish(63);
-
           case 71:
+            return _context25.finish(68);
+
+          case 72:
+            return _context25.finish(65);
+
+          case 73:
             channel.send((0, _formats.formatLastPugStatus)({
               pug: updatedPug.pug,
               guildName: channel.guild.name
@@ -2932,21 +2934,21 @@ function () {
               winner: winningTeam,
               updated: true
             }));
-            _context25.next = 78;
+            _context25.next = 80;
             break;
 
-          case 74:
-            _context25.prev = 74;
+          case 76:
+            _context25.prev = 76;
             _context25.t1 = _context25["catch"](3);
             console.log(_context25.t1);
             message.channel.send('Something went wrong');
 
-          case 78:
+          case 80:
           case "end":
             return _context25.stop();
         }
       }
-    }, _callee25, null, [[3, 74], [36, 59, 63, 71], [64,, 66, 70]]);
+    }, _callee25, null, [[3, 76], [36, 61, 65, 73], [66,, 68, 72]]);
   }));
 
   return function declareWinner(_x99, _x100, _x101, _x102) {
