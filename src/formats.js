@@ -184,10 +184,10 @@ export const formatLeaveStatus = (statuses, isOffline) => {
 export const formatDeadPugs = deadPugs => {
   const body = deadPugs.reduce((acc, { pug, user }, i) => {
     acc += `${i > 0 ? `\n` : ``} ${
-      emojis.trumpXD
+      emojis.peepoComfy
     } **${pug.name.toUpperCase()}** was stopped because **${
       user.username
-    }** left ${emojis.trumpXD}`;
+    }** left ${emojis.peepoComfy}`;
     return acc;
   }, ``);
   return body;
@@ -470,9 +470,11 @@ export const formatUserStats = ({ username, stats, last_pug }) => {
   }, ``);
 
   const lastMetaData = `Last pug played was **${last_pug.name.toUpperCase()}** (${distance})`;
-  const collectiveStatsTitle = `__**Gametypes**__ [total • captained • rating • win%]`;
+  const collectiveStatsTitle = `__**Gametypes**__ [total • captained • rating • won • lost • win%]`;
   const collectiveStatsBody = Object.entries(stats).reduce(
     (acc, [pugName, pugStats], i) => {
+      const won = pugStats.won || 0;
+      const lost = pugStats.lost || 0;
       const winPercentage = pugStats.won
         ? pugStats.won / (pugStats.won + pugStats.lost)
         : 0;
@@ -482,7 +484,7 @@ export const formatUserStats = ({ username, stats, last_pug }) => {
         pugStats.totalCaptain
       }**x captain • ${
         pugStats.totalRating === 0 ? `no` : `${pugStats.totalRating.toFixed(2)}`
-      } rating • ${(winPercentage * 100).toFixed(2)}%] `;
+      } rating • ${won} • ${lost} • ${(winPercentage * 100).toFixed(2)}%] `;
       return acc;
     },
     ``

@@ -123,7 +123,6 @@ function () {
         var poolForCaptains = (0, _utils.shuffle)(playersWithoutCaptain).slice(0, remaining * 0.6).sort(function (a, b) {
           return a.rating - b.rating;
         });
-        console.log(poolForCaptains);
 
         if (_this.noOfTeams === 2) {
           if (_this.captains.length === 0) {
@@ -1752,7 +1751,7 @@ function () {
               name: pugArg
             }).sort({
               timestamp: -1
-            }).limit(howMany).exec();
+            }).limit(1).skip(howMany - 1).exec();
 
           case 16:
             results = _context14.sent;
@@ -1765,7 +1764,7 @@ function () {
               server_id: serverId
             }).sort({
               timestamp: -1
-            }).limit(howMany).exec();
+            }).limit(1).skip(howMany - 1).exec();
 
           case 21:
             results = _context14.sent;
@@ -1779,7 +1778,7 @@ function () {
             return _context14.abrupt("return", channel.send("No ".concat(action, " pug found ").concat(pugArg ? "for **".concat(pugArg.toUpperCase(), "**") : "")));
 
           case 24:
-            found = results[howMany - 1];
+            found = results[0];
             found && channel.send((0, _formats.formatLastPugStatus)({
               pug: found.pug,
               guildName: channel.guild.name
@@ -2768,7 +2767,7 @@ function () {
               server_id: serverId
             }).sort({
               timestamp: -1
-            }).limit(howMany).exec();
+            }).limit(1).skip(howMany - 1).exec();
 
           case 16:
             results = _context25.sent;
@@ -2781,7 +2780,7 @@ function () {
             return _context25.abrupt("return", channel.send("No **".concat(which, "** pug found")));
 
           case 19:
-            found = results[howMany - 1];
+            found = results[0];
 
             if (found) {
               _context25.next = 22;

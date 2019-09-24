@@ -1042,12 +1042,14 @@ export const checkLastPugs = async (
     if (pugArg) {
       results = await Pugs.find({ server_id: serverId, name: pugArg })
         .sort({ timestamp: -1 })
-        .limit(howMany)
+        .limit(1)
+        .skip(howMany - 1)
         .exec();
     } else {
       results = await Pugs.find({ server_id: serverId })
         .sort({ timestamp: -1 })
-        .limit(howMany)
+        .limit(1)
+        .skip(howMany - 1)
         .exec();
     }
 
@@ -1058,7 +1060,7 @@ export const checkLastPugs = async (
         }`
       );
 
-    const found = results[howMany - 1];
+    const found = results[0];
     found &&
       channel.send(
         formatLastPugStatus(
@@ -1545,13 +1547,14 @@ export const declareWinner = async (
 
     const results = await Pugs.find({ server_id: serverId })
       .sort({ timestamp: -1 })
-      .limit(howMany)
+      .limit(1)
+      .skip(howMany - 1)
       .exec();
 
     if (!results || results.length === 0)
       return channel.send(`No **${which}** pug found`);
 
-    const found = results[howMany - 1];
+    const found = results[0];
     if (!found) return channel.send(`No **${which}** pug found`);
 
     let changeWinner = false;

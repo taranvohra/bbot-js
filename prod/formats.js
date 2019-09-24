@@ -203,7 +203,7 @@ var formatDeadPugs = function formatDeadPugs(deadPugs) {
   var body = deadPugs.reduce(function (acc, _ref3, i) {
     var pug = _ref3.pug,
         user = _ref3.user;
-    acc += "".concat(i > 0 ? "\n" : "", " ").concat(_constants.emojis.trumpXD, " **").concat(pug.name.toUpperCase(), "** was stopped because **").concat(user.username, "** left ").concat(_constants.emojis.trumpXD);
+    acc += "".concat(i > 0 ? "\n" : "", " ").concat(_constants.emojis.peepoComfy, " **").concat(pug.name.toUpperCase(), "** was stopped because **").concat(user.username, "** left ").concat(_constants.emojis.peepoComfy);
     return acc;
   }, "");
   return body;
@@ -439,14 +439,16 @@ var formatUserStats = function formatUserStats(_ref9) {
     return acc;
   }, "");
   var lastMetaData = "Last pug played was **".concat(last_pug.name.toUpperCase(), "** (").concat(distance, ")");
-  var collectiveStatsTitle = "__**Gametypes**__ [total \u2022 captained \u2022 rating \u2022 win%]";
+  var collectiveStatsTitle = "__**Gametypes**__ [total \u2022 captained \u2022 rating \u2022 won \u2022 lost \u2022 win%]";
   var collectiveStatsBody = Object.entries(stats).reduce(function (acc, _ref10, i) {
     var _ref11 = _slicedToArray(_ref10, 2),
         pugName = _ref11[0],
         pugStats = _ref11[1];
 
+    var won = pugStats.won || 0;
+    var lost = pugStats.lost || 0;
     var winPercentage = pugStats.won ? pugStats.won / (pugStats.won + pugStats.lost) : 0;
-    acc += "".concat(i > 0 ? ':small_blue_diamond: ' : '', "**").concat(pugName, "** [**").concat(pugStats.totalPugs, "** pug").concat(pugStats.totalPugs !== 1 ? 's' : '', " \u2022 **").concat(pugStats.totalCaptain, "**x captain \u2022 ").concat(pugStats.totalRating === 0 ? "no" : "".concat(pugStats.totalRating.toFixed(2)), " rating \u2022 ").concat((winPercentage * 100).toFixed(2), "%] ");
+    acc += "".concat(i > 0 ? ':small_blue_diamond: ' : '', "**").concat(pugName, "** [**").concat(pugStats.totalPugs, "** pug").concat(pugStats.totalPugs !== 1 ? 's' : '', " \u2022 **").concat(pugStats.totalCaptain, "**x captain \u2022 ").concat(pugStats.totalRating === 0 ? "no" : "".concat(pugStats.totalRating.toFixed(2)), " rating \u2022 ").concat(won, " \u2022 ").concat(lost, " \u2022 ").concat((winPercentage * 100).toFixed(2), "%] ");
     return acc;
   }, "");
   return "".concat(title, "\n\n").concat(totals, "\n\n").concat(lastMetaData, "\n").concat(activeTeams, "\n").concat(collectiveStatsTitle, "\n").concat(collectiveStatsBody);

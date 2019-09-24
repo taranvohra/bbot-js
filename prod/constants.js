@@ -43,7 +43,8 @@ var emojis = {
   residentsleeper: '<:residentsleeper:601092229343215646>',
   trumpXD: '<:trumpXD:610050412749258754>',
   smart: '<:smart:601094351770353664>',
-  bannechu: '<:bannechu:601092624962682881>'
+  bannechu: '<:bannechu:601092624962682881>',
+  peepoComfy: '<:peepoComfy:626060643895607296>'
 };
 exports.emojis = emojis;
 var teamIndexes = {

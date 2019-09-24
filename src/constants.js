@@ -1,4 +1,4 @@
-export const prefix = '.';
+export const prefix = '-';
 
 export const privilegedRoles = ['Admins', 'Moderators'];
 
@@ -34,6 +34,7 @@ export const emojis = {
   trumpXD: '<:trumpXD:610050412749258754>',
   smart: '<:smart:601094351770353664>',
   bannechu: '<:bannechu:601092624962682881>',
+  peepoComfy: '<:peepoComfy:626060643895607296>',
 };
 
 export const teamIndexes = {
