@@ -1576,48 +1576,53 @@ export const declareWinner = async (
     ).exec();
 
     // todo, if same team winner, skip it, if different then reverse wins and loss
-    for (let player of pug.players) {
-      const { id, team, username } = player;
+    pug.players.forEach(({ id, team, username }) => {
       let updatedStats = {};
-      const existingPlayer = await Users.findOne({
-        id,
-        server_id: serverId,
-      }).exec();
+      Users.findOne({ id, server_id: serverId }).then(existingPlayer => {
+        if (!existingPlayer) return;
 
-      if (!existingPlayer) return;
+        const { stats } = existingPlayer;
+        const existingStats = stats[pug.name];
 
-      const { stats } = existingPlayer;
-      const existingStats = stats[pug.name];
-
-      if (!existingStats) return;
-      const presentWins = existingStats.won || 0;
-      const presentLosses = existingStats.lost || 0;
-      updatedStats = {
-        ...existingStats,
-        won:
-          team === winningTeam
-            ? presentWins + 1
-            : changeWinner
-            ? presentWins - 1
-            : presentWins,
-        lost:
-          team !== winningTeam
-            ? presentLosses + 1
-            : changeWinner
-            ? presentLosses - 1
-            : presentLosses,
-      };
-      console.log(username);
-      Users.findOneAndUpdate(
-        { id, server_id: serverId },
-        {
-          $set: {
-            username,
-            stats: { ...stats, [pug.name]: updatedStats },
+        if (!existingStats) return;
+        const presentWins = existingStats.won || 0;
+        const presentLosses = existingStats.lost || 0;
+        updatedStats = {
+          ...existingStats,
+          won:
+            team === winningTeam
+              ? presentWins + 1
+              : changeWinner
+              ? presentWins - 1
+              : presentWins,
+          lost:
+            team !== winningTeam
+              ? presentLosses + 1
+              : changeWinner
+              ? presentLosses - 1
+              : presentLosses,
+        };
+        console.log({
+          username,
+          presentWins,
+          presentLosses,
+          upw: updatedStats.won,
+          upl: updatedStats.lost,
+        });
+        Users.findOneAndUpdate(
+          { id, server_id: serverId },
+          {
+            $set: {
+              username,
+              stats: { ...stats, [pug.name]: updatedStats },
+            },
           },
-        }
-      ).exec();
-    }
+          {
+            upsert: true,
+          }
+        ).exec();
+      });
+    });
 
     channel.send(
       formatLastPugStatus(
