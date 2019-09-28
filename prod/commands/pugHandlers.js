@@ -2715,7 +2715,7 @@ function () {
   var _ref80 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee25(_ref77, _ref78, serverId, _ref79) {
-    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, changeWinner, pug, winningTeam, updatedPug, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, player, _id, team, _username, updatedStats, existingPlayer, stats, existingStats, presentWins, presentLosses;
+    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, changeWinner, pug, winningTeam, updatedPug;
 
     return regeneratorRuntime.wrap(function _callee25$(_context25) {
       while (1) {
@@ -2826,107 +2826,47 @@ function () {
           case 32:
             updatedPug = _context25.sent;
             // todo, if same team winner, skip it, if different then reverse wins and loss
-            _iteratorNormalCompletion = true;
-            _didIteratorError = false;
-            _iteratorError = undefined;
-            _context25.prev = 36;
-            _iterator = pug.players[Symbol.iterator]();
+            pug.players.forEach(function (_ref82) {
+              var id = _ref82.id,
+                  team = _ref82.team,
+                  username = _ref82.username;
+              var updatedStats = {};
 
-          case 38:
-            if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-              _context25.next = 59;
-              break;
-            }
+              _models.Users.findOne({
+                id: id,
+                server_id: serverId
+              }).then(function (existingPlayer) {
+                if (!existingPlayer) return;
+                var stats = existingPlayer.stats;
+                var existingStats = stats[pug.name];
+                if (!existingStats) return;
+                var presentWins = existingStats.won || 0;
+                var presentLosses = existingStats.lost || 0;
+                updatedStats = _objectSpread({}, existingStats, {
+                  won: team === winningTeam ? presentWins + 1 : changeWinner ? presentWins - 1 : presentWins,
+                  lost: team !== winningTeam ? presentLosses + 1 : changeWinner ? presentLosses - 1 : presentLosses
+                });
+                console.log({
+                  username: username,
+                  presentWins: presentWins,
+                  presentLosses: presentLosses,
+                  upw: updatedStats.won,
+                  upl: updatedStats.lost
+                });
 
-            player = _step.value;
-            _id = player.id, team = player.team, _username = player.username;
-            updatedStats = {};
-            _context25.next = 44;
-            return _models.Users.findOne({
-              id: _id,
-              server_id: serverId
-            }).exec();
-
-          case 44:
-            existingPlayer = _context25.sent;
-
-            if (existingPlayer) {
-              _context25.next = 47;
-              break;
-            }
-
-            return _context25.abrupt("return");
-
-          case 47:
-            stats = existingPlayer.stats;
-            existingStats = stats[pug.name];
-
-            if (existingStats) {
-              _context25.next = 51;
-              break;
-            }
-
-            return _context25.abrupt("return");
-
-          case 51:
-            presentWins = existingStats.won || 0;
-            presentLosses = existingStats.lost || 0;
-            updatedStats = _objectSpread({}, existingStats, {
-              won: team === winningTeam ? presentWins + 1 : changeWinner ? presentWins - 1 : presentWins,
-              lost: team !== winningTeam ? presentLosses + 1 : changeWinner ? presentLosses - 1 : presentLosses
+                _models.Users.findOneAndUpdate({
+                  id: id,
+                  server_id: serverId
+                }, {
+                  $set: {
+                    username: username,
+                    stats: _objectSpread({}, stats, _defineProperty({}, pug.name, updatedStats))
+                  }
+                }, {
+                  upsert: true
+                }).exec();
+              });
             });
-            console.log(_username);
-
-            _models.Users.findOneAndUpdate({
-              id: _id,
-              server_id: serverId
-            }, {
-              $set: {
-                username: _username,
-                stats: _objectSpread({}, stats, _defineProperty({}, pug.name, updatedStats))
-              }
-            }).exec();
-
-          case 56:
-            _iteratorNormalCompletion = true;
-            _context25.next = 38;
-            break;
-
-          case 59:
-            _context25.next = 65;
-            break;
-
-          case 61:
-            _context25.prev = 61;
-            _context25.t0 = _context25["catch"](36);
-            _didIteratorError = true;
-            _iteratorError = _context25.t0;
-
-          case 65:
-            _context25.prev = 65;
-            _context25.prev = 66;
-
-            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-              _iterator["return"]();
-            }
-
-          case 68:
-            _context25.prev = 68;
-
-            if (!_didIteratorError) {
-              _context25.next = 71;
-              break;
-            }
-
-            throw _iteratorError;
-
-          case 71:
-            return _context25.finish(68);
-
-          case 72:
-            return _context25.finish(65);
-
-          case 73:
             channel.send((0, _formats.formatLastPugStatus)({
               pug: updatedPug.pug,
               guildName: channel.guild.name
@@ -2934,21 +2874,21 @@ function () {
               winner: winningTeam,
               updated: true
             }));
-            _context25.next = 80;
+            _context25.next = 41;
             break;
 
-          case 76:
-            _context25.prev = 76;
-            _context25.t1 = _context25["catch"](3);
-            console.log(_context25.t1);
+          case 37:
+            _context25.prev = 37;
+            _context25.t0 = _context25["catch"](3);
+            console.log(_context25.t0);
             message.channel.send('Something went wrong');
 
-          case 80:
+          case 41:
           case "end":
             return _context25.stop();
         }
       }
-    }, _callee25, null, [[3, 76], [36, 61, 65, 73], [66,, 68, 72]]);
+    }, _callee25, null, [[3, 37]]);
   }));
 
   return function declareWinner(_x99, _x100, _x101, _x102) {

@@ -431,20 +431,34 @@ export const formatLastPugStatus = (
 };
 
 export const formatUserStats = ({ username, stats, last_pug }) => {
-  const totalPugs = Object.values(stats).reduce(
-    (acc, curr) => (acc += curr.totalPugs || 0),
-    0
-  );
-  const totalCaptains = Object.values(stats).reduce(
-    (acc, curr) => (acc += curr.totalCaptain || 0),
-    0
+  const {
+    totalPugs,
+    totalCaptains,
+    totalWins,
+    totalLosses,
+    totalWinRate,
+    totalGameTypes,
+  } = Object.values(stats).reduce(
+    (acc, curr) => {
+      acc.totalPugs += curr.totalPugs || 0;
+      acc.totalCaptains += curr.totalCaptain || 0;
+      acc.totalWins += curr.won || 0;
+      acc.totalLosses += curr.lost || 0;
+      return acc;
+    },
+    {
+      totalPugs: 0,
+      totalCaptains: 0,
+      totalWins: 0,
+      totalLosses: 0,
+      totalWinRate: 0,
+      totalGameTypes: 0,
+    }
   );
   const title = `:pencil: Showing stats for **${username}** :pencil:`;
-  const totals = `:video_game: played **${totalPugs}** pug${
+  const totals = `:video_game: **${totalPugs}** pug${
     totalPugs !== 1 ? 's' : ''
-  } • :cop: captained **${totalCaptains}** time${
-    totalCaptains !== 1 ? 's' : ''
-  }`;
+  }\t:cop: **${totalCaptains}**\t:trophy: **${totalWins}**\t:x: **${totalLosses}**`;
   const distance = distanceInWordsStrict(new Date(), last_pug.timestamp, {
     addSuffix: true,
   });
@@ -470,7 +484,7 @@ export const formatUserStats = ({ username, stats, last_pug }) => {
   }, ``);
 
   const lastMetaData = `Last pug played was **${last_pug.name.toUpperCase()}** (${distance})`;
-  const collectiveStatsTitle = `__**Gametypes**__ [total • captained • rating • won • lost • win%]`;
+  const collectiveStatsTitle = `__**Gametypes**__`;
   const collectiveStatsBody = Object.entries(stats).reduce(
     (acc, [pugName, pugStats], i) => {
       const won = pugStats.won || 0;
@@ -478,13 +492,15 @@ export const formatUserStats = ({ username, stats, last_pug }) => {
       const winPercentage = pugStats.won
         ? pugStats.won / (pugStats.won + pugStats.lost)
         : 0;
-      acc += `${i > 0 ? ':small_blue_diamond: ' : ''}**${pugName}** [**${
-        pugStats.totalPugs
-      }** pug${pugStats.totalPugs !== 1 ? 's' : ''} • **${
-        pugStats.totalCaptain
-      }**x captain • ${
-        pugStats.totalRating === 0 ? `no` : `${pugStats.totalRating.toFixed(2)}`
-      } rating • ${won} • ${lost} • ${(winPercentage * 100).toFixed(2)}%] `;
+      acc += `**${pugName.toUpperCase()}**\t**${pugStats.totalPugs}** pug${
+        pugStats.totalPugs !== 1 ? 's' : ''
+      }\t:cop: **${pugStats.totalCaptain}**\t:star: ${
+        pugStats.totalRating === 0
+          ? `**no rating**`
+          : `**${pugStats.totalRating.toFixed(2)}**`
+      }\t:trophy: **${won}**\t:x: **${lost}**\t:muscle: **${(
+        winPercentage * 100
+      ).toFixed(2)}%**\n`;
       return acc;
     },
     ``
