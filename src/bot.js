@@ -122,7 +122,6 @@ bBot.on('presenceUpdate', (_, { user, guild, presence: { status } }) => {
   try {
     await mongoose.connect('mongodb://localhost:27017/bBot', {
       useNewUrlParser: true,
-      poolSize: 5,
       useFindAndModify: false,
       useUnifiedTopology: true,
     });

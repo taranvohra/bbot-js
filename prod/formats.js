@@ -411,14 +411,30 @@ var formatUserStats = function formatUserStats(_ref9) {
   var username = _ref9.username,
       stats = _ref9.stats,
       last_pug = _ref9.last_pug;
-  var totalPugs = Object.values(stats).reduce(function (acc, curr) {
-    return acc += curr.totalPugs || 0;
-  }, 0);
-  var totalCaptains = Object.values(stats).reduce(function (acc, curr) {
-    return acc += curr.totalCaptain || 0;
-  }, 0);
+
+  var _Object$values$reduce = Object.values(stats).reduce(function (acc, curr) {
+    acc.totalPugs += curr.totalPugs || 0;
+    acc.totalCaptains += curr.totalCaptain || 0;
+    acc.totalWins += curr.won || 0;
+    acc.totalLosses += curr.lost || 0;
+    return acc;
+  }, {
+    totalPugs: 0,
+    totalCaptains: 0,
+    totalWins: 0,
+    totalLosses: 0,
+    totalWinRate: 0,
+    totalGameTypes: 0
+  }),
+      totalPugs = _Object$values$reduce.totalPugs,
+      totalCaptains = _Object$values$reduce.totalCaptains,
+      totalWins = _Object$values$reduce.totalWins,
+      totalLosses = _Object$values$reduce.totalLosses,
+      totalWinRate = _Object$values$reduce.totalWinRate,
+      totalGameTypes = _Object$values$reduce.totalGameTypes;
+
   var title = ":pencil: Showing stats for **".concat(username, "** :pencil:");
-  var totals = ":video_game: played **".concat(totalPugs, "** pug").concat(totalPugs !== 1 ? 's' : '', " \u2022 :cop: captained **").concat(totalCaptains, "** time").concat(totalCaptains !== 1 ? 's' : '');
+  var totals = ":video_game: **".concat(totalPugs, "** pug").concat(totalPugs !== 1 ? 's' : '', "\t:cop: **").concat(totalCaptains, "**\t:trophy: **").concat(totalWins, "**\t:x: **").concat(totalLosses, "**");
   var distance = (0, _dateFns.distanceInWordsStrict)(new Date(), last_pug.timestamp, {
     addSuffix: true
   });
@@ -439,7 +455,7 @@ var formatUserStats = function formatUserStats(_ref9) {
     return acc;
   }, "");
   var lastMetaData = "Last pug played was **".concat(last_pug.name.toUpperCase(), "** (").concat(distance, ")");
-  var collectiveStatsTitle = "__**Gametypes**__ [total \u2022 captained \u2022 rating \u2022 won \u2022 lost \u2022 win%]";
+  var collectiveStatsTitle = "__**Gametypes**__";
   var collectiveStatsBody = Object.entries(stats).reduce(function (acc, _ref10, i) {
     var _ref11 = _slicedToArray(_ref10, 2),
         pugName = _ref11[0],
@@ -448,7 +464,7 @@ var formatUserStats = function formatUserStats(_ref9) {
     var won = pugStats.won || 0;
     var lost = pugStats.lost || 0;
     var winPercentage = pugStats.won ? pugStats.won / (pugStats.won + pugStats.lost) : 0;
-    acc += "".concat(i > 0 ? ':small_blue_diamond: ' : '', "**").concat(pugName, "** [**").concat(pugStats.totalPugs, "** pug").concat(pugStats.totalPugs !== 1 ? 's' : '', " \u2022 **").concat(pugStats.totalCaptain, "**x captain \u2022 ").concat(pugStats.totalRating === 0 ? "no" : "".concat(pugStats.totalRating.toFixed(2)), " rating \u2022 ").concat(won, " \u2022 ").concat(lost, " \u2022 ").concat((winPercentage * 100).toFixed(2), "%] ");
+    acc += "**".concat(pugName.toUpperCase(), "**\t**").concat(pugStats.totalPugs, "** pug").concat(pugStats.totalPugs !== 1 ? 's' : '', "\t:cop: **").concat(pugStats.totalCaptain, "**\t:star: ").concat(pugStats.totalRating === 0 ? "**no rating**" : "**".concat(pugStats.totalRating.toFixed(2), "**"), "\t:trophy: **").concat(won, "**\t:x: **").concat(lost, "**\t:muscle: **").concat((winPercentage * 100).toFixed(2), "%**\n");
     return acc;
   }, "");
   return "".concat(title, "\n\n").concat(totals, "\n\n").concat(lastMetaData, "\n").concat(activeTeams, "\n").concat(collectiveStatsTitle, "\n").concat(collectiveStatsBody);

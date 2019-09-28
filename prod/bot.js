@@ -192,7 +192,6 @@ regeneratorRuntime.mark(function _callee() {
           _context.next = 3;
           return _mongoose["default"].connect('mongodb://localhost:27017/bBot', {
             useNewUrlParser: true,
-            poolSize: 5,
             useFindAndModify: false,
             useUnifiedTopology: true
           });
