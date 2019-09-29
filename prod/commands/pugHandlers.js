@@ -2825,48 +2825,31 @@ function () {
 
           case 32:
             updatedPug = _context25.sent;
+
             // todo, if same team winner, skip it, if different then reverse wins and loss
-            pug.players.forEach(function (_ref82) {
+            _models.Users.bulkWrite(pug.players.map(function (_ref82) {
+              var _$inc;
+
               var id = _ref82.id,
                   team = _ref82.team,
                   username = _ref82.username;
-              var updatedStats = {};
-
-              _models.Users.findOne({
-                id: id,
-                server_id: serverId
-              }).then(function (existingPlayer) {
-                if (!existingPlayer) return;
-                var stats = existingPlayer.stats;
-                var existingStats = stats[pug.name];
-                if (!existingStats) return;
-                var presentWins = existingStats.won || 0;
-                var presentLosses = existingStats.lost || 0;
-                updatedStats = _objectSpread({}, existingStats, {
-                  won: team === winningTeam ? presentWins + 1 : changeWinner ? presentWins - 1 : presentWins,
-                  lost: team !== winningTeam ? presentLosses + 1 : changeWinner ? presentLosses - 1 : presentLosses
-                });
-                console.log({
-                  username: username,
-                  presentWins: presentWins,
-                  presentLosses: presentLosses,
-                  upw: updatedStats.won,
-                  upl: updatedStats.lost
-                });
-
-                _models.Users.findOneAndUpdate({
-                  id: id,
-                  server_id: serverId
-                }, {
-                  $set: {
-                    username: username,
-                    stats: _objectSpread({}, stats, _defineProperty({}, pug.name, updatedStats))
+              return {
+                updateOne: {
+                  filter: {
+                    id: id,
+                    server_id: serverId
+                  },
+                  update: {
+                    $set: {
+                      username: username
+                    },
+                    $inc: (_$inc = {}, _defineProperty(_$inc, "stats.".concat(pug.name, ".won"), team === winningTeam ? 1 : changeWinner ? -1 : 0), _defineProperty(_$inc, "stats.".concat(pug.name, ".lost"), team !== winningTeam ? 1 : changeWinner ? -1 : 0), _$inc)
                   }
-                }, {
-                  upsert: true
-                }).exec();
-              });
-            });
+                },
+                upsert: true
+              };
+            }));
+
             channel.send((0, _formats.formatLastPugStatus)({
               pug: updatedPug.pug,
               guildName: channel.guild.name
