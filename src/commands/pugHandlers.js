@@ -1579,6 +1579,11 @@ export const declareWinner = async (
     Users.bulkWrite(
       pug.players.map(({ id, team, username }) => {
         console.log(username, team, winningTeam, found.winner, changeWinner);
+        console.log(
+          'wl=',
+          team === winningTeam ? 1 : changeWinner ? -1 : 0,
+          team !== winningTeam ? 1 : changeWinner ? -1 : 0
+        );
         return {
           updateOne: {
             filter: { id, server_id: serverId },
