@@ -1595,7 +1595,7 @@ export const declareWinner = async (
           upsert: true,
         };
       })
-    );
+    ).then(() => {});
     channel.send(
       formatLastPugStatus(
         { pug: updatedPug.pug, guildName: channel.guild.name },
