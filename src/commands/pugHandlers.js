@@ -1578,6 +1578,7 @@ export const declareWinner = async (
     // todo, if same team winner, skip it, if different then reverse wins and loss
     Users.bulkWrite(
       pug.players.map(({ id, team, username }) => {
+        console.log(username, team, winningTeam, found.winner, changeWinner);
         return {
           updateOne: {
             filter: { id, server_id: serverId },

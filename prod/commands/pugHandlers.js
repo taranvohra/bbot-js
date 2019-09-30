@@ -2833,6 +2833,7 @@ function () {
               var id = _ref82.id,
                   team = _ref82.team,
                   username = _ref82.username;
+              console.log(username, team, winningTeam, found.winner, changeWinner);
               return {
                 updateOne: {
                   filter: {
