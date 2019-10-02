@@ -2825,15 +2825,15 @@ function () {
 
           case 32:
             updatedPug = _context25.sent;
-
-            // todo, if same team winner, skip it, if different then reverse wins and loss
-            _models.Users.bulkWrite(pug.players.map(function (_ref82) {
+            _context25.next = 35;
+            return _models.Users.bulkWrite(pug.players.map(function (_ref82) {
               var _$inc;
 
               var id = _ref82.id,
                   team = _ref82.team,
                   username = _ref82.username;
-              console.log(username, team, winningTeam, found.winner, changeWinner);
+              var wonInc = team === winningTeam ? 1 : changeWinner ? -1 : 0;
+              var lostInc = team !== winningTeam ? 1 : changeWinner ? -1 : 0;
               return {
                 updateOne: {
                   filter: {
@@ -2844,13 +2844,13 @@ function () {
                     $set: {
                       username: username
                     },
-                    $inc: (_$inc = {}, _defineProperty(_$inc, "stats.".concat(pug.name, ".won"), team === winningTeam ? 1 : changeWinner ? -1 : 0), _defineProperty(_$inc, "stats.".concat(pug.name, ".lost"), team !== winningTeam ? 1 : changeWinner ? -1 : 0), _$inc)
+                    $inc: (_$inc = {}, _defineProperty(_$inc, "stats.".concat(pug.name, ".won"), wonInc), _defineProperty(_$inc, "stats.".concat(pug.name, ".lost"), lostInc), _$inc)
                   }
-                },
-                upsert: true
+                }
               };
             }));
 
+          case 35:
             channel.send((0, _formats.formatLastPugStatus)({
               pug: updatedPug.pug,
               guildName: channel.guild.name
@@ -2858,21 +2858,21 @@ function () {
               winner: winningTeam,
               updated: true
             }));
-            _context25.next = 41;
+            _context25.next = 42;
             break;
 
-          case 37:
-            _context25.prev = 37;
+          case 38:
+            _context25.prev = 38;
             _context25.t0 = _context25["catch"](3);
             console.log(_context25.t0);
             message.channel.send('Something went wrong');
 
-          case 41:
+          case 42:
           case "end":
             return _context25.stop();
         }
       }
-    }, _callee25, null, [[3, 37]]);
+    }, _callee25, null, [[3, 38]]);
   }));
 
   return function declareWinner(_x99, _x100, _x101, _x102) {
