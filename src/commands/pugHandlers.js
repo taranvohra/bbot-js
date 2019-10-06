@@ -1576,24 +1576,26 @@ export const declareWinner = async (
     ).exec();
 
     // todo, if same team winner, skip it, if different then reverse wins and loss
-    await Users.bulkWrite(
-      pug.players.map(({ id, team, username }) => {
-        const wonInc = team === winningTeam ? 1 : changeWinner ? -1 : 0;
-        const lostInc = team !== winningTeam ? 1 : changeWinner ? -1 : 0;
-        return {
-          updateOne: {
-            filter: { id, server_id: serverId },
-            update: {
-              $set: { username },
-              $inc: {
-                [`stats.${pug.name}.won`]: wonInc,
-                [`stats.${pug.name}.lost`]: lostInc,
-              },
+    const Ops = pug.players.map(({ id, team, username }) => {
+      const wonInc = team === winningTeam ? 1 : changeWinner ? -1 : 0;
+      const lostInc = team !== winningTeam ? 1 : changeWinner ? -1 : 0;
+      return {
+        updateOne: {
+          filter: { id: id, server_id: serverId },
+          update: {
+            $inc: {
+              [`stats.${pug.name}.won`]: wonInc,
+              [`stats.${pug.name}.lost`]: lostInc,
             },
+            $set: { username },
           },
-        };
-      })
-    );
+        },
+      };
+    });
+
+    await Users.bulkWrite(Ops, { ordered: false }).catch(err => {
+      throw err;
+    });
 
     channel.send(
       formatLastPugStatus(
