@@ -190,9 +190,7 @@ regeneratorRuntime.mark(function _callee() {
         case 0:
           _context.prev = 0;
           _context.next = 3;
-          return _mongoose["default"].connect('mongodb://localhost:27017/bBot?authSource=admin', {
-            user: process.env.DB_USERNAME,
-            pass: process.env.DB_PASSWORD,
+          return _mongoose["default"].connect(process.env.DB_HOST, {
             useNewUrlParser: true,
             useFindAndModify: false,
             useUnifiedTopology: true

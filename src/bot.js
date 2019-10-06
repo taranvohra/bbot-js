@@ -120,9 +120,7 @@ bBot.on('presenceUpdate', (_, { user, guild, presence: { status } }) => {
 
 (async () => {
   try {
-    await mongoose.connect('mongodb://localhost:27017/bBot?authSource=admin', {
-      user: process.env.DB_USERNAME,
-      pass: process.env.DB_PASSWORD,
+    await mongoose.connect(process.env.DB_HOST, {
       useNewUrlParser: true,
       useFindAndModify: false,
       useUnifiedTopology: true,
