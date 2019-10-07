@@ -1579,6 +1579,7 @@ export const declareWinner = async (
     const Ops = pug.players.map(({ id, team, username }) => {
       const wonInc = team === winningTeam ? 1 : changeWinner ? -1 : 0;
       const lostInc = team !== winningTeam ? 1 : changeWinner ? -1 : 0;
+      console.log({ username, wonInc, lostInc });
       return {
         updateOne: {
           filter: { id: id, server_id: serverId },
@@ -1593,10 +1594,11 @@ export const declareWinner = async (
       };
     });
 
-    await Users.bulkWrite(Ops, { ordered: false }).catch(err => {
+    const res = await Users.bulkWrite(Ops, { ordered: false }).catch(err => {
       throw err;
     });
 
+    console.log(res);
     channel.send(
       formatLastPugStatus(
         { pug: updatedPug.pug, guildName: channel.guild.name },

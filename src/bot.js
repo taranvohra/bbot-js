@@ -124,6 +124,8 @@ bBot.on('presenceUpdate', (_, { user, guild, presence: { status } }) => {
       useNewUrlParser: true,
       useFindAndModify: false,
       useUnifiedTopology: true,
+      j: true,
+      journal: true,
     });
     await hydrateStore();
     bBot.login(process.env.DISCORD_BOT_TOKEN);

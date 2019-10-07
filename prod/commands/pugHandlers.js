@@ -2715,7 +2715,7 @@ function () {
   var _ref80 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee25(_ref77, _ref78, serverId, _ref79) {
-    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, changeWinner, pug, winningTeam, updatedPug;
+    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, changeWinner, pug, winningTeam, updatedPug, Ops, res;
 
     return regeneratorRuntime.wrap(function _callee25$(_context25) {
       while (1) {
@@ -2825,8 +2825,8 @@ function () {
 
           case 32:
             updatedPug = _context25.sent;
-            _context25.next = 35;
-            return _models.Users.bulkWrite(pug.players.map(function (_ref82) {
+            // todo, if same team winner, skip it, if different then reverse wins and loss
+            Ops = pug.players.map(function (_ref82) {
               var _$inc;
 
               var id = _ref82.id,
@@ -2834,6 +2834,11 @@ function () {
                   username = _ref82.username;
               var wonInc = team === winningTeam ? 1 : changeWinner ? -1 : 0;
               var lostInc = team !== winningTeam ? 1 : changeWinner ? -1 : 0;
+              console.log({
+                username: username,
+                wonInc: wonInc,
+                lostInc: lostInc
+              });
               return {
                 updateOne: {
                   filter: {
@@ -2841,16 +2846,24 @@ function () {
                     server_id: serverId
                   },
                   update: {
+                    $inc: (_$inc = {}, _defineProperty(_$inc, "stats.".concat(pug.name, ".won"), wonInc), _defineProperty(_$inc, "stats.".concat(pug.name, ".lost"), lostInc), _$inc),
                     $set: {
                       username: username
-                    },
-                    $inc: (_$inc = {}, _defineProperty(_$inc, "stats.".concat(pug.name, ".won"), wonInc), _defineProperty(_$inc, "stats.".concat(pug.name, ".lost"), lostInc), _$inc)
+                    }
                   }
                 }
               };
-            }));
+            });
+            _context25.next = 36;
+            return _models.Users.bulkWrite(Ops, {
+              ordered: false
+            })["catch"](function (err) {
+              throw err;
+            });
 
-          case 35:
+          case 36:
+            res = _context25.sent;
+            console.log(res);
             channel.send((0, _formats.formatLastPugStatus)({
               pug: updatedPug.pug,
               guildName: channel.guild.name
@@ -2858,21 +2871,21 @@ function () {
               winner: winningTeam,
               updated: true
             }));
-            _context25.next = 42;
+            _context25.next = 45;
             break;
 
-          case 38:
-            _context25.prev = 38;
+          case 41:
+            _context25.prev = 41;
             _context25.t0 = _context25["catch"](3);
             console.log(_context25.t0);
             message.channel.send('Something went wrong');
 
-          case 42:
+          case 45:
           case "end":
             return _context25.stop();
         }
       }
-    }, _callee25, null, [[3, 38]]);
+    }, _callee25, null, [[3, 41]]);
   }));
 
   return function declareWinner(_x99, _x100, _x101, _x102) {

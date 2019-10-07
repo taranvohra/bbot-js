@@ -193,7 +193,8 @@ regeneratorRuntime.mark(function _callee() {
           return _mongoose["default"].connect(process.env.DB_HOST, {
             useNewUrlParser: true,
             useFindAndModify: false,
-            useUnifiedTopology: true
+            useUnifiedTopology: true,
+            j: true
           });
 
         case 3:
