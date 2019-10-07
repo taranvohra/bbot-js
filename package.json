@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "clean": "rm -rf prod && mkdir prod",
+    "clean": "rm -rf prod && rm -rf generated && mkdir prod",
     "build": "npm run clean && babel src -s -d prod",
     "start": "npm run build && node -r source-map-support/register prod/bot.js"
   },
@@ -13,6 +13,7 @@
   "dependencies": {
     "date-fns": "^1.30.1",
     "discord.js": "^11.5.0",
+    "jimp": "^0.8.4",
     "mongoose": "^5.5.12",
     "redux": "^4.0.1",
     "saslprep": "^1.0.3",
