@@ -2967,10 +2967,18 @@ function () {
               var _stats$gameTypeName = stats[gameTypeName],
                   won = _stats$gameTypeName.won,
                   lost = _stats$gameTypeName.lost,
-                  totalRating = _stats$gameTypeName.totalRating; // if (won + lost < 5) return undefined; // must have atleast 5 games to be considered
+                  totalRating = _stats$gameTypeName.totalRating; // if (won < 5) return undefined; // must have atleast 5 games to be considered
 
               var winP = won / (won + lost);
               var points = 100 - 0.6 * winP + totalRating * 0.4 * gameType.noOfPlayers;
+              console.log({
+                username: username,
+                won: won,
+                lost: lost,
+                totalRating: totalRating,
+                winP: winP,
+                points: points
+              });
               return {
                 username: username,
                 points: points,
@@ -2981,7 +2989,7 @@ function () {
             }).slice(0, 10);
 
             _jimp["default"].read('assets/top10_template.png').then(function (template) {
-              _jimp["default"].loadFont('assets/obelix.fnt').then(
+              _jimp["default"].loadFont('assets/ubuntu.fnt').then(
               /*#__PURE__*/
               function () {
                 var _ref88 = _asyncToGenerator(

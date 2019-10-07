@@ -1653,12 +1653,12 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
         if (!stats || !stats[gameTypeName]) return undefined;
 
         const { won, lost, totalRating } = stats[gameTypeName];
-        // if (won + lost < 5) return undefined; // must have atleast 5 games to be considered
+        if (won < 5) return undefined; // must have atleast 5 games to be considered
 
         const winP = won / (won + lost);
         const points =
           100 - 0.6 * winP + totalRating * 0.4 * gameType.noOfPlayers;
-
+        console.log({ username, won, lost, totalRating, winP, points });
         return {
           username,
           points,
@@ -1670,7 +1670,7 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
       .slice(0, 10);
 
     Jimp.read('assets/top10_template.png').then(template => {
-      Jimp.loadFont('assets/obelix.fnt').then(async font => {
+      Jimp.loadFont('assets/ubuntu.fnt').then(async font => {
         let Y = 50;
         const MAX_HEIGHT = 25;
         // HEADING
