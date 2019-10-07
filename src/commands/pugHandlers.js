@@ -1658,6 +1658,8 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
         const winP = won / (won + lost);
         const points =
           100 - 0.6 * winP + totalRating * 0.4 * gameType.noOfPlayers;
+
+        if (isNaN(points)) return undefined;
         console.log({ username, won, lost, totalRating, winP, points });
         return {
           username,
@@ -1673,19 +1675,6 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
       Jimp.loadFont('assets/ubuntu.fnt').then(async font => {
         let Y = 50;
         const MAX_HEIGHT = 25;
-        // HEADING
-        template.print(
-          font,
-          0,
-          0,
-          {
-            text: `Top 10`,
-            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
-          },
-          400,
-          MAX_HEIGHT
-        );
 
         top10.forEach((player, i) => {
           const {
