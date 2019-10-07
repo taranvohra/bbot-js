@@ -41,6 +41,8 @@ import {
   removeBlock,
 } from '../store/actions';
 import events from 'events';
+import Jimp from 'jimp';
+import fs from 'fs';
 
 export const pugEventEmitter = new events.EventEmitter();
 
@@ -1579,6 +1581,7 @@ export const declareWinner = async (
     const Ops = pug.players.map(({ id, team, username }) => {
       const wonInc = team === winningTeam ? 1 : changeWinner ? -1 : 0;
       const lostInc = team !== winningTeam ? 1 : changeWinner ? -1 : 0;
+      console.log({ username, wonInc, lostInc });
       return {
         updateOne: {
           filter: { id: id, server_id: serverId },
@@ -1593,10 +1596,17 @@ export const declareWinner = async (
       };
     });
 
-    await Users.bulkWrite(Ops, { ordered: false }).catch(err => {
+    const res = await Users.bulkWrite(Ops, {
+      writeConcern: {
+        w: 'majority',
+        j: true,
+      },
+      ordered: false,
+    }).catch(err => {
       throw err;
     });
 
+    console.log(res);
     channel.send(
       formatLastPugStatus(
         { pug: updatedPug.pug, guildName: channel.guild.name },
@@ -1608,5 +1618,176 @@ export const declareWinner = async (
   } catch (error) {
     console.log(error);
     message.channel.send('Something went wrong');
+  }
+};
+
+export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, gameTypes } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : `not present`
+        } <#${pugChannel}>`
+      );
+
+    if (!gameTypeArg)
+      return channel.send('Invalid! specify the gametype aswell');
+
+    const gameType = gameTypes.find(g => g.name === gameTypeArg.toLowerCase());
+    if (!gameType)
+      return channel.send(
+        `**${gameTypeArg.toUpperCase()}** is not a registered gametype`
+      );
+
+    const allPlayers = await Users.find(
+      { server_id: serverId },
+      { username: 1, stats: 1 }
+    );
+
+    const gameTypeName = gameTypeArg.toLowerCase();
+    const top10 = allPlayers
+      .map(({ username, stats }) => {
+        if (!stats || !stats[gameTypeName]) return undefined;
+
+        const { won, lost, totalRating } = stats[gameTypeName];
+        // if (won + lost < 5) return undefined; // must have atleast 5 games to be considered
+
+        const winP = won / (won + lost);
+        const points =
+          100 - 0.6 * winP + totalRating * 0.4 * gameType.noOfPlayers;
+
+        return {
+          username,
+          points,
+          stats: stats[gameTypeName],
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.points - b.points)
+      .slice(0, 10);
+
+    Jimp.read('assets/top10_template.png').then(template => {
+      Jimp.loadFont('assets/obelix.fnt').then(async font => {
+        let Y = 50;
+        const MAX_HEIGHT = 25;
+        // HEADING
+        template.print(
+          font,
+          0,
+          0,
+          {
+            text: `Top 10`,
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          400,
+          MAX_HEIGHT
+        );
+
+        top10.forEach((player, i) => {
+          const {
+            username,
+            stats: { totalPugs, totalRating, won, lost },
+          } = player;
+          const winP = `${((won / (won + lost)) * 100).toFixed(0)}%`;
+
+          template.print(
+            font,
+            30,
+            Y,
+            {
+              text: username,
+              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+            },
+            120,
+            MAX_HEIGHT
+          );
+
+          template.print(
+            font,
+            150,
+            Y,
+            {
+              text: totalPugs.toString(),
+              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+            },
+            50,
+            MAX_HEIGHT
+          );
+
+          template.print(
+            font,
+            200,
+            Y,
+            {
+              text: totalRating.toFixed(2),
+              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+            },
+            50,
+            MAX_HEIGHT
+          );
+          template.print(
+            font,
+            250,
+            Y,
+            {
+              text: won.toString(),
+              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+            },
+            50,
+            MAX_HEIGHT
+          );
+          template.print(
+            font,
+            300,
+            Y,
+            {
+              text: lost.toString(),
+              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+            },
+            50,
+            MAX_HEIGHT
+          );
+          template.print(
+            font,
+            350,
+            Y,
+            {
+              text: winP,
+              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+            },
+            50,
+            MAX_HEIGHT
+          );
+
+          Y += 25;
+        });
+
+        const imageName = Date.now();
+        template.write(`generated/${imageName}.png`);
+
+        await channel.send('', {
+          files: [`generated/${imageName}.png`],
+        });
+
+        try {
+          fs.unlinkSync(`generated/${imageName}.png`);
+        } catch (error) {
+          console.log('unlink error: ', error);
+        }
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    channel.send('Something went wrong');
   }
 };

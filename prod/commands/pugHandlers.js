@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.declareWinner = exports.showBlockedUsers = exports.unblockPlayer = exports.blockPlayer = exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.addOrRemoveTag = exports.checkStats = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.decideDefaultOrJoin = exports.setDefaultJoin = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
+exports.getTop10 = exports.declareWinner = exports.showBlockedUsers = exports.unblockPlayer = exports.blockPlayer = exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.addOrRemoveTag = exports.checkStats = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.decideDefaultOrJoin = exports.setDefaultJoin = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
 
 var _store = _interopRequireDefault(require("../store"));
 
@@ -18,6 +18,10 @@ var _formats = require("../formats");
 var _actions = require("../store/actions");
 
 var _events = _interopRequireDefault(require("events"));
+
+var _jimp = _interopRequireDefault(require("jimp"));
+
+var _fs = _interopRequireDefault(require("fs"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -2715,7 +2719,7 @@ function () {
   var _ref80 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee25(_ref77, _ref78, serverId, _ref79) {
-    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, changeWinner, pug, winningTeam, updatedPug;
+    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, changeWinner, pug, winningTeam, updatedPug, Ops, res;
 
     return regeneratorRuntime.wrap(function _callee25$(_context25) {
       while (1) {
@@ -2825,8 +2829,8 @@ function () {
 
           case 32:
             updatedPug = _context25.sent;
-            _context25.next = 35;
-            return _models.Users.bulkWrite(pug.players.map(function (_ref82) {
+            // todo, if same team winner, skip it, if different then reverse wins and loss
+            Ops = pug.players.map(function (_ref82) {
               var _$inc;
 
               var id = _ref82.id,
@@ -2834,6 +2838,11 @@ function () {
                   username = _ref82.username;
               var wonInc = team === winningTeam ? 1 : changeWinner ? -1 : 0;
               var lostInc = team !== winningTeam ? 1 : changeWinner ? -1 : 0;
+              console.log({
+                username: username,
+                wonInc: wonInc,
+                lostInc: lostInc
+              });
               return {
                 updateOne: {
                   filter: {
@@ -2841,16 +2850,28 @@ function () {
                     server_id: serverId
                   },
                   update: {
+                    $inc: (_$inc = {}, _defineProperty(_$inc, "stats.".concat(pug.name, ".won"), wonInc), _defineProperty(_$inc, "stats.".concat(pug.name, ".lost"), lostInc), _$inc),
                     $set: {
                       username: username
-                    },
-                    $inc: (_$inc = {}, _defineProperty(_$inc, "stats.".concat(pug.name, ".won"), wonInc), _defineProperty(_$inc, "stats.".concat(pug.name, ".lost"), lostInc), _$inc)
+                    }
                   }
                 }
               };
-            }));
+            });
+            _context25.next = 36;
+            return _models.Users.bulkWrite(Ops, {
+              writeConcern: {
+                w: 'majority',
+                j: true
+              },
+              ordered: false
+            })["catch"](function (err) {
+              throw err;
+            });
 
-          case 35:
+          case 36:
+            res = _context25.sent;
+            console.log(res);
             channel.send((0, _formats.formatLastPugStatus)({
               pug: updatedPug.pug,
               guildName: channel.guild.name
@@ -2858,21 +2879,21 @@ function () {
               winner: winningTeam,
               updated: true
             }));
-            _context25.next = 42;
+            _context25.next = 45;
             break;
 
-          case 38:
-            _context25.prev = 38;
+          case 41:
+            _context25.prev = 41;
             _context25.t0 = _context25["catch"](3);
             console.log(_context25.t0);
             message.channel.send('Something went wrong');
 
-          case 42:
+          case 45:
           case "end":
             return _context25.stop();
         }
       }
-    }, _callee25, null, [[3, 38]]);
+    }, _callee25, null, [[3, 41]]);
   }));
 
   return function declareWinner(_x99, _x100, _x101, _x102) {
@@ -2881,4 +2902,193 @@ function () {
 }();
 
 exports.declareWinner = declareWinner;
+
+var getTop10 =
+/*#__PURE__*/
+function () {
+  var _ref85 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee27(_ref83, _ref84, serverId, _) {
+    var channel, _ref86, gameTypeArg, state, _state$pugs$serverId17, pugChannel, gameTypes, gameType, allPlayers, gameTypeName, top10;
+
+    return regeneratorRuntime.wrap(function _callee27$(_context27) {
+      while (1) {
+        switch (_context27.prev = _context27.next) {
+          case 0:
+            channel = _ref83.channel;
+            _ref86 = _slicedToArray(_ref84, 1), gameTypeArg = _ref86[0];
+            _context27.prev = 2;
+            state = _store["default"].getState();
+            _state$pugs$serverId17 = state.pugs[serverId], pugChannel = _state$pugs$serverId17.pugChannel, gameTypes = _state$pugs$serverId17.gameTypes;
+
+            if (!(pugChannel !== channel.id)) {
+              _context27.next = 7;
+              break;
+            }
+
+            return _context27.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
+
+          case 7:
+            if (gameTypeArg) {
+              _context27.next = 9;
+              break;
+            }
+
+            return _context27.abrupt("return", channel.send('Invalid! specify the gametype aswell'));
+
+          case 9:
+            gameType = gameTypes.find(function (g) {
+              return g.name === gameTypeArg.toLowerCase();
+            });
+
+            if (gameType) {
+              _context27.next = 12;
+              break;
+            }
+
+            return _context27.abrupt("return", channel.send("**".concat(gameTypeArg.toUpperCase(), "** is not a registered gametype")));
+
+          case 12:
+            _context27.next = 14;
+            return _models.Users.find({
+              server_id: serverId
+            }, {
+              username: 1,
+              stats: 1
+            });
+
+          case 14:
+            allPlayers = _context27.sent;
+            gameTypeName = gameTypeArg.toLowerCase();
+            top10 = allPlayers.map(function (_ref87) {
+              var username = _ref87.username,
+                  stats = _ref87.stats;
+              if (!stats || !stats[gameTypeName]) return undefined;
+              var _stats$gameTypeName = stats[gameTypeName],
+                  won = _stats$gameTypeName.won,
+                  lost = _stats$gameTypeName.lost,
+                  totalRating = _stats$gameTypeName.totalRating; // if (won + lost < 5) return undefined; // must have atleast 5 games to be considered
+
+              var winP = won / (won + lost);
+              var points = 100 - 0.6 * winP + totalRating * 0.4 * gameType.noOfPlayers;
+              return {
+                username: username,
+                points: points,
+                stats: stats[gameTypeName]
+              };
+            }).filter(Boolean).sort(function (a, b) {
+              return a.points - b.points;
+            }).slice(0, 10);
+
+            _jimp["default"].read('assets/top10_template.png').then(function (template) {
+              _jimp["default"].loadFont('assets/obelix.fnt').then(
+              /*#__PURE__*/
+              function () {
+                var _ref88 = _asyncToGenerator(
+                /*#__PURE__*/
+                regeneratorRuntime.mark(function _callee26(font) {
+                  var Y, MAX_HEIGHT, imageName;
+                  return regeneratorRuntime.wrap(function _callee26$(_context26) {
+                    while (1) {
+                      switch (_context26.prev = _context26.next) {
+                        case 0:
+                          Y = 50;
+                          MAX_HEIGHT = 25; // HEADING
+
+                          template.print(font, 0, 0, {
+                            text: "Top 10",
+                            alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                            alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                          }, 400, MAX_HEIGHT);
+                          top10.forEach(function (player, i) {
+                            var username = player.username,
+                                _player$stats = player.stats,
+                                totalPugs = _player$stats.totalPugs,
+                                totalRating = _player$stats.totalRating,
+                                won = _player$stats.won,
+                                lost = _player$stats.lost;
+                            var winP = "".concat((won / (won + lost) * 100).toFixed(0), "%");
+                            template.print(font, 30, Y, {
+                              text: username,
+                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                            }, 120, MAX_HEIGHT);
+                            template.print(font, 150, Y, {
+                              text: totalPugs.toString(),
+                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                            }, 50, MAX_HEIGHT);
+                            template.print(font, 200, Y, {
+                              text: totalRating.toFixed(2),
+                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                            }, 50, MAX_HEIGHT);
+                            template.print(font, 250, Y, {
+                              text: won.toString(),
+                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                            }, 50, MAX_HEIGHT);
+                            template.print(font, 300, Y, {
+                              text: lost.toString(),
+                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                            }, 50, MAX_HEIGHT);
+                            template.print(font, 350, Y, {
+                              text: winP,
+                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                            }, 50, MAX_HEIGHT);
+                            Y += 25;
+                          });
+                          imageName = Date.now();
+                          template.write("generated/".concat(imageName, ".png"));
+                          _context26.next = 8;
+                          return channel.send('', {
+                            files: ["generated/".concat(imageName, ".png")]
+                          });
+
+                        case 8:
+                          try {
+                            _fs["default"].unlinkSync("generated/".concat(imageName, ".png"));
+                          } catch (error) {
+                            console.log('unlink error: ', error);
+                          }
+
+                        case 9:
+                        case "end":
+                          return _context26.stop();
+                      }
+                    }
+                  }, _callee26);
+                }));
+
+                return function (_x107) {
+                  return _ref88.apply(this, arguments);
+                };
+              }());
+            });
+
+            _context27.next = 24;
+            break;
+
+          case 20:
+            _context27.prev = 20;
+            _context27.t0 = _context27["catch"](2);
+            console.log(_context27.t0);
+            channel.send('Something went wrong');
+
+          case 24:
+          case "end":
+            return _context27.stop();
+        }
+      }
+    }, _callee27, null, [[2, 20]]);
+  }));
+
+  return function getTop10(_x103, _x104, _x105, _x106) {
+    return _ref85.apply(this, arguments);
+  };
+}();
+
+exports.getTop10 = getTop10;
 //# sourceMappingURL=pugHandlers.js.map

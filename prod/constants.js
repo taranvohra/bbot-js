@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.teamIndexes = exports.emojis = exports.pugEvents = exports.offline = exports.captainTimeout = exports.tagLength = exports.strongPlayerRatingThreshold = exports.teamEmojis = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
-var prefix = '.';
+var prefix = '-';
 exports.prefix = prefix;
 var privilegedRoles = ['Admins', 'Moderators'];
 exports.privilegedRoles = privilegedRoles;

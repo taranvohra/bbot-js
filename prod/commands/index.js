@@ -177,6 +177,11 @@ var commands = [{
   description: '',
   aliases: ['winner'],
   solo: 0
+}, {
+  key: 'getTop10',
+  descriptipn: '',
+  aliases: ['top10'],
+  solo: 0
 }];
 exports.commands = commands;
 //# sourceMappingURL=index.js.map
