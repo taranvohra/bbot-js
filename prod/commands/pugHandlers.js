@@ -19,9 +19,11 @@ var _actions = require("../store/actions");
 
 var _events = _interopRequireDefault(require("events"));
 
+var _fs = _interopRequireDefault(require("fs"));
+
 var _jimp = _interopRequireDefault(require("jimp"));
 
-var _fs = _interopRequireDefault(require("fs"));
+var _fonts = require("../fonts");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -2971,14 +2973,7 @@ function () {
 
               var winP = won / (won + lost);
               var points = 100 - 0.6 * winP + totalRating * 0.4 * gameType.noOfPlayers;
-              console.log({
-                username: username,
-                won: won,
-                lost: lost,
-                totalRating: totalRating,
-                winP: winP,
-                points: points
-              });
+              if (isNaN(points)) return undefined;
               return {
                 username: username,
                 points: points,
@@ -2988,93 +2983,98 @@ function () {
               return a.points - b.points;
             }).slice(0, 10);
 
-            _jimp["default"].read('assets/top10_template.png').then(function (template) {
-              _jimp["default"].loadFont('assets/ubuntu.fnt').then(
+            _jimp["default"].read('assets/top10_template.png').then(
+            /*#__PURE__*/
+            function () {
+              var _ref88 = _asyncToGenerator(
               /*#__PURE__*/
-              function () {
-                var _ref88 = _asyncToGenerator(
-                /*#__PURE__*/
-                regeneratorRuntime.mark(function _callee26(font) {
-                  var Y, MAX_HEIGHT, imageName;
-                  return regeneratorRuntime.wrap(function _callee26$(_context26) {
-                    while (1) {
-                      switch (_context26.prev = _context26.next) {
-                        case 0:
-                          Y = 50;
-                          MAX_HEIGHT = 25; // HEADING
+              regeneratorRuntime.mark(function _callee26(template) {
+                var _ref89, arialFNT, ubuntuFNT, ubuntuTTF, Y, MAX_HEIGHT, imageName;
 
-                          template.print(font, 0, 0, {
-                            text: "Top 10",
+                return regeneratorRuntime.wrap(function _callee26$(_context26) {
+                  while (1) {
+                    switch (_context26.prev = _context26.next) {
+                      case 0:
+                        _context26.next = 2;
+                        return _fonts.FONTS;
+
+                      case 2:
+                        _ref89 = _context26.sent;
+                        arialFNT = _ref89.arialFNT;
+                        ubuntuFNT = _ref89.ubuntuFNT;
+                        ubuntuTTF = _ref89.ubuntuTTF;
+                        Y = 50;
+                        MAX_HEIGHT = 25;
+                        top10.forEach(function (player) {
+                          var username = player.username,
+                              _player$stats = player.stats,
+                              totalPugs = _player$stats.totalPugs,
+                              totalRating = _player$stats.totalRating,
+                              won = _player$stats.won,
+                              lost = _player$stats.lost;
+                          var winP = "".concat((won / (won + lost) * 100).toFixed(0), "%");
+                          var name = username.replace(/\\[^\\]/g, '');
+                          var shouldUseUbuntu = name.split('').every(function (_, i) {
+                            return ubuntuTTF.hasGlyphForCodePoint(name.codePointAt(i));
+                          });
+                          template.print(shouldUseUbuntu ? ubuntuFNT : arialFNT, 30, Y, {
+                            text: name,
                             alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
                             alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
-                          }, 400, MAX_HEIGHT);
-                          top10.forEach(function (player, i) {
-                            var username = player.username,
-                                _player$stats = player.stats,
-                                totalPugs = _player$stats.totalPugs,
-                                totalRating = _player$stats.totalRating,
-                                won = _player$stats.won,
-                                lost = _player$stats.lost;
-                            var winP = "".concat((won / (won + lost) * 100).toFixed(0), "%");
-                            template.print(font, 30, Y, {
-                              text: username,
-                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
-                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
-                            }, 120, MAX_HEIGHT);
-                            template.print(font, 150, Y, {
-                              text: totalPugs.toString(),
-                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
-                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
-                            }, 50, MAX_HEIGHT);
-                            template.print(font, 200, Y, {
-                              text: totalRating.toFixed(2),
-                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
-                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
-                            }, 50, MAX_HEIGHT);
-                            template.print(font, 250, Y, {
-                              text: won.toString(),
-                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
-                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
-                            }, 50, MAX_HEIGHT);
-                            template.print(font, 300, Y, {
-                              text: lost.toString(),
-                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
-                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
-                            }, 50, MAX_HEIGHT);
-                            template.print(font, 350, Y, {
-                              text: winP,
-                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
-                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
-                            }, 50, MAX_HEIGHT);
-                            Y += 25;
-                          });
-                          imageName = Date.now();
-                          template.write("generated/".concat(imageName, ".png"));
-                          _context26.next = 8;
-                          return channel.send('', {
-                            files: ["generated/".concat(imageName, ".png")]
-                          });
+                          }, 120, MAX_HEIGHT);
+                          template.print(ubuntuFNT, 150, Y, {
+                            text: totalPugs.toString(),
+                            alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                            alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                          }, 50, MAX_HEIGHT);
+                          template.print(ubuntuFNT, 200, Y, {
+                            text: totalRating.toFixed(2),
+                            alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                            alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                          }, 50, MAX_HEIGHT);
+                          template.print(ubuntuFNT, 250, Y, {
+                            text: won.toString(),
+                            alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                            alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                          }, 50, MAX_HEIGHT);
+                          template.print(ubuntuFNT, 300, Y, {
+                            text: lost.toString(),
+                            alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                            alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                          }, 50, MAX_HEIGHT);
+                          template.print(ubuntuFNT, 350, Y, {
+                            text: winP,
+                            alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                            alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                          }, 50, MAX_HEIGHT);
+                          Y += 25;
+                        });
+                        imageName = Date.now();
+                        template.write("generated/".concat(imageName, ".png"));
+                        _context26.next = 13;
+                        return channel.send('', {
+                          files: ["generated/".concat(imageName, ".png")]
+                        });
 
-                        case 8:
-                          try {
-                            _fs["default"].unlinkSync("generated/".concat(imageName, ".png"));
-                          } catch (error) {
-                            console.log('unlink error: ', error);
-                          }
+                      case 13:
+                        try {
+                          _fs["default"].unlinkSync("generated/".concat(imageName, ".png"));
+                        } catch (error) {
+                          console.log('unlink error: ', error);
+                        }
 
-                        case 9:
-                        case "end":
-                          return _context26.stop();
-                      }
+                      case 14:
+                      case "end":
+                        return _context26.stop();
                     }
-                  }, _callee26);
-                }));
+                  }
+                }, _callee26);
+              }));
 
-                return function (_x107) {
-                  return _ref88.apply(this, arguments);
-                };
-              }());
-            });
+              return function (_x107) {
+                return _ref88.apply(this, arguments);
+              };
+            }());
 
             _context27.next = 24;
             break;

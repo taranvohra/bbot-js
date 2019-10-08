@@ -41,8 +41,9 @@ import {
   removeBlock,
 } from '../store/actions';
 import events from 'events';
-import Jimp from 'jimp';
 import fs from 'fs';
+import Jimp from 'jimp';
+import { FONTS } from '../fonts';
 
 export const pugEventEmitter = new events.EventEmitter();
 
@@ -1653,14 +1654,14 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
         if (!stats || !stats[gameTypeName]) return undefined;
 
         const { won, lost, totalRating } = stats[gameTypeName];
-        if (won < 5) return undefined; // must have atleast 5 games to be considered
+        // if (won < 5) return undefined; // must have atleast 5 games to be considered
 
         const winP = won / (won + lost);
         const points =
           100 - 0.6 * winP + totalRating * 0.4 * gameType.noOfPlayers;
 
         if (isNaN(points)) return undefined;
-        console.log({ username, won, lost, totalRating, winP, points });
+
         return {
           username,
           points,
@@ -1671,109 +1672,112 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
       .sort((a, b) => a.points - b.points)
       .slice(0, 10);
 
-    Jimp.read('assets/top10_template.png').then(template => {
-      Jimp.loadFont('assets/ubuntu.fnt').then(async font => {
-        let Y = 50;
-        const MAX_HEIGHT = 25;
+    Jimp.read('assets/top10_template.png').then(async template => {
+      const { arialFNT, ubuntuFNT, ubuntuTTF } = await FONTS;
+      let Y = 50;
+      const MAX_HEIGHT = 25;
 
-        top10.forEach((player, i) => {
-          const {
-            username,
-            stats: { totalPugs, totalRating, won, lost },
-          } = player;
-          const winP = `${((won / (won + lost)) * 100).toFixed(0)}%`;
+      top10.forEach(player => {
+        const {
+          username,
+          stats: { totalPugs, totalRating, won, lost },
+        } = player;
+        const winP = `${((won / (won + lost)) * 100).toFixed(0)}%`;
+        const name = username.replace(/\\[^\\]/g, '');
 
-          template.print(
-            font,
-            30,
-            Y,
-            {
-              text: username,
-              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
-            },
-            120,
-            MAX_HEIGHT
-          );
+        const shouldUseUbuntu = name
+          .split('')
+          .every((_, i) => ubuntuTTF.hasGlyphForCodePoint(name.codePointAt(i)));
 
-          template.print(
-            font,
-            150,
-            Y,
-            {
-              text: totalPugs.toString(),
-              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
-            },
-            50,
-            MAX_HEIGHT
-          );
+        template.print(
+          shouldUseUbuntu ? ubuntuFNT : arialFNT,
+          30,
+          Y,
+          {
+            text: name,
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          120,
+          MAX_HEIGHT
+        );
 
-          template.print(
-            font,
-            200,
-            Y,
-            {
-              text: totalRating.toFixed(2),
-              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
-            },
-            50,
-            MAX_HEIGHT
-          );
-          template.print(
-            font,
-            250,
-            Y,
-            {
-              text: won.toString(),
-              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
-            },
-            50,
-            MAX_HEIGHT
-          );
-          template.print(
-            font,
-            300,
-            Y,
-            {
-              text: lost.toString(),
-              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
-            },
-            50,
-            MAX_HEIGHT
-          );
-          template.print(
-            font,
-            350,
-            Y,
-            {
-              text: winP,
-              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
-            },
-            50,
-            MAX_HEIGHT
-          );
+        template.print(
+          ubuntuFNT,
+          150,
+          Y,
+          {
+            text: totalPugs.toString(),
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          50,
+          MAX_HEIGHT
+        );
 
-          Y += 25;
-        });
-
-        const imageName = Date.now();
-        template.write(`generated/${imageName}.png`);
-
-        await channel.send('', {
-          files: [`generated/${imageName}.png`],
-        });
-
-        try {
-          fs.unlinkSync(`generated/${imageName}.png`);
-        } catch (error) {
-          console.log('unlink error: ', error);
-        }
+        template.print(
+          ubuntuFNT,
+          200,
+          Y,
+          {
+            text: totalRating.toFixed(2),
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          50,
+          MAX_HEIGHT
+        );
+        template.print(
+          ubuntuFNT,
+          250,
+          Y,
+          {
+            text: won.toString(),
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          50,
+          MAX_HEIGHT
+        );
+        template.print(
+          ubuntuFNT,
+          300,
+          Y,
+          {
+            text: lost.toString(),
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          50,
+          MAX_HEIGHT
+        );
+        template.print(
+          ubuntuFNT,
+          350,
+          Y,
+          {
+            text: winP,
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          50,
+          MAX_HEIGHT
+        );
+        Y += 25;
       });
+
+      const imageName = Date.now();
+      template.write(`generated/${imageName}.png`);
+
+      await channel.send('', {
+        files: [`generated/${imageName}.png`],
+      });
+
+      try {
+        fs.unlinkSync(`generated/${imageName}.png`);
+      } catch (error) {
+        console.log('unlink error: ', error);
+      }
     });
   } catch (error) {
     console.log(error);
