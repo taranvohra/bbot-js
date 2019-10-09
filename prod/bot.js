@@ -28,7 +28,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 
 function _toArray(arr) { return _arrayWithHoles(arr) || _iterableToArray(arr) || _nonIterableRest(); }
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
 function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
@@ -201,21 +207,25 @@ regeneratorRuntime.mark(function _callee() {
           return hydrateStore();
 
         case 5:
-          bBot.login(process.env.DISCORD_BOT_TOKEN);
-          _context.next = 11;
+          _context.next = 7;
+          return bBot.login(process.env.DISCORD_BOT_TOKEN);
+
+        case 7:
+          sendRestartMessageToAllGuilds(bBot);
+          _context.next = 13;
           break;
 
-        case 8:
-          _context.prev = 8;
+        case 10:
+          _context.prev = 10;
           _context.t0 = _context["catch"](0);
           console.log('error', _context.t0);
 
-        case 11:
+        case 13:
         case "end":
           return _context.stop();
       }
     }
-  }, _callee, null, [[0, 8]]);
+  }, _callee, null, [[0, 10]]);
 }))();
 
 var hydrateStore =
@@ -299,6 +309,24 @@ function () {
     return _ref4.apply(this, arguments);
   };
 }();
+
+var sendRestartMessageToAllGuilds = function sendRestartMessageToAllGuilds(client) {
+  var state = _store["default"].getState();
+
+  var allGuildIds = _toConsumableArray(client.guilds.keys());
+
+  allGuildIds.forEach(function (guildId) {
+    var _ref11 = state.pugs[guildId] || state.queryServers[guildId],
+        pugChannel = _ref11.pugChannel,
+        queryChannel = _ref11.queryChannel;
+
+    if (pugChannel || queryChannel) {
+      var guild = client.guilds.get(guildId);
+      var channel = guild.channels.get(pugChannel || queryChannel);
+      channel.send("I just restarted ".concat(_constants.emojis.putricc));
+    }
+  });
+};
 /**
  * P U G
  * E V E N T S
@@ -321,10 +349,10 @@ var checkIfUserNeedsUnblock = function checkIfUserNeedsUnblock() {
   setInterval(function () {
     var state = _store["default"].getState();
 
-    Object.entries(state.blocks).forEach(function (_ref11) {
-      var _ref12 = _slicedToArray(_ref11, 2),
-          serverId = _ref12[0],
-          list = _ref12[1].list;
+    Object.entries(state.blocks).forEach(function (_ref12) {
+      var _ref13 = _slicedToArray(_ref12, 2),
+          serverId = _ref13[0],
+          list = _ref13[1].list;
 
       if (list.length > 0) {
         var guild = bBot.guilds.get(serverId.toString());

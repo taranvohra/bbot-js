@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.teamIndexes = exports.emojis = exports.pugEvents = exports.offline = exports.captainTimeout = exports.tagLength = exports.strongPlayerRatingThreshold = exports.teamEmojis = exports.teams = exports.privilegedRoles = exports.prefix = void 0;
-var prefix = '-';
+var prefix = '.';
 exports.prefix = prefix;
 var privilegedRoles = ['Admins', 'Moderators'];
 exports.privilegedRoles = privilegedRoles;
@@ -44,7 +44,8 @@ var emojis = {
   trumpXD: '<:trumpXD:610050412749258754>',
   smart: '<:smart:601094351770353664>',
   bannechu: '<:bannechu:601092624962682881>',
-  peepoComfy: '<:peepoComfy:626060643895607296>'
+  peepoComfy: '<:peepoComfy:626060643895607296>',
+  putricc: '<:putricc:631513766701301785>'
 };
 exports.emojis = emojis;
 var teamIndexes = {

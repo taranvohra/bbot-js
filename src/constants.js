@@ -35,6 +35,7 @@ export const emojis = {
   smart: '<:smart:601094351770353664>',
   bannechu: '<:bannechu:601092624962682881>',
   peepoComfy: '<:peepoComfy:626060643895607296>',
+  putricc: '<:putricc:631513766701301785>',
 };
 
 export const teamIndexes = {

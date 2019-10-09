@@ -14,7 +14,13 @@ import {
 import { DiscordServers, UT99QueryServers, GameTypes, Blocks } from './models';
 import { handlers, commands, emitters } from './commands';
 import { sanitizeName } from './utils';
-import { prefix, offline, pugEvents, privilegedRoles } from './constants';
+import {
+  prefix,
+  offline,
+  pugEvents,
+  privilegedRoles,
+  emojis,
+} from './constants';
 import { formatBroadcastCaptainsReady } from './formats';
 import { compareAsc } from 'date-fns';
 
@@ -126,7 +132,8 @@ bBot.on('presenceUpdate', (_, { user, guild, presence: { status } }) => {
       useUnifiedTopology: true,
     });
     await hydrateStore();
-    bBot.login(process.env.DISCORD_BOT_TOKEN);
+    await bBot.login(process.env.DISCORD_BOT_TOKEN);
+    sendRestartMessageToAllGuilds(bBot);
   } catch (error) {
     console.log('error', error);
   }
@@ -178,6 +185,21 @@ const hydrateStore = async () => {
         blockedUsers: Array.from(blocked_users),
       })
     );
+  });
+};
+
+const sendRestartMessageToAllGuilds = client => {
+  const state = store.getState();
+  const allGuildIds = [...client.guilds.keys()];
+
+  allGuildIds.forEach(guildId => {
+    const { pugChannel, queryChannel } =
+      state.pugs[guildId] || state.queryServers[guildId];
+    if (pugChannel || queryChannel) {
+      const guild = client.guilds.get(guildId);
+      const channel = guild.channels.get(pugChannel || queryChannel);
+      channel.send(`I just restarted ${emojis.putricc}`);
+    }
   });
 };
 
