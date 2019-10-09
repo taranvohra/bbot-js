@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "clean": "rimraf dist",
+    "clean": "rimraf dist && rimraf generated",
     "build": "npm run clean && babel src -d dist",
     "start": "npm run build && node dist",
     "build-dev": "npm run clean && babel src -s -d dist",
