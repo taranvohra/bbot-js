@@ -4,9 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "clean": "rm -rf prod && rm -rf generated && mkdir prod",
-    "build": "npm run clean && babel src -s -d prod",
-    "start": "npm run build && node -r source-map-support/register prod/bot.js"
+    "clean": "rimraf dist",
+    "build": "npm run clean && babel src -d dist",
+    "start": "npm run build && node dist",
+    "build-dev": "npm run clean && babel src -s -d dist",
+    "start-dev": "npm run build-dev && node -r source-map-support/register dist"
   },
   "author": "",
   "license": "ISC",
@@ -25,6 +27,7 @@
     "@babel/core": "^7.4.5",
     "@babel/polyfill": "^7.4.4",
     "@babel/preset-env": "^7.4.5",
-    "dotenv": "^8.0.0"
+    "dotenv": "^8.0.0",
+    "rimraf": "^3.0.0"
   }
 }
