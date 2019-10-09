@@ -888,7 +888,7 @@ export const pickPlayer = async (
     const result = forWhichPug.pickPlayer(playerIndex - 1, pickingOrder[turn]);
     channel.send(formatPickPlayerStatus({ ...result, pug: forWhichPug }));
 
-    // TODO If finished, save stats to DB and remove from redux
+    // SAVE STATS
     if (result.finished) {
       new Pugs({
         server_id: serverId,
@@ -899,47 +899,62 @@ export const pickPlayer = async (
 
       const players = forWhichPug.players;
 
-      players.forEach(({ id, username, pick, captain, stats }) => {
-        let updatedStats = {};
-        const existingStats = stats[forWhichPug.name];
-        if (!existingStats) {
-          updatedStats = {
-            totalRating: pick,
-            totalCaptain: captain !== null ? 1 : 0,
-            totalPugs: 1,
-          };
-        } else {
-          updatedStats = {
-            ...existingStats,
-            totalRating:
+      Users.bulkWrite(
+        players.map(({ id, username, pick, captain, stats }) => {
+          const existingStats = stats[forWhichPug.name];
+
+          if (!existingStats) {
+            const totalRating = pick;
+            const totalCaptain = captain !== null ? 1 : 0;
+            const totalPugs = 1;
+            return {
+              updateOne: {
+                filter: { id, server_id: serverId },
+                update: {
+                  $set: {
+                    username,
+                    last_pug: { ...forWhichPug, timestamp: new Date() },
+                    [`stats.${forWhichPug.name}.totalRating`]: totalRating,
+                    [`stats.${forWhichPug.name}.totalCaptain`]: totalCaptain,
+                    [`stats.${forWhichPug.name}.totalPugs`]: totalPugs,
+                  },
+                },
+                upsert: true,
+              },
+            };
+          } else {
+            const totalRating =
               captain !== null
                 ? existingStats.totalRating
                 : (existingStats.totalRating *
                     (existingStats.totalPugs - existingStats.totalCaptain) +
                     pick) /
-                  (existingStats.totalPugs - existingStats.totalCaptain + 1),
-            totalCaptain:
+                  (existingStats.totalPugs - existingStats.totalCaptain + 1);
+            const totalCaptain =
               captain !== null
                 ? existingStats.totalCaptain + 1
-                : existingStats.totalCaptain,
-            totalPugs: existingStats.totalPugs + 1,
-          };
-        }
+                : existingStats.totalCaptain;
+            const totalPugs = existingStats.totalPugs + 1;
 
-        Users.findOneAndUpdate(
-          { id, server_id: serverId },
-          {
-            $set: {
-              username,
-              last_pug: { ...forWhichPug, timestamp: new Date() },
-              stats: { ...stats, [forWhichPug.name]: updatedStats },
-            },
-          },
-          {
-            upsert: true,
+            return {
+              updateOne: {
+                filter: { id, server_id: serverId },
+                update: {
+                  $set: {
+                    username,
+                    last_pug: { ...forWhichPug, timestamp: new Date() },
+                    [`stats.${forWhichPug.name}.totalRating`]: totalRating,
+                    [`stats.${forWhichPug.name}.totalCaptain`]: totalCaptain,
+                    [`stats.${forWhichPug.name}.totalPugs`]: totalPugs,
+                  },
+                },
+                upsert: true,
+              },
+            };
           }
-        ).exec();
-      });
+        }),
+        { ordered: false }
+      );
 
       store.dispatch(removePug({ serverId, name }));
     }
@@ -1579,35 +1594,28 @@ export const declareWinner = async (
     ).exec();
 
     // todo, if same team winner, skip it, if different then reverse wins and loss
-    const Ops = pug.players.map(({ id, team, username }) => {
-      const wonInc = team === winningTeam ? 1 : changeWinner ? -1 : 0;
-      const lostInc = team !== winningTeam ? 1 : changeWinner ? -1 : 0;
-      console.log({ username, wonInc, lostInc });
-      return {
-        updateOne: {
-          filter: { id: id, server_id: serverId },
-          update: {
-            $inc: {
-              [`stats.${pug.name}.won`]: wonInc,
-              [`stats.${pug.name}.lost`]: lostInc,
+    await Users.bulkWrite(
+      pug.players.map(({ id, team, username }) => {
+        return {
+          updateOne: {
+            filter: { id, server_id: serverId },
+            update: {
+              $inc: {
+                [`stats.${pug.name}.won`]:
+                  team === winningTeam ? 1 : changeWinner ? -1 : 0,
+                [`stats.${pug.name}.lost`]:
+                  team !== winningTeam ? 1 : changeWinner ? -1 : 0,
+              },
+              $set: { username },
             },
-            $set: { username },
           },
-        },
-      };
-    });
+        };
+      }),
+      {
+        ordered: false,
+      }
+    );
 
-    const res = await Users.bulkWrite(Ops, {
-      writeConcern: {
-        w: 'majority',
-        j: true,
-      },
-      ordered: false,
-    }).catch(err => {
-      throw err;
-    });
-
-    console.log(res);
     channel.send(
       formatLastPugStatus(
         { pug: updatedPug.pug, guildName: channel.guild.name },

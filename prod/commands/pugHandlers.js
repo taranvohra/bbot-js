@@ -1496,7 +1496,7 @@ function () {
             result = forWhichPug.pickPlayer(playerIndex - 1, pickingOrder[turn]);
             channel.send((0, _formats.formatPickPlayerStatus)(_objectSpread({}, result, {
               pug: forWhichPug
-            }))); // TODO If finished, save stats to DB and remove from redux
+            }))); // SAVE STATS
 
             if (result.finished) {
               new _models.Pugs({
@@ -1506,43 +1506,67 @@ function () {
                 timestamp: new Date()
               }).save();
               players = forWhichPug.players;
-              players.forEach(function (_ref40) {
+
+              _models.Users.bulkWrite(players.map(function (_ref40) {
                 var id = _ref40.id,
                     username = _ref40.username,
                     pick = _ref40.pick,
                     captain = _ref40.captain,
                     stats = _ref40.stats;
-                var updatedStats = {};
                 var existingStats = stats[forWhichPug.name];
 
                 if (!existingStats) {
-                  updatedStats = {
-                    totalRating: pick,
-                    totalCaptain: captain !== null ? 1 : 0,
-                    totalPugs: 1
+                  var _$set;
+
+                  var totalRating = pick;
+                  var totalCaptain = captain !== null ? 1 : 0;
+                  var totalPugs = 1;
+                  return {
+                    updateOne: {
+                      filter: {
+                        id: id,
+                        server_id: serverId
+                      },
+                      update: {
+                        $set: (_$set = {
+                          username: username,
+                          last_pug: _objectSpread({}, forWhichPug, {
+                            timestamp: new Date()
+                          })
+                        }, _defineProperty(_$set, "stats.".concat(forWhichPug.name, ".totalRating"), totalRating), _defineProperty(_$set, "stats.".concat(forWhichPug.name, ".totalCaptain"), totalCaptain), _defineProperty(_$set, "stats.".concat(forWhichPug.name, ".totalPugs"), totalPugs), _$set)
+                      },
+                      upsert: true
+                    }
                   };
                 } else {
-                  updatedStats = _objectSpread({}, existingStats, {
-                    totalRating: captain !== null ? existingStats.totalRating : (existingStats.totalRating * (existingStats.totalPugs - existingStats.totalCaptain) + pick) / (existingStats.totalPugs - existingStats.totalCaptain + 1),
-                    totalCaptain: captain !== null ? existingStats.totalCaptain + 1 : existingStats.totalCaptain,
-                    totalPugs: existingStats.totalPugs + 1
-                  });
-                }
+                  var _$set2;
 
-                _models.Users.findOneAndUpdate({
-                  id: id,
-                  server_id: serverId
-                }, {
-                  $set: {
-                    username: username,
-                    last_pug: _objectSpread({}, forWhichPug, {
-                      timestamp: new Date()
-                    }),
-                    stats: _objectSpread({}, stats, _defineProperty({}, forWhichPug.name, updatedStats))
-                  }
-                }, {
-                  upsert: true
-                }).exec();
+                  var _totalRating = captain !== null ? existingStats.totalRating : (existingStats.totalRating * (existingStats.totalPugs - existingStats.totalCaptain) + pick) / (existingStats.totalPugs - existingStats.totalCaptain + 1);
+
+                  var _totalCaptain = captain !== null ? existingStats.totalCaptain + 1 : existingStats.totalCaptain;
+
+                  var _totalPugs = existingStats.totalPugs + 1;
+
+                  return {
+                    updateOne: {
+                      filter: {
+                        id: id,
+                        server_id: serverId
+                      },
+                      update: {
+                        $set: (_$set2 = {
+                          username: username,
+                          last_pug: _objectSpread({}, forWhichPug, {
+                            timestamp: new Date()
+                          })
+                        }, _defineProperty(_$set2, "stats.".concat(forWhichPug.name, ".totalRating"), _totalRating), _defineProperty(_$set2, "stats.".concat(forWhichPug.name, ".totalCaptain"), _totalCaptain), _defineProperty(_$set2, "stats.".concat(forWhichPug.name, ".totalPugs"), _totalPugs), _$set2)
+                      },
+                      upsert: true
+                    }
+                  };
+                }
+              }), {
+                ordered: false
               });
 
               _store["default"].dispatch((0, _actions.removePug)({
@@ -2721,7 +2745,7 @@ function () {
   var _ref80 = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee25(_ref77, _ref78, serverId, _ref79) {
-    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, changeWinner, pug, winningTeam, updatedPug, Ops, res;
+    var channel, _ref81, which, wTeam, id, username, roles, state, pugChannel, _which$split$reduce, tCount, digits, howMany, results, found, changeWinner, pug, winningTeam, updatedPug;
 
     return regeneratorRuntime.wrap(function _callee25$(_context25) {
       while (1) {
@@ -2831,20 +2855,13 @@ function () {
 
           case 32:
             updatedPug = _context25.sent;
-            // todo, if same team winner, skip it, if different then reverse wins and loss
-            Ops = pug.players.map(function (_ref82) {
+            _context25.next = 35;
+            return _models.Users.bulkWrite(pug.players.map(function (_ref82) {
               var _$inc;
 
               var id = _ref82.id,
                   team = _ref82.team,
                   username = _ref82.username;
-              var wonInc = team === winningTeam ? 1 : changeWinner ? -1 : 0;
-              var lostInc = team !== winningTeam ? 1 : changeWinner ? -1 : 0;
-              console.log({
-                username: username,
-                wonInc: wonInc,
-                lostInc: lostInc
-              });
               return {
                 updateOne: {
                   filter: {
@@ -2852,28 +2869,18 @@ function () {
                     server_id: serverId
                   },
                   update: {
-                    $inc: (_$inc = {}, _defineProperty(_$inc, "stats.".concat(pug.name, ".won"), wonInc), _defineProperty(_$inc, "stats.".concat(pug.name, ".lost"), lostInc), _$inc),
+                    $inc: (_$inc = {}, _defineProperty(_$inc, "stats.".concat(pug.name, ".won"), team === winningTeam ? 1 : changeWinner ? -1 : 0), _defineProperty(_$inc, "stats.".concat(pug.name, ".lost"), team !== winningTeam ? 1 : changeWinner ? -1 : 0), _$inc),
                     $set: {
                       username: username
                     }
                   }
                 }
               };
-            });
-            _context25.next = 36;
-            return _models.Users.bulkWrite(Ops, {
-              writeConcern: {
-                w: 'majority',
-                j: true
-              },
+            }), {
               ordered: false
-            })["catch"](function (err) {
-              throw err;
             });
 
-          case 36:
-            res = _context25.sent;
-            console.log(res);
+          case 35:
             channel.send((0, _formats.formatLastPugStatus)({
               pug: updatedPug.pug,
               guildName: channel.guild.name
@@ -2881,21 +2888,21 @@ function () {
               winner: winningTeam,
               updated: true
             }));
-            _context25.next = 45;
+            _context25.next = 42;
             break;
 
-          case 41:
-            _context25.prev = 41;
+          case 38:
+            _context25.prev = 38;
             _context25.t0 = _context25["catch"](3);
             console.log(_context25.t0);
             message.channel.send('Something went wrong');
 
-          case 45:
+          case 42:
           case "end":
             return _context25.stop();
         }
       }
-    }, _callee25, null, [[3, 41]]);
+    }, _callee25, null, [[3, 38]]);
   }));
 
   return function declareWinner(_x99, _x100, _x101, _x102) {
@@ -2969,7 +2976,8 @@ function () {
               var _stats$gameTypeName = stats[gameTypeName],
                   won = _stats$gameTypeName.won,
                   lost = _stats$gameTypeName.lost,
-                  totalRating = _stats$gameTypeName.totalRating; // if (won < 5) return undefined; // must have atleast 5 games to be considered
+                  totalRating = _stats$gameTypeName.totalRating;
+              if (won < 5) return undefined; // must have atleast 5 games to be considered
 
               var winP = won / (won + lost);
               var points = 100 - 0.6 * winP + totalRating * 0.4 * gameType.noOfPlayers;
