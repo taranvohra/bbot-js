@@ -1,3 +1,4 @@
+import config from '../config.json';
 import '@babel/polyfill';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
@@ -126,13 +127,13 @@ bBot.on('presenceUpdate', (_, { user, guild, presence: { status } }) => {
 
 (async () => {
   try {
-    await mongoose.connect(process.env.DB_HOST, {
+    await mongoose.connect(config.mongoDBConnectionString, {
       useNewUrlParser: true,
       useFindAndModify: false,
       useUnifiedTopology: true,
     });
     await hydrateStore();
-    await bBot.login(process.env.DISCORD_BOT_TOKEN);
+    await bBot.login(config.discordToken);
     sendRestartMessageToAllGuilds(bBot);
   } catch (error) {
     console.log('error', error);
@@ -193,8 +194,7 @@ const sendRestartMessageToAllGuilds = client => {
   const allGuildIds = [...client.guilds.keys()];
 
   allGuildIds.forEach(guildId => {
-    const { pugChannel, queryChannel } =
-      state.pugs[guildId] || state.queryServers[guildId];
+    const { pugChannel, queryChannel } = state.pugs[guildId] || state.queryServers[guildId];
     if (pugChannel || queryChannel) {
       const guild = client.guilds.get(guildId);
       const channel = guild.channels.get(pugChannel || queryChannel);

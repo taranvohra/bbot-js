@@ -1,0 +1,4 @@
+{
+	"mongoDBConnectionString": "mongodb://localhost/discord_bbot",
+	"discordToken": "PUT_HERE_DISCORD_TOKEN"
+}
