@@ -1825,7 +1825,7 @@ export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
         if (!stats || !stats[gameTypeName]) return undefined;
 
         const { won, lost, totalRating } = stats[gameTypeName];
-        // if (lost < 5) return undefined; // must have atleast 5 losses to be considered
+        if (lost < 5) return undefined; // must have atleast 5 losses to be considered
 
         const winP = won / (won + lost);
         const points =
