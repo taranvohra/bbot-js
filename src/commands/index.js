@@ -192,7 +192,7 @@ const commands = [
   },
   {
     key: 'getTop10',
-    descriptipn: '',
+    description: '',
     aliases: ['top10'],
     solo: 0,
   },
@@ -200,6 +200,12 @@ const commands = [
     key: 'setPrefix',
     descriptipn: '',
     aliases: ['setprefix'],
+    solo: 0,
+  },
+  {
+    key: 'getBottom10',
+    description: '',
+    aliases: ['bottom10'],
     solo: 0,
   },
 ];
