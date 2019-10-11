@@ -1662,12 +1662,10 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
         if (!stats || !stats[gameTypeName]) return undefined;
 
         const { won, lost, totalRating } = stats[gameTypeName];
-        if (won < 5) return undefined; // must have atleast 5 games to be considered
+        if (won + lost < 3) return undefined; // must have atleast 3 games to be considered
 
         const winP = won / (won + lost);
-        const points =
-          100 - 0.6 * winP + totalRating * 0.4 * gameType.noOfPlayers;
-
+        const points = (1 + 0.015 * winP * 100) * (1 + 1.5 / totalRating);
         if (isNaN(points)) return undefined;
 
         return {
@@ -1677,7 +1675,7 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
         };
       })
       .filter(Boolean)
-      .sort((a, b) => a.points - b.points)
+      .sort((a, b) => b.points - a.points)
       .slice(0, 10);
 
     Jimp.read('assets/top10_template.png').then(async template => {
@@ -1825,11 +1823,10 @@ export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
         if (!stats || !stats[gameTypeName]) return undefined;
 
         const { won, lost, totalRating } = stats[gameTypeName];
-        if (lost < 5) return undefined; // must have atleast 5 losses to be considered
+        if (won + lost < 3) return undefined; // must have atleast 3 games to be considered
 
         const winP = won / (won + lost);
-        const points =
-          100 - 0.6 * winP + totalRating * 0.4 * gameType.noOfPlayers;
+        const points = (1 + 0.015 * winP * 100) * (1 + 1.5 / totalRating);
 
         if (isNaN(points)) return undefined;
 
@@ -1840,9 +1837,10 @@ export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
         };
       })
       .filter(Boolean)
-      .sort((a, b) => a.points - b.points);
+      .sort((a, b) => b.points - a.points);
 
-    const bottom10 = sortedPlayers.slice(sortedPlayers.length - 10);
+    const startPoint = sortedPlayers.length - 10;
+    const bottom10 = sortedPlayers.slice(startPoint);
 
     Jimp.read('assets/bottom10_template.png').then(async template => {
       const { arialFNT, obelixFNT, ubuntuFNT, ubuntuTTF } = await FONTS;
@@ -1861,13 +1859,13 @@ export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
           .split('')
           .every((_, i) => ubuntuTTF.hasGlyphForCodePoint(name.codePointAt(i)));
 
-        if (sortedPlayers.length - 10 + i - 1 < sortedPlayers.length - 4) {
+        if (startPoint + 1 + i < sortedPlayers.length - 2) {
           template.print(
             obelixFNT,
             0,
             Y,
             {
-              text: (sortedPlayers.length - 10 + i - 1).toString(),
+              text: (startPoint + 1 + i).toString(),
               alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
               alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
             },
