@@ -196,6 +196,12 @@ const commands = [
     aliases: ['top10'],
     solo: 0,
   },
+  {
+    key: 'setPrefix',
+    descriptipn: '',
+    aliases: ['setprefix'],
+    solo: 0,
+  },
 ];
 
 export { commands, handlers, emitters };

@@ -10,12 +10,13 @@ import {
   assignQueryServers,
   assignGameTypes,
   assignBlocks,
+  setPrefix,
 } from './store/actions';
 import { DiscordServers, UT99QueryServers, GameTypes, Blocks } from './models';
 import { handlers, commands, emitters } from './commands';
 import { sanitizeName } from './utils';
 import {
-  prefix,
+  defaultPrefix,
   offline,
   pugEvents,
   privilegedRoles,
@@ -32,7 +33,10 @@ const bBot = new Client({
 
 async function onMessage(message) {
   if (message.author.equals(bBot.user)) return;
-  if (!message.content.startsWith(prefix)) return;
+
+  const state = store.getState();
+  const channelPrefix = state.globals[message.guild.id].prefix || defaultPrefix;
+  if (!message.content.startsWith(channelPrefix)) return;
 
   const { id, username } = message.author;
   const roles = message.member ? message.member.roles : null;
@@ -50,7 +54,7 @@ async function onMessage(message) {
     : null;
 
   const [first, ...args] = message.content
-    .substring(prefix.length)
+    .substring(channelPrefix.length)
     .split(' ')
     .filter(Boolean);
   const action = first && first.toLowerCase();
@@ -147,7 +151,7 @@ const hydrateStore = async () => {
     Blocks.find({}).exec(),
   ]);
 
-  dServers.forEach(({ server_id, pug_channel, query_channel }) => {
+  dServers.forEach(({ server_id, pug_channel, query_channel, prefix }) => {
     store.dispatch(INIT({ serverId: server_id }));
     store.dispatch(
       setPugChannel({
@@ -157,6 +161,10 @@ const hydrateStore = async () => {
     );
     store.dispatch(
       setQueryChannel({ serverId: server_id, queryChannel: query_channel })
+    );
+
+    store.dispatch(
+      setPrefix({ serverId: server_id, prefix: prefix })
     );
   });
 
