@@ -179,8 +179,13 @@ var commands = [{
   solo: 0
 }, {
   key: 'getTop10',
-  descriptipn: '',
+  description: '',
   aliases: ['top10'],
+  solo: 0
+}, {
+  key: 'getBottom10',
+  description: '',
+  aliases: ['bottom10'],
   solo: 0
 }];
 exports.commands = commands;

@@ -1792,3 +1792,182 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
     channel.send('Something went wrong');
   }
 };
+
+export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, gameTypes } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : `not present`
+        } <#${pugChannel}>`
+      );
+
+    if (!gameTypeArg)
+      return channel.send('Invalid! specify the gametype aswell');
+
+    const gameType = gameTypes.find(g => g.name === gameTypeArg.toLowerCase());
+    if (!gameType)
+      return channel.send(
+        `**${gameTypeArg.toUpperCase()}** is not a registered gametype`
+      );
+
+    const allPlayers = await Users.find(
+      { server_id: serverId },
+      { username: 1, stats: 1 }
+    );
+
+    const gameTypeName = gameTypeArg.toLowerCase();
+    const sortedPlayers = allPlayers
+      .map(({ username, stats }) => {
+        if (!stats || !stats[gameTypeName]) return undefined;
+
+        const { won, lost, totalRating } = stats[gameTypeName];
+        // if (lost < 5) return undefined; // must have atleast 5 losses to be considered
+
+        const winP = won / (won + lost);
+        const points =
+          100 - 0.6 * winP + totalRating * 0.4 * gameType.noOfPlayers;
+
+        if (isNaN(points)) return undefined;
+
+        return {
+          username,
+          points,
+          stats: stats[gameTypeName],
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.points - b.points);
+
+    const bottom10 = sortedPlayers.slice(sortedPlayers.length - 10);
+
+    Jimp.read('assets/bottom10_template.png').then(async template => {
+      const { arialFNT, obelixFNT, ubuntuFNT, ubuntuTTF } = await FONTS;
+      let Y = 50;
+      const MAX_HEIGHT = 25;
+
+      bottom10.forEach((player, i) => {
+        const {
+          username,
+          stats: { totalPugs, totalRating, won, lost },
+        } = player;
+        const winP = `${((won / (won + lost)) * 100).toFixed(0)}%`;
+        const name = username.replace(/\\[^\\]/g, '');
+
+        const shouldUseUbuntu = name
+          .split('')
+          .every((_, i) => ubuntuTTF.hasGlyphForCodePoint(name.codePointAt(i)));
+
+        if (sortedPlayers.length - 10 + i - 1 < sortedPlayers.length - 4) {
+          template.print(
+            obelixFNT,
+            0,
+            Y,
+            {
+              text: (sortedPlayers.length - 10 + i - 1).toString(),
+              alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+              alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+            },
+            30,
+            MAX_HEIGHT
+          );
+        }
+
+        template.print(
+          shouldUseUbuntu ? ubuntuFNT : arialFNT,
+          30,
+          Y,
+          {
+            text: name,
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          120,
+          MAX_HEIGHT
+        );
+
+        template.print(
+          ubuntuFNT,
+          150,
+          Y,
+          {
+            text: totalPugs.toString(),
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          50,
+          MAX_HEIGHT
+        );
+
+        template.print(
+          ubuntuFNT,
+          200,
+          Y,
+          {
+            text: totalRating.toFixed(2),
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          50,
+          MAX_HEIGHT
+        );
+        template.print(
+          ubuntuFNT,
+          250,
+          Y,
+          {
+            text: won.toString(),
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          50,
+          MAX_HEIGHT
+        );
+        template.print(
+          ubuntuFNT,
+          300,
+          Y,
+          {
+            text: lost.toString(),
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          50,
+          MAX_HEIGHT
+        );
+        template.print(
+          ubuntuFNT,
+          350,
+          Y,
+          {
+            text: winP,
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          50,
+          MAX_HEIGHT
+        );
+        Y += 25;
+      });
+
+      const imageName = Date.now();
+      template.write(`generated/${imageName}.png`);
+
+      await channel.send('', {
+        files: [`generated/${imageName}.png`],
+      });
+
+      try {
+        fs.unlinkSync(`generated/${imageName}.png`);
+      } catch (error) {
+        console.log('unlink error: ', error);
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    channel.send('Something went wrong');
+  }
+};

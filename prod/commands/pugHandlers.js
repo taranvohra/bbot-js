@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getTop10 = exports.declareWinner = exports.showBlockedUsers = exports.unblockPlayer = exports.blockPlayer = exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.addOrRemoveTag = exports.checkStats = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.decideDefaultOrJoin = exports.setDefaultJoin = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
+exports.getBottom10 = exports.getTop10 = exports.declareWinner = exports.showBlockedUsers = exports.unblockPlayer = exports.blockPlayer = exports.adminPickPlayer = exports.adminRemovePlayer = exports.adminAddPlayer = exports.addOrRemoveTag = exports.checkStats = exports.decidePromoteOrPick = exports.resetPug = exports.checkLastPugs = exports.promoteAvailablePugs = exports.pugPicking = exports.pickPlayer = exports.addCaptain = exports.leaveAllGameTypes = exports.leaveGameTypes = exports.decideDefaultOrJoin = exports.setDefaultJoin = exports.joinGameTypes = exports.listAllCurrentGameTypes = exports.listGameTypes = exports.delGameType = exports.addGameType = exports.pugEventEmitter = void 0;
 
 var _store = _interopRequireDefault(require("../store"));
 
@@ -3107,4 +3107,210 @@ function () {
 }();
 
 exports.getTop10 = getTop10;
+
+var getBottom10 =
+/*#__PURE__*/
+function () {
+  var _ref92 = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee29(_ref90, _ref91, serverId, _) {
+    var channel, _ref93, gameTypeArg, state, _state$pugs$serverId18, pugChannel, gameTypes, gameType, allPlayers, gameTypeName, sortedPlayers, bottom10;
+
+    return regeneratorRuntime.wrap(function _callee29$(_context29) {
+      while (1) {
+        switch (_context29.prev = _context29.next) {
+          case 0:
+            channel = _ref90.channel;
+            _ref93 = _slicedToArray(_ref91, 1), gameTypeArg = _ref93[0];
+            _context29.prev = 2;
+            state = _store["default"].getState();
+            _state$pugs$serverId18 = state.pugs[serverId], pugChannel = _state$pugs$serverId18.pugChannel, gameTypes = _state$pugs$serverId18.gameTypes;
+
+            if (!(pugChannel !== channel.id)) {
+              _context29.next = 7;
+              break;
+            }
+
+            return _context29.abrupt("return", channel.send("Active channel for pugs is ".concat(pugChannel ? "<#".concat(pugChannel, ">") : "not present", " <#").concat(pugChannel, ">")));
+
+          case 7:
+            if (gameTypeArg) {
+              _context29.next = 9;
+              break;
+            }
+
+            return _context29.abrupt("return", channel.send('Invalid! specify the gametype aswell'));
+
+          case 9:
+            gameType = gameTypes.find(function (g) {
+              return g.name === gameTypeArg.toLowerCase();
+            });
+
+            if (gameType) {
+              _context29.next = 12;
+              break;
+            }
+
+            return _context29.abrupt("return", channel.send("**".concat(gameTypeArg.toUpperCase(), "** is not a registered gametype")));
+
+          case 12:
+            _context29.next = 14;
+            return _models.Users.find({
+              server_id: serverId
+            }, {
+              username: 1,
+              stats: 1
+            });
+
+          case 14:
+            allPlayers = _context29.sent;
+            gameTypeName = gameTypeArg.toLowerCase();
+            sortedPlayers = allPlayers.map(function (_ref94) {
+              var username = _ref94.username,
+                  stats = _ref94.stats;
+              if (!stats || !stats[gameTypeName]) return undefined;
+              var _stats$gameTypeName2 = stats[gameTypeName],
+                  won = _stats$gameTypeName2.won,
+                  lost = _stats$gameTypeName2.lost,
+                  totalRating = _stats$gameTypeName2.totalRating; // if (lost < 5) return undefined; // must have atleast 5 losses to be considered
+
+              var winP = won / (won + lost);
+              var points = 100 - 0.6 * winP + totalRating * 0.4 * gameType.noOfPlayers;
+              if (isNaN(points)) return undefined;
+              return {
+                username: username,
+                points: points,
+                stats: stats[gameTypeName]
+              };
+            }).filter(Boolean).sort(function (a, b) {
+              return a.points - b.points;
+            });
+            bottom10 = sortedPlayers.slice(sortedPlayers.length - 10);
+
+            _jimp["default"].read('assets/bottom10_template.png').then(
+            /*#__PURE__*/
+            function () {
+              var _ref95 = _asyncToGenerator(
+              /*#__PURE__*/
+              regeneratorRuntime.mark(function _callee28(template) {
+                var _ref96, arialFNT, obelixFNT, ubuntuFNT, ubuntuTTF, Y, MAX_HEIGHT, imageName;
+
+                return regeneratorRuntime.wrap(function _callee28$(_context28) {
+                  while (1) {
+                    switch (_context28.prev = _context28.next) {
+                      case 0:
+                        _context28.next = 2;
+                        return _fonts.FONTS;
+
+                      case 2:
+                        _ref96 = _context28.sent;
+                        arialFNT = _ref96.arialFNT;
+                        obelixFNT = _ref96.obelixFNT;
+                        ubuntuFNT = _ref96.ubuntuFNT;
+                        ubuntuTTF = _ref96.ubuntuTTF;
+                        Y = 50;
+                        MAX_HEIGHT = 25;
+                        bottom10.forEach(function (player, i) {
+                          var username = player.username,
+                              _player$stats2 = player.stats,
+                              totalPugs = _player$stats2.totalPugs,
+                              totalRating = _player$stats2.totalRating,
+                              won = _player$stats2.won,
+                              lost = _player$stats2.lost;
+                          var winP = "".concat((won / (won + lost) * 100).toFixed(0), "%");
+                          var name = username.replace(/\\[^\\]/g, '');
+                          var shouldUseUbuntu = name.split('').every(function (_, i) {
+                            return ubuntuTTF.hasGlyphForCodePoint(name.codePointAt(i));
+                          });
+
+                          if (sortedPlayers.length - 10 + i - 1 < sortedPlayers.length - 4) {
+                            template.print(obelixFNT, 0, Y, {
+                              text: (sortedPlayers.length - 10 + i - 1).toString(),
+                              alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                              alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                            }, 30, MAX_HEIGHT);
+                          }
+
+                          template.print(shouldUseUbuntu ? ubuntuFNT : arialFNT, 30, Y, {
+                            text: name,
+                            alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                            alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                          }, 120, MAX_HEIGHT);
+                          template.print(ubuntuFNT, 150, Y, {
+                            text: totalPugs.toString(),
+                            alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                            alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                          }, 50, MAX_HEIGHT);
+                          template.print(ubuntuFNT, 200, Y, {
+                            text: totalRating.toFixed(2),
+                            alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                            alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                          }, 50, MAX_HEIGHT);
+                          template.print(ubuntuFNT, 250, Y, {
+                            text: won.toString(),
+                            alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                            alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                          }, 50, MAX_HEIGHT);
+                          template.print(ubuntuFNT, 300, Y, {
+                            text: lost.toString(),
+                            alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                            alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                          }, 50, MAX_HEIGHT);
+                          template.print(ubuntuFNT, 350, Y, {
+                            text: winP,
+                            alignmentX: _jimp["default"].HORIZONTAL_ALIGN_CENTER,
+                            alignmentY: _jimp["default"].VERTICAL_ALIGN_MIDDLE
+                          }, 50, MAX_HEIGHT);
+                          Y += 25;
+                        });
+                        imageName = Date.now();
+                        template.write("generated/".concat(imageName, ".png"));
+                        _context28.next = 14;
+                        return channel.send('', {
+                          files: ["generated/".concat(imageName, ".png")]
+                        });
+
+                      case 14:
+                        try {
+                          _fs["default"].unlinkSync("generated/".concat(imageName, ".png"));
+                        } catch (error) {
+                          console.log('unlink error: ', error);
+                        }
+
+                      case 15:
+                      case "end":
+                        return _context28.stop();
+                    }
+                  }
+                }, _callee28);
+              }));
+
+              return function (_x112) {
+                return _ref95.apply(this, arguments);
+              };
+            }());
+
+            _context29.next = 25;
+            break;
+
+          case 21:
+            _context29.prev = 21;
+            _context29.t0 = _context29["catch"](2);
+            console.log(_context29.t0);
+            channel.send('Something went wrong');
+
+          case 25:
+          case "end":
+            return _context29.stop();
+        }
+      }
+    }, _callee29, null, [[2, 21]]);
+  }));
+
+  return function getBottom10(_x108, _x109, _x110, _x111) {
+    return _ref92.apply(this, arguments);
+  };
+}();
+
+exports.getBottom10 = getBottom10;
 //# sourceMappingURL=pugHandlers.js.map
