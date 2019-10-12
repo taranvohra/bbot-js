@@ -5,6 +5,7 @@ const schema = mongoose.Schema({
   pug_channel: String,
   query_channel: String,
   prefix: String,
+  ignored_group_commands: [String],
 });
 
 export default mongoose.model('discord_servers', schema);
