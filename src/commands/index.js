@@ -202,6 +202,15 @@ const commands = [
     aliases: ['bottom10'],
     solo: 0,
   },
+  {
+    key: 'getTopXY',
+    description: '',
+    aliases: ['top'],
+    solo: 0,
+    regex(action) {
+      return RegExp(`^${action}\\d*\\d-\\d{2,}`, 'g');
+    },
+  },
 ];
 
 export { commands, handlers, emitters };
