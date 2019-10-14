@@ -1,7 +1,7 @@
 import { DiscordServers, UT99QueryServers, Blocks, GameTypes } from '../models';
 import store from '../store';
 import { INIT, setQueryChannel, setPugChannel, setPrefix as setPrefixAction } from '../store/actions';
-import { privilegedRoles } from '../constants';
+import { privilegedRoles, defaultPrefix } from '../constants';
 import { hasPrivilegedRole } from '../utils';
 
 export const registerServer = async (message, _, serverId, { roles }) => {
@@ -39,7 +39,7 @@ export const registerQueryChannel = async (message, _, serverId, { roles }) => {
 
     if (!res)
       return message.channel.send(
-        'Please register the server with the bot! Type .register'
+        `Please register the server with the bot! Type: ${defaultPrefix}register`
       );
 
     await DiscordServers.findOneAndUpdate(
@@ -69,7 +69,7 @@ export const registerPugChannel = async (message, _, serverId, { roles }) => {
 
     if (!res)
       return message.channel.send(
-        'Please register the server with the bot! Type .register'
+        `Please register the server with the bot! Type: ${defaultPrefix}register`
       );
 
     await DiscordServers.findOneAndUpdate(
@@ -97,7 +97,7 @@ export const setPrefix = async (message, [proposedPrefix], serverId, { roles }) 
 
     if (!res)
       return message.channel.send(
-        'Please register the server with the bot! Type .register'
+        `Please register the server with the bot! Type ${defaultPrefix}register`
       );
 
     if (proposedPrefix && proposedPrefix.length <= 3) {
