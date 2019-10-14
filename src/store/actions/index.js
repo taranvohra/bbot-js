@@ -63,17 +63,17 @@ export const setPrefix = data => ({
   payload: data,
 });
 
-export const ignoreGroupCommands = data => ({
-  type: 'IGNORE_GROUP_COMMANDS',
+export const ignoreGroupCommand = data => ({
+  type: 'IGNORE_GROUP_COMMAND',
   payload: data,
 });
 
-export const unignoreGroupCommands = data => ({
-  type: 'UNIGNORE_GROUP_COMMANDS',
+export const unignoreGroupCommand = data => ({
+  type: 'UNIGNORE_GROUP_COMMAND',
   payload: data,
 });
 
-export const listGroupCommands = data => ({
-  type: 'LIST_GROUP_COMMANDS',
+export const listGroupCommand = data => ({
+  type: 'LIST_GROUP_COMMAND',
   payload: data,
 });

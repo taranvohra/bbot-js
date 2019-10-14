@@ -5,7 +5,7 @@ import { Client, User, Message } from 'discord.js';
 import store from './store';
 import {
   INIT,
-  ignoreGroupCommands,
+  ignoreGroupCommand,
   setQueryChannel,
   setPugChannel,
   assignQueryServers,
@@ -92,11 +92,6 @@ function isIgnoredGroupCommands(serverId, command) {
   }
 
   const state = store.getState();
-  if (!state.globals || !state.globals[serverId]) {
-    //console.log('no globals or no globals for servers for serverid: ', serverId);
-    return false;
-  }
-
   const result = state.globals[serverId].ignoreGroupCommands.has(command.group.toLowerCase());
   //console.log(`isIgnoredGroupCommands command ${command.key} result: ${result}`);
   return result;
@@ -188,9 +183,9 @@ const hydrateStore = async () => {
       setPrefix({ serverId: server_id, prefix: prefix })
     );
     
-    // Populating the ignoted group commands. Probably should do it in bulk instead of 1by1.
+    // Populating the ignored group command list. Probably should do it in bulk instead of 1by1.
     Array.from(ignored_group_commands).forEach(igc => store.dispatch(
-      ignoreGroupCommands({ serverId: server_id, groupCommands: igc })
+      ignoreGroupCommand({ serverId: server_id, groupCommands: igc })
     ));
   });
 

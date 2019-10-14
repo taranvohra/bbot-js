@@ -6,8 +6,8 @@ import {
   setQueryChannel,
   setPugChannel,
   setPrefix as setPrefixAction,
-  ignoreGroupCommands as ignoreGroupCommandsAction,
-  unignoreGroupCommands as unignoreGroupCommandsAction
+  ignoreGroupCommand as ignoreGroupCommandsAction,
+  unignoreGroupCommand as unignoreGroupCommandsAction
 } from '../store/actions';
 import { privilegedRoles } from '../constants';
 import { commands } from '../commands';
@@ -129,7 +129,7 @@ export const setPrefix = async (message, [proposedPrefix], serverId, { roles }) 
   }
 };
 
-export const ignoreGroupCommands = async (message, [proposedGroup], serverId, { roles }) => {
+export const ignoreGroupCommand = async (message, [proposedGroup], serverId, { roles }) => {
   try {
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     const res = await DiscordServers.findOne({
@@ -138,7 +138,7 @@ export const ignoreGroupCommands = async (message, [proposedGroup], serverId, { 
 
     if (!res) return;
     if (!proposedGroup) {
-      message.channel.send('Not enough paramters.');
+      message.channel.send('Not enough parameters.');
       return;
     }
 
@@ -155,11 +155,11 @@ export const ignoreGroupCommands = async (message, [proposedGroup], serverId, { 
       return;
     }
 
-    store.dispatch(ignoreGroupCommandsAction({ serverId, groupCommands: normalizedProposedGroup }));
     await DiscordServers.findOneAndUpdate(
       { server_id: serverId },
       { ignored_group_commands: [...ignoredGroupCommands.add(normalizedProposedGroup)] }
-    ).exec();
+      ).exec();
+    store.dispatch(ignoreGroupCommandsAction({ serverId, groupCommands: normalizedProposedGroup }));
 
     message.channel.send(`**${proposedGroup}** has been added to *ignore group commands* list.`);
   }
@@ -169,7 +169,7 @@ export const ignoreGroupCommands = async (message, [proposedGroup], serverId, { 
   }
 }
 
-export const unignoreGroupCommands = async (message, [proposedGroup], serverId, { roles }) => {
+export const unignoreGroupCommand = async (message, [proposedGroup], serverId, { roles }) => {
   try {
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     const res = await DiscordServers.findOne({
@@ -178,7 +178,7 @@ export const unignoreGroupCommands = async (message, [proposedGroup], serverId, 
 
     if (!res) return;
     if (!proposedGroup) {
-      message.channel.send('Not enough paramters.');
+      message.channel.send('Not enough parameters.');
       return;
     }
 
@@ -203,7 +203,7 @@ export const unignoreGroupCommands = async (message, [proposedGroup], serverId, 
   }
 }
 
-export const listGroupCommands = async (message, _, serverId, { roles }) => {
+export const listGroupCommand = async (message, _, serverId, { roles }) => {
   try {
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     const res = await DiscordServers.findOne({
