@@ -100,6 +100,13 @@ const commands = [
   },
   {
     group: 'pug',
+    key: 'checkLastPugsAndListGameTypes',
+    description: 'Display last filled pug and list all players which are joined to the pug.',
+    aliases: ['liast'],
+    solo: 1,
+  },
+  {
+    group: 'pug',
     key: 'listAllCurrentGameTypes',
     description: '',
     aliases: ['lsa'],

@@ -2590,3 +2590,12 @@ export const subPugPlayer = async (
     message.channel.send('Something went wrong');
   }
 };
+export const checkLastPugsAndListGameTypes = async (
+  message,
+  args,
+  serverId,
+  additionalObj
+) => {
+  checkLastPugs(message, args, serverId, additionalObj);
+  listGameTypes(message, args, serverId, additionalObj);
+};
