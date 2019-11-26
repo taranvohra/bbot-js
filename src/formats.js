@@ -22,7 +22,7 @@ export const formatQueryServers = list => {
   richEmbed.setTitle(`IP\u00A0\u00A0\u00A0Name`);
   richEmbed.setColor(embedColor);
   richEmbed.setDescription(description || 'No game servers added yet');
-  richEmbed.setFooter('To query, type .q ip');
+  richEmbed.setFooter('To query, type: q ip');
   return richEmbed;
 };
 

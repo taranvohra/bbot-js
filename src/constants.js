@@ -1,4 +1,4 @@
-export const prefix = '.';
+export const defaultPrefix = '.';
 
 export const privilegedRoles = ['Admins', 'Moderators'];
 
