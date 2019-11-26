@@ -1,7 +1,7 @@
 import { DiscordServers, UT99QueryServers, Blocks, GameTypes } from '../models';
 import store from '../store';
-import { INIT, setQueryChannel, setPugChannel } from '../store/actions';
-import { privilegedRoles } from '../constants';
+import { INIT, setQueryChannel, setPugChannel, setPrefix as setPrefixAction } from '../store/actions';
+import { privilegedRoles, defaultPrefix } from '../constants';
 import { hasPrivilegedRole } from '../utils';
 
 export const registerServer = async (message, _, serverId, { roles }) => {
@@ -39,7 +39,7 @@ export const registerQueryChannel = async (message, _, serverId, { roles }) => {
 
     if (!res)
       return message.channel.send(
-        'Please register the server with the bot! Type .register'
+        `Please register the server with the bot! Type: ${defaultPrefix}register`
       );
 
     await DiscordServers.findOneAndUpdate(
@@ -69,7 +69,7 @@ export const registerPugChannel = async (message, _, serverId, { roles }) => {
 
     if (!res)
       return message.channel.send(
-        'Please register the server with the bot! Type .register'
+        `Please register the server with the bot! Type: ${defaultPrefix}register`
       );
 
     await DiscordServers.findOneAndUpdate(
@@ -82,6 +82,39 @@ export const registerPugChannel = async (message, _, serverId, { roles }) => {
     message.channel.send(
       `<#${message.channel.id}> has been set as the pug channel`
     );
+  } catch (err) {
+    message.channel.send('Something went wrong');
+    console.log(err);
+  }
+};
+
+export const setPrefix = async (message, [proposedPrefix], serverId, { roles }) => {
+  try {
+    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
+    const res = await DiscordServers.findOne({
+      server_id: serverId,
+    }).exec();
+
+    if (!res)
+      return message.channel.send(
+        `Please register the server with the bot! Type ${defaultPrefix}register`
+      );
+
+    if (proposedPrefix && proposedPrefix.length <= 3) {
+      const updatedEntity = await DiscordServers.findOneAndUpdate(
+        { server_id: serverId },
+        { prefix: proposedPrefix }
+      ).exec();
+
+      store.dispatch(setPrefixAction({ serverId, prefix: proposedPrefix }));
+
+      message.channel.send(
+        `**${proposedPrefix}** has been set as prefix.`
+      );
+    }
+    else {
+      message.channel.send('error: prefix length must be 1-3 long.');
+    }
   } catch (err) {
     message.channel.send('Something went wrong');
     console.log(err);

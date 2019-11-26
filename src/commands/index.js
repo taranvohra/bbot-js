@@ -197,6 +197,12 @@ const commands = [
     solo: 0,
   },
   {
+    key: 'setPrefix',
+    descriptipn: '',
+    aliases: ['setprefix'],
+    solo: 0,
+  },
+  {
     key: 'getBottom10',
     description: '',
     aliases: ['bottom10'],
