@@ -21,6 +21,8 @@ import {
   pugEvents,
   privilegedRoles,
   emojis,
+  coolDownRoles,
+  coolDownSeconds,
 } from './constants';
 import { formatBroadcastCaptainsReady } from './formats';
 import { compareAsc } from 'date-fns';
@@ -28,7 +30,7 @@ import { compareAsc } from 'date-fns';
 dotenv.config();
 
 const bBot = new Client({
-  disabledEvents: ['TYPING_START', 'CHANNEL_UPDATE'],
+  disabledEvents: ['TYPING_START', 'CHANNEL_UPDATE', 'USER_UPDATE'],
 });
 
 async function onMessage(message) {
@@ -127,6 +129,40 @@ bBot.on('presenceUpdate', (_, { user, guild, presence: { status } }) => {
     }
   }
 });
+
+bBot.on(
+  'guildMemberUpdate',
+  ({ roles: oldRoles }, { roles: newRoles, guild, id }) => {
+    const state = store.getState();
+    const { pugChannel } = state.pugs[guild.id] || {};
+    const { queryChannel } = state.queryServers[guild.id] || {};
+
+    // No point in sending cooldown message
+    if (!pugChannel && !queryChannel) return;
+
+    const wasPresentBefore = coolDownRoles.some(cr =>
+      oldRoles.find(or => or.name === cr)
+    );
+    const isPresentNow = coolDownRoles.some(cr =>
+      newRoles.find(nr => nr.name === cr)
+    );
+
+    const channel = guild.channels.get(pugChannel || queryChannel);
+    if (!wasPresentBefore && isPresentNow) {
+      // Cooldown Role Added
+      channel.send(
+        `<@${id}>, you have been assigned a \`COOLDOWN\` role. This because the admins/moderators feel you spam certain bot commands alot. The following commands are part of this restriction:-\n
+        **1. promoting pugs**
+        **2. querying servers**\n\nThis means you & other members part of this restriction will be able to use the aforementioned commands \`once\` every ${coolDownSeconds} seconds.`
+      );
+    } else if (wasPresentBefore && !isPresentNow) {
+      // Cooldown Role Removed
+      channel.send(
+        `<@${id}>, the \`COOLDOWN\` restriction has been lifted up by the authorities. Ensure it doesn't happen again.`
+      );
+    }
+  }
+);
 
 (async () => {
   try {
