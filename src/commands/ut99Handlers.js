@@ -1,9 +1,17 @@
 import store from '../store';
 import crypto from 'crypto';
 import { UT99QueryServers } from '../models';
-import { pushQueryServer, removeQueryServer } from '../store/actions';
-import { privilegedRoles } from '../constants';
-import { hasPrivilegedRole, createAlternatingObject } from '../utils';
+import {
+  pushQueryServer,
+  removeQueryServer,
+  initCmdCooldown,
+} from '../store/actions';
+import { privilegedRoles, coolDownRoles, coolDownSeconds } from '../constants';
+import {
+  hasPrivilegedRole,
+  createAlternatingObject,
+  hasCoolDownRole,
+} from '../utils';
 import { formatQueryServers, formatQueryServerStatus } from '../formats';
 import API from '../services/API';
 
@@ -104,18 +112,30 @@ export const queryUT99Server = async (
   { channel },
   [arg, ...rest],
   serverId,
-  _
+  { roles }
 ) => {
   try {
     const state = store.getState();
     const { queryChannel, list = [] } = state.queryServers[serverId];
-
     if (queryChannel !== channel.id)
       return channel.send(
         `Active channel for querying is ${
           queryChannel ? `<#${queryChannel}>` : `is not present`
         }`
       );
+
+    // Check if command is in cooldown mode for that role
+    if (hasCoolDownRole(coolDownRoles, roles)) {
+      const { cooldown } = state.globals[serverId];
+      const timeDiff = cooldown.query - Date.now();
+      if (cooldown.query !== undefined && timeDiff > 0) {
+        return channel.send(
+          `COOLDOWN! You will be able to use this command after ${(
+            timeDiff / 1000
+          ).toFixed(0)} second${timeDiff / 1000 > 1 ? `s` : ``}`
+        );
+      }
+    }
 
     const sortedList = list.sort((a, b) => a.timestamp - b.timestamp);
     const { host, port = 7777 } =
@@ -152,6 +172,17 @@ export const queryUT99Server = async (
       { ...createAlternatingObject(info), host, port },
       createAlternatingObject(players)
     );
+
+    // Save cooldown expiry timestamp in redux store
+    if (hasCoolDownRole(coolDownRoles, roles)) {
+      store.dispatch(
+        initCmdCooldown({
+          serverId,
+          command: 'query',
+          timestamp: Date.now() + coolDownSeconds * 1000,
+        })
+      );
+    }
 
     channel.send(formattedResponse);
   } catch (error) {

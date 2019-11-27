@@ -28,7 +28,7 @@ import { compareAsc } from 'date-fns';
 dotenv.config();
 
 const bBot = new Client({
-  disabledEvents: ['TYPING_START', 'CHANNEL_UPDATE', 'USER_UPDATE'],
+  disabledEvents: ['TYPING_START', 'CHANNEL_UPDATE'],
 });
 
 async function onMessage(message) {
@@ -163,9 +163,7 @@ const hydrateStore = async () => {
       setQueryChannel({ serverId: server_id, queryChannel: query_channel })
     );
 
-    store.dispatch(
-      setPrefix({ serverId: server_id, prefix: prefix })
-    );
+    store.dispatch(setPrefix({ serverId: server_id, prefix: prefix }));
   });
 
   qServers.forEach(({ server_id, query_servers }) => {
