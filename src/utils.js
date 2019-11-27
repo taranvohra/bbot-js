@@ -1,7 +1,10 @@
-import { teams } from './constants';
+import { teams, cooldownRoles } from './constants';
 
 export const hasPrivilegedRole = (privilegedRoles, userRoles) =>
   privilegedRoles.some(pr => userRoles.find(ur => ur.name === pr));
+
+export const hasCoolDownRole = (coolDownRoles, userRoles) =>
+  userRoles && coolDownRoles.some(cr => userRoles.find(ur => ur.name === cr));
 
 /**
  * @param {Object} players

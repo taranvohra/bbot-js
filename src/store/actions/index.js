@@ -62,3 +62,8 @@ export const setPrefix = data => ({
   type: 'SET_PREFIX',
   payload: data,
 });
+
+export const initCmdCooldown = data => ({
+  type: 'CMD_COOLDOWN_INIT',
+  payload: data,
+});
