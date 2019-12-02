@@ -14,7 +14,7 @@ import {
   offline,
   pugEvents,
   tagLength,
-  prefix,
+  defaultPrefix as prefix,
   emojis,
   strongPlayerRatingThreshold,
   teamIndexes,
