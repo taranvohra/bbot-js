@@ -6,6 +6,7 @@ import {
   shuffle,
   getRandomInt,
   sanitizeName,
+  hasCoolDownRole,
 } from '../utils';
 import {
   privilegedRoles,
@@ -17,6 +18,8 @@ import {
   emojis,
   strongPlayerRatingThreshold,
   teamIndexes,
+  coolDownRoles,
+  coolDownSeconds,
 } from '../constants';
 import {
   formatListGameTypes,
@@ -39,6 +42,7 @@ import {
   removePug,
   addBlock,
   removeBlock,
+  initCmdCooldown,
 } from '../store/actions';
 import events from 'events';
 import fs from 'fs';
@@ -991,7 +995,12 @@ export const pugPicking = async ({ channel }, _, serverId, __) => {
   }
 };
 
-export const promoteAvailablePugs = async ({ channel }, args, serverId, _) => {
+export const promoteAvailablePugs = async (
+  { channel },
+  args,
+  serverId,
+  { roles }
+) => {
   try {
     const state = store.getState();
     const { pugChannel, list } = state.pugs[serverId];
@@ -1002,6 +1011,19 @@ export const promoteAvailablePugs = async ({ channel }, args, serverId, _) => {
           pugChannel ? `<#${pugChannel}>` : `not present`
         } <#${pugChannel}>`
       );
+
+    // Check if command is in cooldown mode for that role
+    if (hasCoolDownRole(coolDownRoles, roles)) {
+      const { cooldown } = state.globals[serverId];
+      const timeDiff = cooldown.promote - Date.now();
+      if (cooldown.promote !== undefined && timeDiff > 0) {
+        return channel.send(
+          `COOLDOWN! You will be able to use this command after ${(
+            timeDiff / 1000
+          ).toFixed(0)} second${timeDiff / 1000 > 1 ? `s` : ``}`
+        );
+      }
+    }
 
     const hasPugMentioned =
       args[0] && list.find(p => p.name === args[0].toLowerCase());
@@ -1014,6 +1036,17 @@ export const promoteAvailablePugs = async ({ channel }, args, serverId, _) => {
       return channel.send(
         formatPromoteAvailablePugs([hasPugMentioned], channel.guild.name)
       );
+
+    // Save cooldown expiry timestamp in redux store
+    if (hasCoolDownRole(coolDownRoles, roles)) {
+      store.dispatch(
+        initCmdCooldown({
+          serverId,
+          command: 'promote',
+          timestamp: Date.now() + coolDownSeconds * 1000,
+        })
+      );
+    }
 
     !hasPugMentioned && list.length > 0
       ? channel.send(formatPromoteAvailablePugs(list, channel.guild.name))
@@ -1125,7 +1158,7 @@ export const decidePromoteOrPick = async (
   { channel },
   args,
   serverId,
-  { id, username, action }
+  { id, username, action, roles }
 ) => {
   try {
     const state = store.getState();
@@ -1143,6 +1176,7 @@ export const decidePromoteOrPick = async (
       return promoteAvailablePugs({ channel }, args, serverId, {
         id,
         username,
+        roles,
       });
 
     // p 4 or pick 7 or p siege5
@@ -1153,6 +1187,7 @@ export const decidePromoteOrPick = async (
           return promoteAvailablePugs({ channel }, args, serverId, {
             id,
             username,
+            roles,
           });
         }
         return pickPlayer({ channel }, args, serverId, { id, username });

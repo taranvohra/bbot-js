@@ -1,10 +1,13 @@
 const globals = (state = {}, { type, payload }) => {
+  
 	let newState;
 	switch (type) {
 		case 'INIT':
 			newState = {
 				...state,
 				[payload.serverId]: {
+          prefix: null,
+          cooldown: {},
 					ignoreGroupCommands: new Set()
 				}
 			};
@@ -19,14 +22,7 @@ const globals = (state = {}, { type, payload }) => {
 				}
 			};
 			break;
-
-		case 'IGNORE_GROUP_COMMAND':
-			// console.log('IGNORE_GROUP_COMMANDS Payload: ', payload);
-			// console.log(state);
-			// console.log(state[payload.serverId]);
-			if (!state[payload.serverId]) {
-				state[payload.serverId] = { };
-			}
+      
 		case 'IGNORE_GROUP_COMMAND':
 			if (!state[payload.serverId].ignoreGroupCommands) {
 				state[payload.serverId].ignoreGroupCommands  = new Set();
@@ -53,12 +49,24 @@ const globals = (state = {}, { type, payload }) => {
 				},
 			};
 			break;
-
-		default:
-			newState = state;
-	}
-
-	return newState;
+      
+    case 'CMD_COOLDOWN_INIT': 
+      newState = {
+        ...state,
+        [payload.serverId]: {
+          ...state[payload.serverId],
+          cooldown: {
+            ...state[payload.serverId].cooldown,
+            [payload.command]: payload.timestamp,
+          },
+        },
+      };
+     break;
+      
+    default:
+      newState = state;
+  }
+  return newState;
 };
 
 export default globals;
