@@ -63,6 +63,22 @@ export const setPrefix = data => ({
   payload: data,
 });
 
+
+export const ignoreGroupCommand = data => ({
+  type: 'IGNORE_GROUP_COMMAND',
+  payload: data,
+});
+
+export const unignoreGroupCommand = data => ({
+  type: 'UNIGNORE_GROUP_COMMAND',
+  payload: data,
+});
+
+export const listGroupCommand = data => ({
+  type: 'LIST_GROUP_COMMAND',
+  payload: data,
+});
+
 export const initCmdCooldown = data => ({
   type: 'CMD_COOLDOWN_INIT',
   payload: data,

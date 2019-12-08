@@ -5,6 +5,7 @@ import { Client, User, Message } from 'discord.js';
 import store from './store';
 import {
   INIT,
+  ignoreGroupCommand,
   setQueryChannel,
   setPugChannel,
   assignQueryServers,
@@ -70,7 +71,7 @@ async function onMessage(message) {
       (cmd.solo === soloType || cmd.solo === 2)
   );
 
-  if (foundCommand) {
+  if (foundCommand && !isIgnoredGroupCommands(serverId, foundCommand)) {
     return handlers[foundCommand.key](message, args, serverId, {
       id,
       roles,
@@ -82,6 +83,20 @@ async function onMessage(message) {
     });
   }
   // message.channel.send(`Command not found`);
+}
+
+function isIgnoredGroupCommands(serverId, command) {
+  //console.log('isIgnoredGroupCommands', command);
+  // Will return false if command object is not being passed or found command is not under any group.
+  if (!command || !command.group) {
+    //console.log('no command has been supplied or command group is empty, ', command);
+    return false;
+  }
+
+  const state = store.getState();
+  const result = state.globals[serverId].ignoreGroupCommands.has(command.group.toLowerCase());
+  //console.log(`isIgnoredGroupCommands command ${command.key} result: ${result}`);
+  return result;
 }
 
 /*
@@ -187,7 +202,8 @@ const hydrateStore = async () => {
     Blocks.find({}).exec(),
   ]);
 
-  dServers.forEach(({ server_id, pug_channel, query_channel, prefix }) => {
+
+  dServers.forEach(({ server_id, pug_channel, query_channel, prefix, ignored_group_commands }) => {
     store.dispatch(INIT({ serverId: server_id }));
     store.dispatch(
       setPugChannel({
@@ -198,8 +214,15 @@ const hydrateStore = async () => {
     store.dispatch(
       setQueryChannel({ serverId: server_id, queryChannel: query_channel })
     );
-
-    store.dispatch(setPrefix({ serverId: server_id, prefix: prefix }));
+    
+    store.dispatch(
+      setPrefix({ serverId: server_id, prefix: prefix })
+    );
+    
+    // Populating the ignored group command list. Probably should do it in bulk instead of 1by1.
+    Array.from(ignored_group_commands).forEach(igc => store.dispatch(
+      ignoreGroupCommand({ serverId: server_id, groupCommands: igc })
+    ));
   });
 
   qServers.forEach(({ server_id, query_servers }) => {
