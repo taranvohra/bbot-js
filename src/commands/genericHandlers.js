@@ -1,8 +1,16 @@
 import { DiscordServers, UT99QueryServers, Blocks, GameTypes } from '../models';
 import store from '../store';
-import { INIT, setQueryChannel, setPugChannel, setPrefix as setPrefixAction } from '../store/actions';
 import { privilegedRoles, defaultPrefix } from '../constants';
-import { hasPrivilegedRole } from '../utils';
+import {
+  INIT,
+  setQueryChannel,
+  setPugChannel,
+  setPrefix as setPrefixAction,
+  ignoreGroupCommand as ignoreGroupCommandsAction,
+  unignoreGroupCommand as unignoreGroupCommandsAction
+} from '../store/actions';
+import { privilegedRoles } from '../constants';
+import { commands } from '../commands';
 
 export const registerServer = async (message, _, serverId, { roles }) => {
   try {
@@ -120,3 +128,117 @@ export const setPrefix = async (message, [proposedPrefix], serverId, { roles }) 
     console.log(err);
   }
 };
+
+export const ignoreGroupCommand = async (message, [proposedGroup], serverId, { roles }) => {
+  try {
+    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
+    const res = await DiscordServers.findOne({
+      server_id: serverId,
+    }).exec();
+
+    if (!res) return;
+    if (!proposedGroup) {
+      message.channel.send('Not enough parameters.');
+      return;
+    }
+
+    const normalizedProposedGroup = proposedGroup.toLowerCase();
+    const allCommandsGroups = new Set(commands.filter(c => c.group).map(c => c.group));
+    if (!allCommandsGroups.has(normalizedProposedGroup)) {
+      message.channel.send(`**${proposedGroup}** is not in the available *ignored group commands*. try using: *listGroupCommands*`);
+      return;
+    }
+
+    const ignoredGroupCommands = new Set(res.ignored_group_commands);
+    if (ignoredGroupCommands.has(normalizedProposedGroup)) {
+      message.channel.send(`**${proposedGroup}** is already present in the *ignored groups commands*.`);
+      return;
+    }
+
+    await DiscordServers.findOneAndUpdate(
+      { server_id: serverId },
+      { ignored_group_commands: [...ignoredGroupCommands.add(normalizedProposedGroup)] }
+      ).exec();
+    store.dispatch(ignoreGroupCommandsAction({ serverId, groupCommands: normalizedProposedGroup }));
+
+    message.channel.send(`**${proposedGroup}** has been added to *ignore group commands* list.`);
+  }
+  catch (err) {
+    message.channel.send('Something went wrong');
+    console.log(err);
+  }
+}
+
+export const unignoreGroupCommand = async (message, [proposedGroup], serverId, { roles }) => {
+  try {
+    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
+    const res = await DiscordServers.findOne({
+      server_id: serverId,
+    }).exec();
+
+    if (!res) return;
+    if (!proposedGroup) {
+      message.channel.send('Not enough parameters.');
+      return;
+    }
+
+    const normalizedProposedGroup = proposedGroup.toLowerCase();
+    const ignoredGroupCommands = new Set(res.ignored_group_commands);
+    if (ignoredGroupCommands.delete(normalizedProposedGroup)) {
+      store.dispatch(unignoreGroupCommandsAction({ serverId, groupCommands: normalizedProposedGroup }));
+      await DiscordServers.findOneAndUpdate(
+        { server_id: serverId },
+        { ignored_group_commands: [...ignoredGroupCommands] }
+      ).exec();
+      
+      message.channel.send(`**${proposedGroup}** has been removed from *ignore group commands* list.`);
+    }
+    else {
+      message.channel.send(`**${proposedGroup}** is already **not** present in the *ignore group commands*.`);
+    }
+  }
+  catch (err) {
+    message.channel.send('Something went wrong');
+    console.log(err);
+  }
+}
+
+export const listGroupCommand = async (message, _, serverId, { roles }) => {
+  try {
+    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
+    const res = await DiscordServers.findOne({
+      server_id: serverId,
+    }).exec();
+
+    if (!res) return;
+
+    const commandsByGroup = {};
+    commands.forEach(cmd => {
+      if (cmd.group) {
+        if (!commandsByGroup[cmd.group]) {
+          commandsByGroup[cmd.group] = [];
+        }
+        commandsByGroup[cmd.group].push(cmd.key.toLowerCase());
+      }
+    })
+    
+    const availableCommands = Object.keys(commandsByGroup).filter(key => res.ignored_group_commands.indexOf(key) == -1);
+    const unavailableCommands = Object.keys(commandsByGroup).filter(key => res.ignored_group_commands.indexOf(key) > -1);
+
+    const availableCommandsDisplay = availableCommands.map(ac => `**${ac}**[${commandsByGroup[ac]}]`);
+    const unavailableCommandsDisplay = unavailableCommands.map(ac => `**${ac}**[${commandsByGroup[ac]}]`);
+    
+    const result = [];
+    if (availableCommands.length > 0) {
+      result.push(`__**Available:**__ ${availableCommandsDisplay}`);
+    }
+    if (unavailableCommands.length > 0) {
+      result.push(`__**Ignored:**__ ${unavailableCommandsDisplay}`);
+    }
+    message.channel.send(`Group Commands List:\r\n${result.join('\r\n')}.`);
+  }
+  catch (err) {
+    message.channel.send('Something went wrong');
+    console.log(err);
+  }
+}
