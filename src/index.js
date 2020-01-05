@@ -51,10 +51,16 @@ async function onMessage(message) {
 
   if (!serverId) return;
 
-  const hasUserMention = message.mentions.users.first();
-  const mentionedUser = hasUserMention
-    ? { id: hasUserMention.id, username: sanitizeName(hasUserMention.username) }
-    : null;
+  const mentionedUsers = [...message.content.matchAll(/<@!(\d+)>/g)].map(
+    ([_, id]) => {
+      const user = bBot.users.get(id);
+      return { id, username: sanitizeName(user.username) };
+    }
+  );
+  // const mentionedUsers = message.mentions.users.map(user => ({
+  //   id: user.id,
+  //   username: sanitizeName(user.username),
+  // }));
 
   const [first, ...args] = message.content
     .substring(channelPrefix.length)
@@ -76,7 +82,7 @@ async function onMessage(message) {
       id,
       roles,
       username: sanitizeName(username),
-      mentionedUser,
+      mentionedUsers,
       isInvisible,
       action,
       client: bBot,
@@ -94,7 +100,9 @@ function isIgnoredGroupCommands(serverId, command) {
   }
 
   const state = store.getState();
-  const result = state.globals[serverId].ignoreGroupCommands.has(command.group.toLowerCase());
+  const result = state.globals[serverId].ignoreGroupCommands.has(
+    command.group.toLowerCase()
+  );
   //console.log(`isIgnoredGroupCommands command ${command.key} result: ${result}`);
   return result;
 }
@@ -202,28 +210,35 @@ const hydrateStore = async () => {
     Blocks.find({}).exec(),
   ]);
 
+  dServers.forEach(
+    ({
+      server_id,
+      pug_channel,
+      query_channel,
+      prefix,
+      ignored_group_commands,
+    }) => {
+      store.dispatch(INIT({ serverId: server_id }));
+      store.dispatch(
+        setPugChannel({
+          serverId: server_id,
+          pugChannel: pug_channel,
+        })
+      );
+      store.dispatch(
+        setQueryChannel({ serverId: server_id, queryChannel: query_channel })
+      );
 
-  dServers.forEach(({ server_id, pug_channel, query_channel, prefix, ignored_group_commands }) => {
-    store.dispatch(INIT({ serverId: server_id }));
-    store.dispatch(
-      setPugChannel({
-        serverId: server_id,
-        pugChannel: pug_channel,
-      })
-    );
-    store.dispatch(
-      setQueryChannel({ serverId: server_id, queryChannel: query_channel })
-    );
-    
-    store.dispatch(
-      setPrefix({ serverId: server_id, prefix: prefix })
-    );
-    
-    // Populating the ignored group command list. Probably should do it in bulk instead of 1by1.
-    Array.from(ignored_group_commands).forEach(igc => store.dispatch(
-      ignoreGroupCommand({ serverId: server_id, groupCommands: igc })
-    ));
-  });
+      store.dispatch(setPrefix({ serverId: server_id, prefix: prefix }));
+
+      // Populating the ignored group command list. Probably should do it in bulk instead of 1by1.
+      Array.from(ignored_group_commands).forEach(igc =>
+        store.dispatch(
+          ignoreGroupCommand({ serverId: server_id, groupCommands: igc })
+        )
+      );
+    }
+  );
 
   qServers.forEach(({ server_id, query_servers }) => {
     store.dispatch(
