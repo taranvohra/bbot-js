@@ -14,7 +14,7 @@ import {
   offline,
   pugEvents,
   tagLength,
-  prefix,
+  defaultPrefix,
   emojis,
   strongPlayerRatingThreshold,
   teamIndexes,
@@ -673,7 +673,7 @@ export const decideDefaultOrJoin = async (
       db_user.default_joins.length === 0
     )
       return channel.send(
-        `No defaultjoin set. Type **${prefix}defaultjoin gametypes** to set it!`
+        `No defaultjoin set. Type **${defaultPrefix}defaultjoin gametypes** to set it!`
       );
 
     return joinGameTypes({ channel }, db_user.default_joins, serverId, {
@@ -1205,7 +1205,7 @@ export const checkStats = async (
   { channel },
   args,
   serverId,
-  { id, username, mentionedUser }
+  { id, username, mentionedUsers }
 ) => {
   try {
     const state = store.getState();
@@ -1218,6 +1218,7 @@ export const checkStats = async (
         } <#${pugChannel}>`
       );
 
+    const [mentionedUser] = mentionedUsers;
     const user = await Users.findOne({
       server_id: serverId,
       id: mentionedUser ? mentionedUser.id : id,
@@ -1291,7 +1292,7 @@ export const adminAddPlayer = async (
   { channel },
   args,
   serverId,
-  { mentionedUser, roles, client }
+  { mentionedUsers, roles, client }
 ) => {
   try {
     const state = store.getState();
@@ -1304,6 +1305,7 @@ export const adminAddPlayer = async (
         } <#${pugChannel}>`
       );
 
+    const [mentionedUser] = mentionedUsers;
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     if (!mentionedUser) return channel.send('No mentioned user');
 
@@ -1322,7 +1324,7 @@ export const adminRemovePlayer = async (
   { channel },
   args,
   serverId,
-  { mentionedUser, roles }
+  { mentionedUsers, roles }
 ) => {
   try {
     const state = store.getState();
@@ -1335,6 +1337,7 @@ export const adminRemovePlayer = async (
         } <#${pugChannel}>`
       );
 
+    const [mentionedUser] = mentionedUsers;
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     if (!mentionedUser) return channel.send('No mentioned user');
 
@@ -1352,7 +1355,7 @@ export const adminPickPlayer = async (
   { channel },
   args,
   serverId,
-  { mentionedUser, roles }
+  { mentionedUsers, roles }
 ) => {
   try {
     const state = store.getState();
@@ -1365,6 +1368,7 @@ export const adminPickPlayer = async (
         } <#${pugChannel}>`
       );
 
+    const [mentionedUser] = mentionedUsers;
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     if (!mentionedUser) return channel.send('No mentioned user');
 
@@ -1382,7 +1386,7 @@ export const blockPlayer = async (
   { channel },
   args,
   serverId,
-  { id, username, roles, mentionedUser }
+  { id, username, roles, mentionedUsers }
 ) => {
   try {
     const state = store.getState();
@@ -1396,6 +1400,7 @@ export const blockPlayer = async (
         } <#${pugChannel}>`
       );
 
+    const [mentionedUser] = mentionedUsers;
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     if (!mentionedUser) return channel.send('No mentioned user');
 
@@ -1484,7 +1489,7 @@ export const unblockPlayer = async (
   { channel },
   args,
   serverId,
-  { id, username, roles, mentionedUser, isBot }
+  { id, username, roles, mentionedUsers, isBot }
 ) => {
   try {
     const state = store.getState();
@@ -1498,6 +1503,7 @@ export const unblockPlayer = async (
         } <#${pugChannel}>`
       );
 
+    const [mentionedUser] = mentionedUsers;
     if (!hasPrivilegedRole(privilegedRoles, roles) && !isBot) return;
     if (!mentionedUser) return channel.send('No mentioned user');
 
@@ -2208,5 +2214,285 @@ export const getTopXY = async (
   } catch (error) {
     console.log(error);
     channel.send('Something went wrong');
+  }
+};
+
+export const subPugPlayer = async (
+  { channel },
+  [which],
+  serverId,
+  { id, username, roles, mentionedUsers: { 0: mUser1, 1: mUser2 } }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : `not present`
+        }`
+      );
+
+    if (!hasPrivilegedRole(privilegedRoles, roles)) return;
+
+    const { tCount, digits } = which.split('').reduce(
+      (acc, curr) => {
+        acc.tCount += curr === 't' ? 1 : 0;
+        acc.digits += curr.match(/\d/g) ? curr : '';
+        return acc;
+      },
+      { tCount: 0, digits: '' }
+    );
+
+    if (tCount > 1 && parseInt(digits) > 0)
+      return channel.send('Invalid command');
+
+    const howMany = parseInt(digits) > 0 ? parseInt(digits) : tCount;
+
+    const results = await Pugs.find({ server_id: serverId })
+      .sort({ timestamp: -1 })
+      .limit(1)
+      .skip(howMany - 1)
+      .exec();
+
+    if (!results || results.length === 0)
+      return channel.send(`No **${which}** pug found`);
+
+    const found = results[0];
+    if (!found) return channel.send(`No **${which}** pug found`);
+
+    const { pug, winner, timestamp } = found;
+
+    const usersResults = await Users.find({
+      server_id: serverId,
+      id: { $in: [mUser1.id, mUser2.id] },
+    }).exec();
+
+    const { injured, substitute } = usersResults.reduce((acc, curr) => {
+      if (curr.id === mUser1.id) acc.injured = curr;
+      else acc.substitute = curr;
+      return acc;
+    }, {});
+
+    const injuredIndex = pug.players.findIndex(u => u.id === injured.id);
+    const substituteIndex = pug.players.findIndex(u => u.id === substitute.id);
+
+    // Injured player not in the pug (not present)
+    if (injuredIndex === -1)
+      return channel.send(`**${injured.username}** was not present in the pug`);
+
+    // Injured & substitute are in pug BUT in same team
+    if (
+      substituteIndex !== -1 &&
+      pug.players[substituteIndex].team === pug.players[injuredIndex].team
+    )
+      return channel.send(`Invalid. Both players are from same team`);
+
+    // IMMUTABLE UPDATES
+    let pOut, pIn;
+    let isTrade;
+    let updatedPug = { ...pug };
+    updatedPug.players = [...updatedPug.players];
+
+    const injuredPlayer = updatedPug.players[injuredIndex];
+    const substitutePlayer = updatedPug.players[substituteIndex];
+
+    if (substituteIndex !== -1) {
+      // TRADE b/w two teams
+      isTrade = true;
+      updatedPug.players[injuredIndex] = {
+        ...injuredPlayer,
+        team: substitutePlayer.team,
+        pick: substitutePlayer.pick,
+        captain: substitutePlayer.captain,
+      };
+      updatedPug.players[substituteIndex] = {
+        ...substitutePlayer,
+        team: injuredPlayer.team,
+        pick: injuredPlayer.pick,
+        captain: injuredPlayer.captain,
+      };
+    } else {
+      // Outsider substituting
+      isTrade = false;
+      pOut = { ...injuredPlayer };
+      pIn = {
+        ...injuredPlayer,
+        tag: null,
+        username: substitute.username,
+        id: substitute.id,
+        stats: substitute.stats,
+        rating: substitute.stats[updatedPug.name]
+          ? substitute.stats[updatedPug.name].totalRating
+          : 0,
+      };
+      updatedPug.players[injuredIndex] = pIn;
+    }
+
+    const {
+      pug: savedPug,
+      pug: { players: updatedPlayers },
+    } = await Pugs.findOneAndUpdate(
+      { _id: found.id },
+      { $set: { pug: updatedPug } },
+      { new: true }
+    ).exec();
+
+    // Adding both players whose individual stats has to be updated
+    // and because substitueIndex might be -1 sometimes
+    // hence filtering it out
+    const playersToBeUpdated = [
+      updatedPlayers[injuredIndex],
+      updatedPlayers[substituteIndex],
+    ].filter(Boolean);
+
+    if (isTrade) {
+      await Users.bulkWrite(
+        playersToBeUpdated.map(
+          ({ id, team, username, pick, captain, stats }) => {
+            const existingStats = stats[pug.name];
+
+            if (!existingStats) {
+              const totalRating = pick;
+              const totalCaptain = captain !== null ? 1 : 0;
+              const totalPugs = 1;
+              return {
+                updateOne: {
+                  filter: { id, server_id: serverId },
+                  update: {
+                    $set: {
+                      username,
+                      last_pug: { ...savedPug, timestamp },
+                      [`stats.${pug.name}.totalRating`]: totalRating,
+                      [`stats.${pug.name}.totalCaptain`]: totalCaptain,
+                      [`stats.${pug.name}.totalPugs`]: totalPugs,
+                    },
+                    $inc: {
+                      [`stats.${pug.name}.won`]:
+                        winner !== undefined ? (team === winner ? 1 : -1) : 0,
+                      [`stats.${pug.name}.lost`]:
+                        winner !== undefined ? (team !== winner ? 1 : -1) : 0,
+                    },
+                  },
+                  upsert: true,
+                },
+              };
+            } else {
+              const totalPugs = existingStats.totalPugs + 1;
+              return {
+                updateOne: {
+                  filter: { id, server_id: serverId },
+                  update: {
+                    $set: {
+                      username,
+                      last_pug: { ...savedPug, timestamp },
+                      [`stats.${pug.name}.totalPugs`]: totalPugs,
+                    },
+                    $inc: {
+                      [`stats.${pug.name}.won`]:
+                        winner !== undefined ? (team === winner ? 1 : -1) : 0,
+                      [`stats.${pug.name}.lost`]:
+                        winner !== undefined ? (team !== winner ? 1 : -1) : 0,
+                    },
+                  },
+                  upsert: true,
+                },
+              };
+            }
+          }
+        ),
+        {
+          ordered: false,
+        }
+      );
+    } else {
+      await Users.bulkWrite(
+        playersToBeUpdated.map(
+          ({ id, team, username, pick, captain, stats }) => {
+            const existingStats = stats[pug.name];
+
+            if (!existingStats) {
+              const totalRating = pick;
+              const totalCaptain = captain !== null ? 1 : 0;
+              const totalPugs = 1;
+              return {
+                updateOne: {
+                  filter: { id, server_id: serverId },
+                  update: {
+                    $set: {
+                      username,
+                      last_pug: { ...savedPug, timestamp },
+                      [`stats.${pug.name}.totalRating`]: totalRating,
+                      [`stats.${pug.name}.totalCaptain`]: totalCaptain,
+                      [`stats.${pug.name}.totalPugs`]: totalPugs,
+                    },
+                    $inc: {
+                      [`stats.${pug.name}.won`]:
+                        winner !== undefined ? (team === winner ? 1 : 0) : 0,
+                      [`stats.${pug.name}.lost`]:
+                        winner !== undefined ? (team !== winner ? 1 : 0) : 0,
+                    },
+                  },
+                  upsert: true,
+                },
+              };
+            } else {
+              const totalPugs = existingStats.totalPugs + 1;
+              return {
+                updateOne: {
+                  filter: { id, server_id: serverId },
+                  update: {
+                    $set: {
+                      username,
+                      last_pug: { ...savedPug, timestamp },
+                      [`stats.${pug.name}.totalPugs`]: totalPugs,
+                    },
+                    $inc: {
+                      [`stats.${pug.name}.won`]:
+                        winner !== undefined ? (team === winner ? 1 : 0) : 0,
+                      [`stats.${pug.name}.lost`]:
+                        winner !== undefined ? (team !== winner ? 1 : 0) : 0,
+                    },
+                  },
+                  upsert: true,
+                },
+              };
+            }
+          }
+        ),
+        {
+          ordered: false,
+        }
+      );
+
+      // TODO maybe decrement subbed out player's totalPugs??
+      await Users.updateOne(
+        { id: injured.id, server_id: serverId },
+        {
+          $set: {
+            last_pug: { ...savedPug, timestamp },
+          },
+          $inc: {
+            [`stats.${pug.name}.won`]:
+              winner !== undefined ? (pOut.team === winner ? -1 : 0) : 0,
+            [`stats.${pug.name}.lost`]:
+              winner !== undefined ? (pOut.team !== winner ? -1 : 0) : 0,
+          },
+        }
+      );
+    }
+
+    channel.send(
+      formatLastPugStatus(
+        { pug: updatedPug, guildName: channel.guild.name },
+        which,
+        found.timestamp,
+        { winner, updated: true }
+      )
+    );
+  } catch (error) {
+    console.log(error);
+    message.channel.send('Something went wrong');
   }
 };
