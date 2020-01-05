@@ -262,6 +262,12 @@ const commands = [
       return RegExp(`^${action}\\d*\\d-\\d{2,}`, 'g');
     },
   },
+  {
+    key: 'subPugPlayer',
+    description: '',
+    aliases: ['sub'],
+    solo: 0,
+  },
 ];
 
 export { commands, handlers, emitters };
