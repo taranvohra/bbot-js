@@ -6,7 +6,13 @@ import {
   padNumberWithZeros,
   getTeamIndex,
 } from './utils';
-import { teams, prefix, captainTimeout, emojis, teamEmojis } from './constants';
+import {
+  teams,
+  defaultPrefix,
+  captainTimeout,
+  emojis,
+  teamEmojis,
+} from './constants';
 import { distanceInWordsStrict } from 'date-fns';
 
 const embedColor = '#11806A';
@@ -201,7 +207,7 @@ export const formatBroadcastPug = toBroadcast => {
     acc += `<@${player.id}> `;
     return acc;
   }, ``);
-  const footer = `Type **${prefix}captain** to become a captain for this pug. Random captains will be picked in ${captainTimeout /
+  const footer = `Type **${defaultPrefix}captain** to become a captain for this pug. Random captains will be picked in ${captainTimeout /
     1000} seconds`;
 
   return `${title}\n${body}\n${footer}\n`;

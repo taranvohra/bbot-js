@@ -20,6 +20,7 @@ import {
   teamIndexes,
   coolDownRoles,
   coolDownSeconds,
+  inactiveThresholdDays,
 } from '../constants';
 import {
   formatListGameTypes,
@@ -48,6 +49,7 @@ import events from 'events';
 import fs from 'fs';
 import Jimp from 'jimp';
 import { FONTS } from '../fonts';
+import subDays from 'date-fns/sub_days';
 
 export const pugEventEmitter = new events.EventEmitter();
 
@@ -1692,8 +1694,12 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
         `**${gameTypeArg.toUpperCase()}** is not a registered gametype`
       );
 
+    const lastInactiveDate = subDays(new Date(), inactiveThresholdDays);
     const allPlayers = await Users.find(
-      { server_id: serverId },
+      {
+        server_id: serverId,
+        'last_pug.timestamp': { $gte: lastInactiveDate },
+      },
       { username: 1, stats: 1 }
     );
 
@@ -1854,8 +1860,9 @@ export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
         `**${gameTypeArg.toUpperCase()}** is not a registered gametype`
       );
 
+    const lastInactiveDate = subDays(new Date(), inactiveThresholdDays);
     const allPlayers = await Users.find(
-      { server_id: serverId },
+      { server_id: serverId, 'last_pug.timestamp': { $gte: lastInactiveDate } },
       { username: 1, stats: 1 }
     );
 
@@ -1882,7 +1889,7 @@ export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
       .sort((a, b) => b.points - a.points);
 
     const startPoint = sortedPlayers.length - 10;
-    const bottom10 = sortedPlayers.slice(startPoint);
+    const bottom10 = sortedPlayers.slice(startPoint < 0 ? 0 : startPoint);
 
     Jimp.read('assets/bottom10_template.png').then(async template => {
       const { arialFNT, obelixFNT, ubuntuFNT, ubuntuTTF } = await FONTS;
@@ -1901,13 +1908,14 @@ export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
           .split('')
           .every((_, i) => ubuntuTTF.hasGlyphForCodePoint(name.codePointAt(i)));
 
+        // because last 3 are emojis in the template so no need to write in # column
         if (startPoint + 1 + i < sortedPlayers.length - 2) {
           template.print(
             obelixFNT,
             0,
             Y,
             {
-              text: (startPoint + 1 + i).toString(),
+              text: ((startPoint < 0 ? 0 : startPoint) + 1 + i).toString(),
               alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
               alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
             },
@@ -2048,8 +2056,9 @@ export const getTopXY = async (
         'Difference between **start** & **end** should be 10!'
       );
 
+    const lastInactiveDate = subDays(new Date(), inactiveThresholdDays);
     const allPlayers = await Users.find(
-      { server_id: serverId },
+      { server_id: serverId, 'last_pug.timestamp': { $gte: lastInactiveDate } },
       { username: 1, stats: 1 }
     );
 
