@@ -193,6 +193,7 @@ bBot.on(
       useNewUrlParser: true,
       useFindAndModify: false,
       useUnifiedTopology: true,
+      socketTimeoutMS: 750000,
     });
     await hydrateStore();
     await bBot.login(process.env.DISCORD_BOT_TOKEN);
