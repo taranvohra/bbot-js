@@ -6,6 +6,8 @@ export const coolDownRoles = ['COOLDOWN'];
 
 export const coolDownSeconds = 120;
 
+export const inactiveThresholdDays = 30;
+
 export const teams = {
   team_0: 'Red Team',
   team_1: 'Blue Team',
