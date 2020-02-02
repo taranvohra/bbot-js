@@ -309,7 +309,7 @@ const checkIfUserNeedsUnblock = () => {
           const mentionedUser = { id: user.id, username: user.username };
           if (compareAsc(new Date(), user.expires_at) >= 0) {
             handlers['unblockPlayer']({ channel }, null, serverId, {
-              mentionedUser,
+              mentionedUsers: [mentionedUser],
               isBot: true,
               roles: [],
             });
