@@ -38,7 +38,11 @@ async function onMessage(message) {
   if (message.author.equals(bBot.user)) return;
 
   const state = store.getState();
-  const channelPrefix = state.globals[message.guild.id].prefix || defaultPrefix;
+
+  const channelPrefix = state.globals[message.guild.id]
+    ? state.globals[message.guild.id].prefix || defaultPrefix
+    : defaultPrefix;
+
   if (!message.content.startsWith(channelPrefix)) return;
 
   const { id, username } = message.author;
@@ -51,16 +55,14 @@ async function onMessage(message) {
 
   if (!serverId) return;
 
-  const mentionedUsers = [...message.content.matchAll(/<@!(\d+)>/g)].map(
-    ([_, id]) => {
-      const user = bBot.users.get(id);
-      return { id, username: sanitizeName(user.username) };
-    }
-  );
-  // const mentionedUsers = message.mentions.users.map(user => ({
-  //   id: user.id,
-  //   username: sanitizeName(user.username),
-  // }));
+  let mentionedUsers = [];
+  const mentions = [...message.content.matchAll(/<@!(\d+)>/g)];
+
+  for (const mention of mentions) {
+    const [_, id] = mention;
+    const user = await bBot.fetchUser(id);
+    mentionedUsers.push({ id, username: sanitizeName(user.username) });
+  }
 
   const [first, ...args] = message.content
     .substring(channelPrefix.length)
