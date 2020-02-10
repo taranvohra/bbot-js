@@ -207,11 +207,12 @@ export const formatBroadcastPug = (toBroadcast, isDuel) => {
     acc += `<@${player.id}> `;
     return acc;
   }, ``);
+
   const footer = !isDuel
     ? `Type **${defaultPrefix}captain** to become a captain for this pug. Random captains will be picked in ${captainTimeout /
         1000} seconds`
     : ``;
-
+  
   return `${title}\n${body}\n${footer}\n`;
 };
 

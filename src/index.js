@@ -55,6 +55,7 @@ async function onMessage(message) {
 
   if (!serverId) return;
 
+
   let mentionedUsers = [];
   const mentions = [...message.content.matchAll(/<@!(\d+)>/g)];
 
