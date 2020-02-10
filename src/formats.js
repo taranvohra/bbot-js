@@ -199,7 +199,7 @@ export const formatDeadPugs = deadPugs => {
   return body;
 };
 
-export const formatBroadcastPug = toBroadcast => {
+export const formatBroadcastPug = (toBroadcast, isDuel) => {
   const title = `${
     emojis.moskva
   } :mega: **${toBroadcast.name.toUpperCase()}** has been filled!`;
@@ -207,9 +207,12 @@ export const formatBroadcastPug = toBroadcast => {
     acc += `<@${player.id}> `;
     return acc;
   }, ``);
-  const footer = `Type **${defaultPrefix}captain** to become a captain for this pug. Random captains will be picked in ${captainTimeout /
-    1000} seconds`;
 
+  const footer = !isDuel
+    ? `Type **${defaultPrefix}captain** to become a captain for this pug. Random captains will be picked in ${captainTimeout /
+        1000} seconds`
+    : ``;
+  
   return `${title}\n${body}\n${footer}\n`;
 };
 
@@ -397,7 +400,8 @@ export const formatLastPugStatus = (
   { pug, guildName },
   action,
   timestamp,
-  { winner, updated }
+  { winner, updated },
+  isDuel
 ) => {
   const distanceInWords = distanceInWordsStrict(new Date(), timestamp, {
     addSuffix: true,
@@ -406,6 +410,11 @@ export const formatLastPugStatus = (
     action.slice(
       1
     )} **${pug.name.toUpperCase()}** at **${guildName}** (${distanceInWords})`;
+
+  if (isDuel) {
+    const body = `${pug.players[0].username} :people_wrestling: ${pug.players[1].username}`;
+    return `${title}\n${body}`;
+  }
 
   const pugTeams = Array(pug.noOfTeams)
     .fill(0)
@@ -469,25 +478,31 @@ export const formatUserStats = ({ username, stats, last_pug }) => {
     addSuffix: true,
   });
 
-  const pugTeams = Array(last_pug.noOfTeams)
-    .fill(0)
-    .reduce((acc, _, i) => {
-      acc[i] = `\t**${teams[`team_${i}`]}** ${teamEmojis[`team_${i}`]} `;
-      return acc;
-    }, {});
+  const pugTeams = !last_pug.isDuel
+    ? Array(last_pug.noOfTeams)
+        .fill(0)
+        .reduce((acc, _, i) => {
+          acc[i] = `\t**${teams[`team_${i}`]}** ${teamEmojis[`team_${i}`]} `;
+          return acc;
+        }, {})
+    : null;
 
-  const currTeams = [...last_pug.players]
-    .sort((a, b) => a.pick - b.pick)
-    .reduce((acc, curr) => {
-      if (curr.team !== null)
-        acc[curr.team] += `*${curr.username}* :small_orange_diamond: `;
-      return acc;
-    }, pugTeams);
+  const currTeams = !last_pug.isDuel
+    ? [...last_pug.players]
+        .sort((a, b) => a.pick - b.pick)
+        .reduce((acc, curr) => {
+          if (curr.team !== null)
+            acc[curr.team] += `*${curr.username}* :small_orange_diamond: `;
+          return acc;
+        }, pugTeams)
+    : null;
 
-  const activeTeams = Object.values(currTeams).reduce((acc, curr) => {
-    acc += `${curr.slice(0, curr.length - 24)}\n`;
-    return acc;
-  }, ``);
+  const activeTeams = !last_pug.isDuel
+    ? Object.values(currTeams).reduce((acc, curr) => {
+        acc += `${curr.slice(0, curr.length - 24)}\n`;
+        return acc;
+      }, ``)
+    : `${last_pug.players[0].username} :people_wrestling: ${last_pug.players[1].username}\n`;
 
   const lastMetaData = `Last pug played was **${last_pug.name.toUpperCase()}** (${distance})`;
   const collectiveStatsTitle = `__**Gametypes**__`;
