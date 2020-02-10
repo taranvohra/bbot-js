@@ -75,7 +75,9 @@ class Pug {
         captain: null,
         pick: null,
         tag: null,
-        rating: user.stats[this.name] ? user.stats[this.name].totalRating : 0,
+        rating: user.stats[this.name]
+          ? user.stats[this.name].totalRating || 0
+          : 0,
         ...user,
       });
       return 1;
@@ -91,6 +93,9 @@ class Pug {
 
   fillPug(serverId) {
     this.picking = true;
+
+    if (this.noOfPlayers === 2 && this.noOfTeams === 2) return; // DUEL
+
     this.timer = setTimeout(() => {
       const remaining = this.noOfPlayers - this.captains.length;
       const playersWithoutCaptain = this.players.filter(
@@ -500,6 +505,7 @@ export const joinGameTypes = async (
     const db_user = await Users.findOne({ server_id: serverId, id: id }).exec();
 
     let toBroadcast = null;
+    let isDuel = false;
     const user = {
       id,
       username,
@@ -524,6 +530,7 @@ export const joinGameTypes = async (
 
         if (!hasFilledBeforeJoining && hasFilledAfterJoining) {
           toBroadcast = pug;
+          isDuel = pug.noOfPlayers === 2 && pug.noOfTeams === 2;
         }
 
         if (!existingPug && joined) {
@@ -565,7 +572,7 @@ export const joinGameTypes = async (
       }
 
       allLeaveMsgs && channel.send(allLeaveMsgs);
-      channel.send(formatBroadcastPug(toBroadcast));
+      channel.send(formatBroadcastPug(toBroadcast, isDuel));
 
       // Send DM to each user
       const DM_title = `**${toBroadcast.name.toUpperCase()}** filled in **${
@@ -582,6 +589,69 @@ export const joinGameTypes = async (
           user.send(`${DM_title}\n${DM_body}`);
         }
       });
+
+      if (isDuel) {
+        new Pugs({
+          server_id: serverId,
+          name: toBroadcast.name,
+          pug: toBroadcast,
+          timestamp: new Date(),
+          duel: true,
+        }).save();
+
+        Users.bulkWrite(
+          toBroadcast.players.map(({ id, username, stats }) => {
+            const existingStats = stats[toBroadcast.name];
+
+            if (!existingStats) {
+              const totalRating = 0;
+              const totalCaptain = 0;
+              const totalPugs = 1;
+              return {
+                updateOne: {
+                  filter: { id, server_id: serverId },
+                  update: {
+                    $set: {
+                      username,
+                      last_pug: {
+                        ...toBroadcast,
+                        timestamp: new Date(),
+                        isDuel: true,
+                      },
+                      [`stats.${toBroadcast.name}.totalRating`]: totalRating,
+                      [`stats.${toBroadcast.name}.totalCaptain`]: totalCaptain,
+                      [`stats.${toBroadcast.name}.totalPugs`]: totalPugs,
+                    },
+                  },
+                  upsert: true,
+                },
+              };
+            } else {
+              const totalPugs = existingStats.totalPugs + 1;
+              return {
+                updateOne: {
+                  filter: { id, server_id: serverId },
+                  update: {
+                    $set: {
+                      username,
+                      last_pug: {
+                        ...toBroadcast,
+                        timestamp: new Date(),
+                        isDuel: true,
+                      },
+                      [`stats.${toBroadcast.name}.totalPugs`]: totalPugs,
+                    },
+                  },
+                  upsert: true,
+                },
+              };
+            }
+          }),
+          { ordered: false }
+        );
+
+        store.dispatch(removePug({ serverId, name: toBroadcast.name }));
+      }
     }
   } catch (error) {
     channel.send('Something went wrong');
@@ -1120,7 +1190,8 @@ export const checkLastPugs = async (
           { pug: found.pug, guildName: channel.guild.name },
           action,
           found.timestamp,
-          { winner: found.winner }
+          { winner: found.winner },
+          found.duel
         )
       );
   } catch (error) {
