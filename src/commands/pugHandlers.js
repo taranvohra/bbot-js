@@ -50,6 +50,7 @@ import fs from 'fs';
 import Jimp from 'jimp';
 import { FONTS } from '../fonts';
 import subDays from 'date-fns/sub_days';
+import { distanceInWords } from 'date-fns';
 
 export const pugEventEmitter = new events.EventEmitter();
 
@@ -490,8 +491,15 @@ export const joinGameTypes = async (
 
     if (!id) return channel.send('No user was mentioned');
 
-    if (blockedList.some(u => u.id === id))
-      return channel.send(`Not allowed to join pugs`);
+    const blockedUser = blockedList.find(u => u.id === id);
+    if (blockedUser) {
+      return channel.send(
+        `You're blocked from joining pugs. Block expires in **${distanceInWords(
+          new Date(),
+          new Date(blockedUser.expires_at)
+        )}**`
+      );
+    }
 
     const isPartOfFilledPug = list.find(
       p => p.picking && p.players.some(u => u.id === id)
