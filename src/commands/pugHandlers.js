@@ -1670,6 +1670,7 @@ export const declareWinner = async (
       );
 
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
+    return channel.send(`Command has been temporarily disabled`);
 
     const { tCount, digits } = which.split('').reduce(
       (acc, curr) => {
@@ -1754,6 +1755,8 @@ export const declareWinner = async (
 
 export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
   try {
+    return channel.send(`Command has been temporarily disabled`);
+
     const state = store.getState();
     const { pugChannel, gameTypes } = state.pugs[serverId];
 
@@ -1920,6 +1923,8 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
 
 export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
   try {
+    return channel.send(`Command has been temporarily disabled`);
+
     const state = store.getState();
     const { pugChannel, gameTypes } = state.pugs[serverId];
 
@@ -2106,6 +2111,7 @@ export const getTopXY = async (
   { action }
 ) => {
   try {
+    return channel.send(`Command has been temporarily disabled`);
     const state = store.getState();
     const { pugChannel, gameTypes } = state.pugs[serverId];
 
