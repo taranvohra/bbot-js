@@ -10,6 +10,7 @@ import {
   unignoreGroupCommand as unignoreGroupCommandsAction,
 } from '../store/actions';
 import { commands } from '../commands';
+import { hasPrivilegedRole } from '../utils';
 
 export const registerServer = async (message, _, serverId, { roles }) => {
   try {

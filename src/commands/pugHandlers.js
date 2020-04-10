@@ -50,6 +50,7 @@ import fs from 'fs';
 import Jimp from 'jimp';
 import { FONTS } from '../fonts';
 import subDays from 'date-fns/sub_days';
+import { distanceInWords } from 'date-fns';
 
 export const pugEventEmitter = new events.EventEmitter();
 
@@ -490,8 +491,15 @@ export const joinGameTypes = async (
 
     if (!id) return channel.send('No user was mentioned');
 
-    if (blockedList.some(u => u.id === id))
-      return channel.send(`Not allowed to join pugs`);
+    const blockedUser = blockedList.find(u => u.id === id);
+    if (blockedUser) {
+      return channel.send(
+        `You're blocked from joining pugs. Block expires in **${distanceInWords(
+          new Date(),
+          new Date(blockedUser.expires_at)
+        )}**`
+      );
+    }
 
     const isPartOfFilledPug = list.find(
       p => p.picking && p.players.some(u => u.id === id)
@@ -1662,6 +1670,7 @@ export const declareWinner = async (
       );
 
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
+    return channel.send(`Command has been temporarily disabled`);
 
     const { tCount, digits } = which.split('').reduce(
       (acc, curr) => {
@@ -1746,6 +1755,8 @@ export const declareWinner = async (
 
 export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
   try {
+    return channel.send(`Command has been temporarily disabled`);
+
     const state = store.getState();
     const { pugChannel, gameTypes } = state.pugs[serverId];
 
@@ -1912,6 +1923,8 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
 
 export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
   try {
+    return channel.send(`Command has been temporarily disabled`);
+
     const state = store.getState();
     const { pugChannel, gameTypes } = state.pugs[serverId];
 
@@ -2098,6 +2111,7 @@ export const getTopXY = async (
   { action }
 ) => {
   try {
+    return channel.send(`Command has been temporarily disabled`);
     const state = store.getState();
     const { pugChannel, gameTypes } = state.pugs[serverId];
 
@@ -2575,4 +2589,13 @@ export const subPugPlayer = async (
     console.log(error);
     message.channel.send('Something went wrong');
   }
+};
+export const checkLastPugsAndListGameTypes = async (
+  message,
+  args,
+  serverId,
+  additionalObj
+) => {
+  checkLastPugs(message, args, serverId, additionalObj);
+  listGameTypes(message, args, serverId, additionalObj);
 };
