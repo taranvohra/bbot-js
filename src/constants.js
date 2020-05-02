@@ -1,4 +1,4 @@
-export const defaultPrefix = '-';
+export const defaultPrefix = '.';
 
 export const privilegedRoles = ['Admins', 'Moderators'];
 
