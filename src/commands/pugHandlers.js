@@ -36,6 +36,7 @@ import {
   formatLastPugStatus,
   formatUserStats,
   formatListGameType,
+  formatCoinFlipMapVoteWinner,
 } from '../formats';
 import {
   assignGameTypes,
@@ -44,6 +45,7 @@ import {
   addBlock,
   removeBlock,
   initCmdCooldown,
+  enableCoinFlip,
 } from '../store/actions';
 import events from 'events';
 import fs from 'fs';
@@ -87,7 +89,7 @@ class Pug {
   }
 
   removePlayer(user) {
-    const playerIndex = this.players.findIndex(p => p.id === user.id);
+    const playerIndex = this.players.findIndex((p) => p.id === user.id);
     this.players.splice(playerIndex, 1);
     if (this.picking) this.stopPug();
   }
@@ -100,7 +102,7 @@ class Pug {
     this.timer = setTimeout(() => {
       const remaining = this.noOfPlayers - this.captains.length;
       const playersWithoutCaptain = this.players.filter(
-        p => p.captain === null
+        (p) => p.captain === null
       );
       const poolForCaptains = shuffle(playersWithoutCaptain)
         .slice(0, remaining * 0.6)
@@ -167,7 +169,7 @@ class Pug {
           }
         } else {
           // 1 capt already there
-          const firstCaptain = this.players.find(u => u.captain !== null);
+          const firstCaptain = this.players.find((u) => u.captain !== null);
           let leastDiff = 10000;
           let otherCaptainIndex = null;
           for (let i = 0; i < poolForCaptains.length; i++) {
@@ -220,7 +222,7 @@ class Pug {
   }
 
   fillCaptainSpot(user, teamIndex) {
-    const pIndex = this.players.findIndex(u => u.id === user.id);
+    const pIndex = this.players.findIndex((u) => u.id === user.id);
     if (this.players[pIndex].captain === null && !this.captains[teamIndex]) {
       this.players[pIndex].captain = this.players[pIndex].team = teamIndex;
       this.players[pIndex].pick = 0;
@@ -239,7 +241,7 @@ class Pug {
       let pickedPlayers = [{ player: this.players[playerIndex], team }];
       // last pick automatically goes
       if (this.turn === this.pickingOrder.length - 1) {
-        const lastPlayerIndex = this.players.findIndex(u => u.team === null);
+        const lastPlayerIndex = this.players.findIndex((u) => u.team === null);
         const lastPlayerTeam = this.pickingOrder[this.turn];
 
         this.players[lastPlayerIndex].team = lastPlayerTeam;
@@ -264,7 +266,7 @@ class Pug {
   }
 
   addTag(user, tag) {
-    this.players.forEach(u => {
+    this.players.forEach((u) => {
       if (u.id === user.id) {
         u.tag = tag;
       }
@@ -272,7 +274,7 @@ class Pug {
   }
 
   removeTag(user) {
-    this.players.forEach(u => {
+    this.players.forEach((u) => {
       if (u.id === user.id) {
         u.tag = null;
       }
@@ -289,7 +291,7 @@ class Pug {
   }
 
   findPlayer(user) {
-    return this.players.find(u => u.id === user.id);
+    return this.players.find((u) => u.id === user.id);
   }
 
   isEmpty() {
@@ -305,7 +307,9 @@ class Pug {
     this.picking = false;
     this.turn = 0;
     this.captains = [];
-    this.players.forEach(user => (user.captain = user.team = user.pick = null));
+    this.players.forEach(
+      (user) => (user.captain = user.team = user.pick = null)
+    );
     clearTimeout(this.timer);
   }
 }
@@ -324,7 +328,7 @@ export const addGameType = async (
     const state = store.getState();
     const { gameTypes } = state.pugs[serverId];
 
-    if (gameTypes.some(g => g.name === gameName.toLowerCase()))
+    if (gameTypes.some((g) => g.name === gameName.toLowerCase()))
       return channel.send('Gametype already exists');
 
     const pickingOrder = computePickingOrder(
@@ -371,11 +375,11 @@ export const delGameType = async (
     const state = store.getState();
     const { gameTypes } = state.pugs[serverId];
 
-    if (!gameTypes.some(g => g.name === gameName.toLowerCase()))
+    if (!gameTypes.some((g) => g.name === gameName.toLowerCase()))
       return channel.send("Gametype doesn't exist");
 
     const updatedGameTypes = gameTypes.filter(
-      g => g.name !== gameName.toLowerCase()
+      (g) => g.name !== gameName.toLowerCase()
     );
 
     await GameTypes.findOneAndUpdate(
@@ -405,12 +409,12 @@ export const listGameTypes = async ({ channel }, [gameType], serverId, __) => {
 
     if (gameType) {
       const validGameType = gameTypes.find(
-        g => g.name === gameType.toLowerCase()
+        (g) => g.name === gameType.toLowerCase()
       );
       if (!validGameType)
         return channel.send(`There is no such active pug: **${gameType}**`);
 
-      const existingPug = list.find(p => p.name === gameType.toLowerCase());
+      const existingPug = list.find((p) => p.name === gameType.toLowerCase());
       if (!existingPug)
         return channel.send(
           `**${gameType.toUpperCase()}** (0/${validGameType.noOfPlayers})`
@@ -418,7 +422,7 @@ export const listGameTypes = async ({ channel }, [gameType], serverId, __) => {
 
       channel.send(formatListGameType(existingPug));
     } else {
-      const tempList = gameTypes.map(g => {
+      const tempList = gameTypes.map((g) => {
         return {
           name: g.name,
           players: 0,
@@ -427,7 +431,7 @@ export const listGameTypes = async ({ channel }, [gameType], serverId, __) => {
       });
 
       const gamesList = tempList.reduce((acc, curr) => {
-        const existingPug = list.find(p => p.name === curr.name);
+        const existingPug = list.find((p) => p.name === curr.name);
         if (existingPug) {
           acc.push({
             name: existingPug.name,
@@ -491,7 +495,7 @@ export const joinGameTypes = async (
 
     if (!id) return channel.send('No user was mentioned');
 
-    const blockedUser = blockedList.find(u => u.id === id);
+    const blockedUser = blockedList.find((u) => u.id === id);
     if (blockedUser) {
       return channel.send(
         `You're blocked from joining pugs. Block expires in **${distanceInWords(
@@ -502,7 +506,7 @@ export const joinGameTypes = async (
     }
 
     const isPartOfFilledPug = list.find(
-      p => p.picking && p.players.some(u => u.id === id)
+      (p) => p.picking && p.players.some((u) => u.id === id)
     );
 
     if (isPartOfFilledPug)
@@ -519,14 +523,14 @@ export const joinGameTypes = async (
       username,
       stats: db_user && db_user.stats ? db_user.stats : {},
     };
-    const statuses = args.map(a => {
+    const statuses = args.map((a) => {
       if (!toBroadcast) {
         const game = a.toLowerCase();
-        const gameType = gameTypes.find(g => g.name === game);
+        const gameType = gameTypes.find((g) => g.name === game);
 
         if (!gameType) return { user, name: game, joined: -1 }; // -1 is for NOT FOUND
 
-        const existingPug = list.find(p => p.name === game);
+        const existingPug = list.find((p) => p.name === game);
         const pug = existingPug || new Pug(gameType);
 
         const hasFilledBeforeJoining = pug.picking;
@@ -591,7 +595,7 @@ export const joinGameTypes = async (
         return acc;
       }, ``);
 
-      toBroadcast.players.forEach(player => {
+      toBroadcast.players.forEach((player) => {
         const user = client.users.get(player.id);
         if (user) {
           user.send(`${DM_title}\n${DM_body}`);
@@ -684,9 +688,9 @@ export const setDefaultJoin = async (
         } <#${pugChannel}>`
       );
 
-    const allJoins = args.map(a => {
+    const allJoins = args.map((a) => {
       const game = a.toLowerCase();
-      const gameType = gameTypes.find(g => g.name === game);
+      const gameType = gameTypes.find((g) => g.name === game);
 
       if (!gameType) return undefined;
       return game;
@@ -793,13 +797,13 @@ export const leaveGameTypes = async (
       return channel.send('Invalid, No pugs were mentioned');
 
     const user = { id, username };
-    const statuses = args.map(a => {
+    const statuses = args.map((a) => {
       const game = a.toLowerCase();
-      const gameType = gameTypes.find(g => g.name === game);
+      const gameType = gameTypes.find((g) => g.name === game);
 
       if (!gameType) return { user, name: game, left: -1 }; // -1 is for NOT FOUND
 
-      const pug = list.find(p => p.name === game);
+      const pug = list.find((p) => p.name === game);
       const isInPug = pug && pug.findPlayer(user);
       if (isInPug) {
         pug.removePlayer(user);
@@ -888,10 +892,10 @@ export const addCaptain = async (
         } <#${pugChannel}>`
       );
 
-    const forWhichPug = list.find(pug => {
+    const forWhichPug = list.find((pug) => {
       const isCandidate = pug.picking && !pug.areCaptainsDecided();
       if (isCandidate) {
-        return pug.players.some(u => u.id === id); // check whether the guy is present there
+        return pug.players.some((u) => u.id === id); // check whether the guy is present there
       }
       return false;
     });
@@ -901,7 +905,7 @@ export const addCaptain = async (
         'There was no filled pug for which you could captain'
       );
 
-    if (!forWhichPug.players.some(u => u.id === id && u.captain === null))
+    if (!forWhichPug.players.some((u) => u.id === id && u.captain === null))
       return channel.send(`**${username}** is already a captain`);
 
     const user = { id, username };
@@ -926,7 +930,7 @@ export const pickPlayer = async (
 ) => {
   try {
     const state = store.getState();
-    const { pugChannel, list } = state.pugs[serverId];
+    const { pugChannel, list, gameTypes } = state.pugs[serverId];
 
     if (pugChannel !== channel.id)
       return channel.send(
@@ -938,9 +942,9 @@ export const pickPlayer = async (
     const playerIndex = parseInt(index);
     if (!playerIndex) return;
 
-    const forWhichPug = list.find(pug => {
+    const forWhichPug = list.find((pug) => {
       if (pug.picking) {
-        return pug.players.some(u => u.id === id && u.captain !== null); // check whether the guy is present there
+        return pug.players.some((u) => u.id === id && u.captain !== null); // check whether the guy is present there
       }
       return false;
     });
@@ -954,7 +958,7 @@ export const pickPlayer = async (
       return channel.send('Please wait until all captains have been decided');
 
     const { team } = forWhichPug.players.find(
-      u => (u.id === id) & (u.captain !== null)
+      (u) => (u.id === id) & (u.captain !== null)
     );
     const { pickingOrder, turn, name } = forWhichPug;
 
@@ -974,6 +978,16 @@ export const pickPlayer = async (
 
     // SAVE STATS
     if (result.finished) {
+      const gameType = gameTypes.find((g) => g.name === name);
+      const { hasCoinFlipMapvoteDecider } = gameType;
+      hasCoinFlipMapvoteDecider
+        ? channel.send(
+            formatCoinFlipMapVoteWinner(
+              getRandomInt(0, forWhichPug.noOfTeams - 1)
+            )
+          )
+        : null;
+
       new Pugs({
         server_id: serverId,
         name: forWhichPug.name,
@@ -1061,7 +1075,7 @@ export const pugPicking = async ({ channel }, _, serverId, __) => {
       );
 
     const pugsInPicking = list.filter(
-      pug => pug.picking && pug.areCaptainsDecided()
+      (pug) => pug.picking && pug.areCaptainsDecided()
     );
 
     if (pugsInPicking.length === 0) {
@@ -1106,7 +1120,7 @@ export const promoteAvailablePugs = async (
     }
 
     const hasPugMentioned =
-      args[0] && list.find(p => p.name === args[0].toLowerCase());
+      args[0] && list.find((p) => p.name === args[0].toLowerCase());
 
     if (
       hasPugMentioned &&
@@ -1222,7 +1236,7 @@ export const resetPug = async ({ channel }, args, serverId, { roles }) => {
     );
 
   const pugName = args[0].toLowerCase();
-  const forWhichPug = list.find(p => p.name === pugName);
+  const forWhichPug = list.find((p) => p.name === pugName);
 
   if (!forWhichPug)
     return channel.send(`No pug found: **${args[0].toUpperCase()}**`);
@@ -1345,11 +1359,11 @@ export const addOrRemoveTag = async (
 
     tag = sanitizeName(args.join(' '));
 
-    const whichPugs = list.filter(pug => pug.findPlayer({ id, username }));
+    const whichPugs = list.filter((pug) => pug.findPlayer({ id, username }));
 
     if (whichPugs.length === 0) return;
 
-    whichPugs.forEach(pug => {
+    whichPugs.forEach((pug) => {
       isAddingTag
         ? pug.addTag({ id, username }, tag)
         : pug.removeTag({ id, username });
@@ -1485,7 +1499,7 @@ export const blockPlayer = async (
     if (!hasPrivilegedRole(privilegedRoles, roles)) return;
     if (!mentionedUser) return channel.send('No mentioned user');
 
-    if (list.some(u => u.id === mentionedUser.id))
+    if (list.some((u) => u.id === mentionedUser.id))
       return channel.send(
         `${mentionedUser.username} is already blocked from pugs`
       );
@@ -1497,17 +1511,17 @@ export const blockPlayer = async (
       return channel.send('Please mention the length of the block');
 
     const blockCalculator = {
-      m: minutes => {
+      m: (minutes) => {
         const dt = new Date();
         dt.setMinutes(dt.getMinutes() + minutes);
         return dt;
       },
-      h: hours => {
+      h: (hours) => {
         const dt = new Date();
         dt.setHours(dt.getHours() + hours);
         return dt;
       },
-      d: days => {
+      d: (days) => {
         const dt = new Date();
         dt.setHours(dt.getHours() + days * 24);
         return dt;
@@ -1588,12 +1602,12 @@ export const unblockPlayer = async (
     if (!hasPrivilegedRole(privilegedRoles, roles) && !isBot) return;
     if (!mentionedUser) return channel.send('No mentioned user');
 
-    if (!list.some(u => u.id === mentionedUser.id))
+    if (!list.some((u) => u.id === mentionedUser.id))
       return channel.send(
         `cannot unblock **${mentionedUser.username}** if the user isn't blocked in the first place ${emojis.smart} `
       );
 
-    const newBlockedList = list.filter(u => u.id !== mentionedUser.id);
+    const newBlockedList = list.filter((u) => u.id !== mentionedUser.id);
     await Blocks.findOneAndUpdate(
       { server_id: serverId },
       { $set: { blocked_users: newBlockedList } },
@@ -1770,7 +1784,9 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
     if (!gameTypeArg)
       return channel.send('Invalid! specify the gametype aswell');
 
-    const gameType = gameTypes.find(g => g.name === gameTypeArg.toLowerCase());
+    const gameType = gameTypes.find(
+      (g) => g.name === gameTypeArg.toLowerCase()
+    );
     if (!gameType)
       return channel.send(
         `**${gameTypeArg.toUpperCase()}** is not a registered gametype`
@@ -1807,19 +1823,19 @@ export const getTop10 = async ({ channel }, [gameTypeArg], serverId, _) => {
       .sort((a, b) => b.points - a.points)
       .slice(0, 10);
 
-    Jimp.read('assets/top10_template.png').then(async template => {
+    Jimp.read('assets/top10_template.png').then(async (template) => {
       const { arialFNT, ubuntuFNT, ubuntuTTF } = await FONTS;
       let Y = 50;
       const MAX_HEIGHT = 25;
 
-      top10.forEach(player => {
+      top10.forEach((player) => {
         const {
           username,
           stats: { totalPugs, totalRating, won, lost },
         } = player;
         const winP = `${((won / (won + lost)) * 100).toFixed(0)}%`;
 
-        const name = username.replace(/\\[^\\]/g, c => c.substring(1));
+        const name = username.replace(/\\[^\\]/g, (c) => c.substring(1));
 
         const shouldUseUbuntu = name
           .split('')
@@ -1938,7 +1954,9 @@ export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
     if (!gameTypeArg)
       return channel.send('Invalid! specify the gametype aswell');
 
-    const gameType = gameTypes.find(g => g.name === gameTypeArg.toLowerCase());
+    const gameType = gameTypes.find(
+      (g) => g.name === gameTypeArg.toLowerCase()
+    );
     if (!gameType)
       return channel.send(
         `**${gameTypeArg.toUpperCase()}** is not a registered gametype`
@@ -1975,7 +1993,7 @@ export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
     const startPoint = sortedPlayers.length - 10;
     const bottom10 = sortedPlayers.slice(startPoint < 0 ? 0 : startPoint);
 
-    Jimp.read('assets/bottom10_template.png').then(async template => {
+    Jimp.read('assets/bottom10_template.png').then(async (template) => {
       const { arialFNT, obelixFNT, ubuntuFNT, ubuntuTTF } = await FONTS;
       let Y = 50;
       const MAX_HEIGHT = 25;
@@ -1986,7 +2004,7 @@ export const getBottom10 = async ({ channel }, [gameTypeArg], serverId, _) => {
           stats: { totalPugs, totalRating, won, lost },
         } = player;
         const winP = `${((won / (won + lost)) * 100).toFixed(0)}%`;
-        const name = username.replace(/\\[^\\]/g, c => c.substring(1));
+        const name = username.replace(/\\[^\\]/g, (c) => c.substring(1));
 
         const shouldUseUbuntu = name
           .split('')
@@ -2125,16 +2143,15 @@ export const getTopXY = async (
     if (!gameTypeArg)
       return channel.send('Invalid! specify the gametype aswell');
 
-    const gameType = gameTypes.find(g => g.name === gameTypeArg.toLowerCase());
+    const gameType = gameTypes.find(
+      (g) => g.name === gameTypeArg.toLowerCase()
+    );
     if (!gameType)
       return channel.send(
         `**${gameTypeArg.toUpperCase()}** is not a registered gametype`
       );
 
-    const [start, end] = action
-      .replace('top', '')
-      .split('-')
-      .map(Number);
+    const [start, end] = action.replace('top', '').split('-').map(Number);
 
     if (end - start !== 10)
       return channel.send(
@@ -2172,7 +2189,7 @@ export const getTopXY = async (
 
     if (topXYPlayers.length === 0) return channel.send(`There aren't any`);
 
-    Jimp.read('assets/top_template.png').then(async template => {
+    Jimp.read('assets/top_template.png').then(async (template) => {
       const { arialFNT, obelixFNT, ubuntuFNT, ubuntuTTF } = await FONTS;
       let Y = 50;
       const MAX_HEIGHT = 25;
@@ -2196,7 +2213,7 @@ export const getTopXY = async (
           stats: { totalPugs, totalRating, won, lost },
         } = player;
         const winP = `${((won / (won + lost)) * 100).toFixed(0)}%`;
-        const name = username.replace(/\\[^\\]/g, c => c.substring(1));
+        const name = username.replace(/\\[^\\]/g, (c) => c.substring(1));
 
         const shouldUseUbuntu = name
           .split('')
@@ -2369,8 +2386,10 @@ export const subPugPlayer = async (
       return acc;
     }, {});
 
-    const injuredIndex = pug.players.findIndex(u => u.id === injured.id);
-    const substituteIndex = pug.players.findIndex(u => u.id === substitute.id);
+    const injuredIndex = pug.players.findIndex((u) => u.id === injured.id);
+    const substituteIndex = pug.players.findIndex(
+      (u) => u.id === substitute.id
+    );
 
     // Injured player not in the pug (not present)
     if (injuredIndex === -1)
@@ -2588,5 +2607,81 @@ export const subPugPlayer = async (
   } catch (error) {
     console.log(error);
     message.channel.send('Something went wrong');
+  }
+};
+
+export const enableMapVoteCoinFlip = async (
+  { channel },
+  args,
+  serverId,
+  { roles }
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, gameTypes } = state.pugs[serverId];
+    const gameName = args[0].toLowerCase();
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : `not present`
+        }`
+      );
+
+    if (!hasPrivilegedRole(privilegedRoles, roles) && !isBot) return;
+
+    if (!gameTypes.some((g) => g.name === gameName))
+      return channel.send(`${gameName} Gametype doesnt exist`);
+
+    const updatedGameTypes = gameTypes.map((g) =>
+      g.name === gameName
+        ? { ...g.toObject(), hasCoinFlipMapvoteDecider: true }
+        : g
+    );
+
+    await GameTypes.findOneAndUpdate(
+      { server_id: serverId },
+      { $set: { game_types: updatedGameTypes } }
+    ).exec();
+    store.dispatch(enableCoinFlip({ serverId, gameType: gameName }));
+    channel.send(`Coinflip enabled for **${gameName}**`);
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
+  }
+};
+
+export const disableMapVoteCoinFlip = async ({ channel }, args, serverId) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, gameTypes } = state.pugs[serverId];
+    const gameName = args[0].toLowerCase();
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : `not present`
+        }`
+      );
+
+    if (!hasPrivilegedRole(privilegedRoles, roles) && !isBot) return;
+
+    if (!gameTypes.some((g) => g.name === gameName))
+      return channel.send(`${gameName} Gametype doesnt exist`);
+
+    const updatedGameTypes = gameTypes.map((g) =>
+      g.name === gameName
+        ? { ...g.toObject(), hasCoinFlipMapvoteDecider: false }
+        : g
+    );
+    await GameTypes.findOneAndUpdate(
+      { server_id: serverId },
+      { $set: { game_types: updatedGameTypes } }
+    ).exec();
+    store.dispatch(disableMapVoteCoinFlip({ serverId, gameType: gameName }));
+    channel.send(`Coinflip disabled for **${gameName}**`);
+  } catch (error) {
+    channel.send('Something went wrong');
+    console.log(error);
   }
 };

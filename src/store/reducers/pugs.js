@@ -44,13 +44,41 @@ const pugs = (state = {}, { type, payload }) => {
 
     case 'REMOVE_PUG': {
       const updatedList = state[payload.serverId].list.filter(
-        p => p.name !== payload.name
+        (p) => p.name !== payload.name
       );
       return {
         ...state,
         [payload.serverId]: {
           ...state[payload.serverId],
           list: updatedList,
+        },
+      };
+    }
+
+    case 'ENABLE_COINFLIP': {
+      return {
+        ...state,
+        [payload.serverId]: {
+          ...state[payload.serverId],
+          gameTypes: state[payload.serverId]['gameTypes'].map((g) =>
+            g.name === payload.gameType
+              ? { ...g, hasCoinFlipMapvoteDecider: true }
+              : g
+          ),
+        },
+      };
+    }
+
+    case 'DISABLE_COINFLIP': {
+      return {
+        ...state,
+        [payload.serverId]: {
+          ...state[payload.serverId],
+          gameTypes: state[payload.serverId]['gameTypes'].map((g) =>
+            g.name === payload.gameType
+              ? { ...g, hasCoinFlipMapvoteDecider: false }
+              : g
+          ),
         },
       };
     }

@@ -17,7 +17,7 @@ import { distanceInWordsStrict } from 'date-fns';
 
 const embedColor = '#11806A';
 
-export const formatQueryServers = list => {
+export const formatQueryServers = (list) => {
   const richEmbed = new Discord.RichEmbed();
 
   const description = list.reduce((acc, curr, index) => {
@@ -63,7 +63,7 @@ export const formatQueryServerStatus = (info, players) => {
     );
   }
 
-  Object.keys(playerList).forEach(team => {
+  Object.keys(playerList).forEach((team) => {
     const teamIndex = getTeamIndex(team);
     const p = playerList[team];
     const teamPlayers = p.reduce((acc, curr) => {
@@ -107,7 +107,7 @@ export const formatListGameTypes = (guildName, list) => {
   return `${title}\n${body}`;
 };
 
-export const formatJoinStatus = statuses => {
+export const formatJoinStatus = (statuses) => {
   const { joined, missed, nf, aj, user } = statuses.reduce(
     (acc, { joined, user, name, activeCount, maxPlayers }) => {
       switch (joined) {
@@ -187,7 +187,7 @@ export const formatLeaveStatus = (statuses, isOffline) => {
   return body;
 };
 
-export const formatDeadPugs = deadPugs => {
+export const formatDeadPugs = (deadPugs) => {
   const body = deadPugs.reduce((acc, { pug, user }, i) => {
     acc += `${i > 0 ? `\n` : ``} ${
       emojis.peepoComfy
@@ -209,14 +209,15 @@ export const formatBroadcastPug = (toBroadcast, isDuel) => {
   }, ``);
 
   const footer = !isDuel
-    ? `Type **${defaultPrefix}captain** to become a captain for this pug. Random captains will be picked in ${captainTimeout /
-        1000} seconds`
+    ? `Type **${defaultPrefix}captain** to become a captain for this pug. Random captains will be picked in ${
+        captainTimeout / 1000
+      } seconds`
     : ``;
-  
+
   return `${title}\n${body}\n${footer}\n`;
 };
 
-export const formatListGameType = pug => {
+export const formatListGameType = (pug) => {
   const title = `**${pug.name.toUpperCase()}** (${pug.players.length}/${
     pug.noOfPlayers
   })`;
@@ -313,7 +314,7 @@ export const formatPickPlayerStatus = ({ pickedPlayers, finished, pug }) => {
   }\n${activeTeams}`;
 };
 
-export const formatPugsInPicking = pugsInPicking => {
+export const formatPugsInPicking = (pugsInPicking) => {
   const body = pugsInPicking.reduce((acc, pug) => {
     let count = 0;
     const next = pug.captains[pug.pickingOrder[pug.turn]];
@@ -387,9 +388,9 @@ export const formatPromoteAvailablePugs = (pugs, guildName) => {
   const title = `@here in **${guildName}**`;
   const body = pugs.reduce((acc, curr) => {
     if (!curr.picking) {
-      acc += `**${curr.noOfPlayers -
-        curr.players
-          .length}** more needed for **${curr.name.toUpperCase()}**\n`;
+      acc += `**${
+        curr.noOfPlayers - curr.players.length
+      }** more needed for **${curr.name.toUpperCase()}**\n`;
     }
     return acc;
   }, ``);
@@ -406,10 +407,9 @@ export const formatLastPugStatus = (
   const distanceInWords = distanceInWordsStrict(new Date(), timestamp, {
     addSuffix: true,
   });
-  const title = `${action.charAt(0).toUpperCase() +
-    action.slice(
-      1
-    )} **${pug.name.toUpperCase()}** at **${guildName}** (${distanceInWords})`;
+  const title = `${
+    action.charAt(0).toUpperCase() + action.slice(1)
+  } **${pug.name.toUpperCase()}** at **${guildName}** (${distanceInWords})`;
 
   if (isDuel) {
     const body = `${pug.players[0].username} :people_wrestling: ${pug.players[1].username}`;
@@ -528,4 +528,12 @@ export const formatUserStats = ({ username, stats, last_pug }) => {
   );
 
   return `${title}\n\n${totals}\n\n${lastMetaData}\n${activeTeams}\n${collectiveStatsTitle}\n${collectiveStatsBody}`;
+};
+
+export const formatCoinFlipMapVoteWinner = (winningTeamIndex) => {
+  const head = `---- *mapvote coin flip* ----`;
+  const body = `${teamEmojis[`team_${winningTeamIndex}`]} **${teams[
+    `team_${winningTeamIndex}`
+  ].toUpperCase()}** ${teamEmojis[`team_${winningTeamIndex}`]} won **mapvote**`;
+  return `${head}\n${body}`;
 };
