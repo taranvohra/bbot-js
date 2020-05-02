@@ -1,4 +1,5 @@
-import '@babel/polyfill';
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { Client, User, Message } from 'discord.js';
@@ -55,7 +56,6 @@ async function onMessage(message) {
 
   if (!serverId) return;
 
-
   let mentionedUsers = [];
   const mentions = [...message.content.matchAll(/<@!(\d+)>/g)];
 
@@ -73,10 +73,10 @@ async function onMessage(message) {
   const soloType = args[0] === offline || args.length === 0 ? 1 : 0;
 
   const foundCommand = commands.find(
-    cmd =>
+    (cmd) =>
       (!cmd.regex
         ? cmd.aliases.includes(action)
-        : cmd.aliases.some(a => cmd.regex(a).test(action))) &&
+        : cmd.aliases.some((a) => cmd.regex(a).test(action))) &&
       (cmd.solo === soloType || cmd.solo === 2)
   );
 
@@ -166,11 +166,11 @@ bBot.on(
     // No point in sending cooldown message
     if (!pugChannel && !queryChannel) return;
 
-    const wasPresentBefore = coolDownRoles.some(cr =>
-      oldRoles.find(or => or.name === cr)
+    const wasPresentBefore = coolDownRoles.some((cr) =>
+      oldRoles.find((or) => or.name === cr)
     );
-    const isPresentNow = coolDownRoles.some(cr =>
-      newRoles.find(nr => nr.name === cr)
+    const isPresentNow = coolDownRoles.some((cr) =>
+      newRoles.find((nr) => nr.name === cr)
     );
 
     const channel = guild.channels.get(pugChannel || queryChannel);
@@ -196,7 +196,7 @@ bBot.on(
       useNewUrlParser: true,
       useFindAndModify: false,
       useUnifiedTopology: true,
-      socketTimeoutMS: 750000,
+      socketTimeoutMS: 60000,
     });
     await hydrateStore();
     await bBot.login(process.env.DISCORD_BOT_TOKEN);
@@ -236,7 +236,7 @@ const hydrateStore = async () => {
       store.dispatch(setPrefix({ serverId: server_id, prefix: prefix }));
 
       // Populating the ignored group command list. Probably should do it in bulk instead of 1by1.
-      Array.from(ignored_group_commands).forEach(igc =>
+      Array.from(ignored_group_commands).forEach((igc) =>
         store.dispatch(
           ignoreGroupCommand({ serverId: server_id, groupCommands: igc })
         )
@@ -272,11 +272,11 @@ const hydrateStore = async () => {
   });
 };
 
-const sendRestartMessageToAllGuilds = client => {
+const sendRestartMessageToAllGuilds = (client) => {
   const state = store.getState();
   const allGuildIds = [...client.guilds.keys()];
 
-  allGuildIds.forEach(guildId => {
+  allGuildIds.forEach((guildId) => {
     const { pugChannel, queryChannel } =
       state.pugs[guildId] || state.queryServers[guildId];
     if (pugChannel || queryChannel) {
@@ -294,7 +294,7 @@ const sendRestartMessageToAllGuilds = client => {
 emitters.pugEventEmitter.on(pugEvents.captainsReady, (serverId, name) => {
   const state = store.getState();
   const { pugChannel, list } = state.pugs[serverId];
-  const pug = list.find(p => p.name === name);
+  const pug = list.find((p) => p.name === name);
 
   bBot.channels.get(pugChannel).send(formatBroadcastCaptainsReady(pug));
 });
@@ -308,7 +308,7 @@ const checkIfUserNeedsUnblock = () => {
         const { pugChannel } = state.pugs[serverId];
         const channel = guild.channels.get(pugChannel);
 
-        list.forEach(user => {
+        list.forEach((user) => {
           const mentionedUser = { id: user.id, username: user.username };
           if (compareAsc(new Date(), user.expires_at) >= 0) {
             handlers['unblockPlayer']({ channel }, null, serverId, {

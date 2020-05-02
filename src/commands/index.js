@@ -268,6 +268,12 @@ const commands = [
     aliases: ['sub'],
     solo: 0,
   },
+  {
+    key: 'enableMapVoteCoinFlip',
+    description: '',
+    aliases: ['enablecoinflip'],
+    solo: 0,
+  },
 ];
 
 export { commands, handlers, emitters };

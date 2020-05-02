@@ -1,10 +1,11 @@
 import { teams, cooldownRoles } from './constants';
 
 export const hasPrivilegedRole = (privilegedRoles, userRoles) =>
-  privilegedRoles.some(pr => userRoles.find(ur => ur.name === pr));
+  privilegedRoles.some((pr) => userRoles.find((ur) => ur.name === pr));
 
 export const hasCoolDownRole = (coolDownRoles, userRoles) =>
-  userRoles && coolDownRoles.some(cr => userRoles.find(ur => ur.name === cr));
+  userRoles &&
+  coolDownRoles.some((cr) => userRoles.find((ur) => ur.name === cr));
 
 /**
  * @param {Object} players
@@ -48,7 +49,7 @@ export const getPlayerList = (players, noOfPlayers, noOfTeams) => {
  * @description Creates a new object with the even index as key and odd index as the value
  * @returns {Object}
  */
-export const createAlternatingObject = array =>
+export const createAlternatingObject = (array) =>
   array.reduce((acc, item, i, arr) => {
     if (i % 2 === 0) acc[item.toLowerCase()] = arr[i + 1];
     return acc;
@@ -59,15 +60,15 @@ export const createAlternatingObject = array =>
  * @description Escapes special characters in the name
  * @returns {String}
  */
-export const sanitizeName = name =>
-  name.replace(/(\*|`|:|_|~|\|)/g, c => `\\${c}`);
+export const sanitizeName = (name) =>
+  name.replace(/(\*|`|:|_|~|\|)/g, (c) => `\\${c}`);
 
 /**
  * @param {Number} time
  * @description Gives minutes and seconds
  * @returns {Object}
  */
-export const getMinutesAndSeconds = time => {
+export const getMinutesAndSeconds = (time) => {
   const seconds = time % 60;
   const minutes = (time - seconds) / 60;
   return { seconds, minutes };
@@ -78,7 +79,7 @@ export const getMinutesAndSeconds = time => {
  * @description padded with zero(s)
  * @returns {String}
  */
-export const padNumberWithZeros = number =>
+export const padNumberWithZeros = (number) =>
   number > -1 && number < 10 ? `0${number}` : `${number}`;
 
 /**
@@ -106,8 +107,8 @@ export const getTeamScores = (info, maxTeams) => {
  * @description Returns the index for the team
  * @returns {Number}
  */
-export const getTeamIndex = teamName =>
-  Object.values(teams).findIndex(t => t === teamName);
+export const getTeamIndex = (teamName) =>
+  Object.values(teams).findIndex((t) => t === teamName);
 
 /**
  * @param {Number} noOfPlayers
@@ -141,7 +142,7 @@ export const computePickingOrder = (noOfPlayers, noOfTeams) => {
   return pickingOrder.length > 0 ? pickingOrder : [-1];
 };
 
-export const shuffle = array =>
+export const shuffle = (array) =>
   Array.from(array).sort(() => Math.random() - 0.5);
 
 export function getRandomInt(min, max) {

@@ -8,6 +8,7 @@ const schema = mongoose.Schema({
       noOfPlayers: Number,
       noOfTeams: Number,
       pickingOrder: [Number],
+      hasCoinFlipMapvoteDecider: Boolean,
     },
   ],
 });
