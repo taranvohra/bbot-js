@@ -60,7 +60,7 @@ const pugs = (state = {}, { type, payload }) => {
         ...state,
         [payload.serverId]: {
           ...state[payload.serverId],
-          gameTypes: state[payload.serverId]['gameTypes'].map((g) =>
+          gameTypes: state[payload.serverId].gameTypes.map((g) =>
             g.name === payload.gameType
               ? { ...g, hasCoinFlipMapvoteDecider: true }
               : g
@@ -74,7 +74,7 @@ const pugs = (state = {}, { type, payload }) => {
         ...state,
         [payload.serverId]: {
           ...state[payload.serverId],
-          gameTypes: state[payload.serverId]['gameTypes'].map((g) =>
+          gameTypes: state[payload.serverId].gameTypes.map((g) =>
             g.name === payload.gameType
               ? { ...g, hasCoinFlipMapvoteDecider: false }
               : g

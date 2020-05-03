@@ -2635,7 +2635,10 @@ export const enableMapVoteCoinFlip = async (
 
     const updatedGameTypes = gameTypes.map((g) =>
       g.name === gameName
-        ? { ...g.toObject(), hasCoinFlipMapvoteDecider: true }
+        ? {
+            ...(g.toObject ? g.toObject() : g), // mongo hacky fix
+            hasCoinFlipMapvoteDecider: true,
+          }
         : g
     );
 
@@ -2671,7 +2674,10 @@ export const disableMapVoteCoinFlip = async ({ channel }, args, serverId) => {
 
     const updatedGameTypes = gameTypes.map((g) =>
       g.name === gameName
-        ? { ...g.toObject(), hasCoinFlipMapvoteDecider: false }
+        ? {
+            ...(g.toObject ? g.toObject() : g),
+            hasCoinFlipMapvoteDecider: false,
+          }
         : g
     );
     await GameTypes.findOneAndUpdate(
