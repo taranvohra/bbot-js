@@ -274,6 +274,12 @@ const commands = [
     aliases: ['enablecoinflip'],
     solo: 0,
   },
+  {
+    key: 'getTop10Played',
+    description: '',
+    aliases: ['top10played'],
+    solo: 0,
+  },
 ];
 
 export { commands, handlers, emitters };

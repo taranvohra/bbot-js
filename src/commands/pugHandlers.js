@@ -2691,3 +2691,138 @@ export const disableMapVoteCoinFlip = async ({ channel }, args, serverId) => {
     console.log(error);
   }
 };
+
+export const getTop10Played = async (
+  { channel },
+  [gameTypeArg],
+  serverId,
+  _
+) => {
+  try {
+    const state = store.getState();
+    const { pugChannel, gameTypes } = state.pugs[serverId];
+
+    if (pugChannel !== channel.id)
+      return channel.send(
+        `Active channel for pugs is ${
+          pugChannel ? `<#${pugChannel}>` : `not present`
+        }`
+      );
+
+    if (!gameTypeArg)
+      return channel.send('Invalid! specify the gametype aswell');
+
+    const gameType = gameTypes.find(
+      (g) => g.name === gameTypeArg.toLowerCase()
+    );
+    if (!gameType)
+      return channel.send(
+        `**${gameTypeArg.toUpperCase()}** is not a registered gametype`
+      );
+
+    const allPlayers = await Users.find(
+      {
+        server_id: serverId,
+      },
+      { username: 1, stats: 1 }
+    );
+
+    const gameTypeName = gameTypeArg.toLowerCase();
+    const top10 = allPlayers
+      .map(({ username, stats }) => {
+        if (!stats || !stats[gameTypeName]) return undefined;
+        const { totalPugs } = stats[gameTypeName];
+        return {
+          username,
+          totalPugs,
+        };
+      })
+      .sort((a, b) => b.totalPugs - a.totalPugs)
+      .slice(0, 10);
+
+    Jimp.read('assets/top10_played_template.png').then(async (template) => {
+      const { arialFNT, obelixFNT, ubuntuFNT, ubuntuTTF } = await FONTS;
+      let Y = 50;
+      const MAX_HEIGHT = 25;
+
+      template.print(
+        obelixFNT,
+        0,
+        0,
+        {
+          text: `TOP 10 PLAYED ${gameTypeName.toUpperCase()}`,
+          alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+          alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+        },
+        200,
+        MAX_HEIGHT
+      );
+
+      top10.forEach((player, i) => {
+        const { username, totalPugs } = player;
+        const name = username.replace(/\\[^\\]/g, (c) => c.substring(1));
+
+        const shouldUseUbuntu = name
+          .split('')
+          .every((_, i) => ubuntuTTF.hasGlyphForCodePoint(name.codePointAt(i)));
+
+        template.print(
+          obelixFNT,
+          0,
+          Y,
+          {
+            text: (i + 1).toString(),
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          30,
+          MAX_HEIGHT
+        );
+
+        template.print(
+          shouldUseUbuntu ? ubuntuFNT : arialFNT,
+          30,
+          Y,
+          {
+            text: name.substring(0, 12),
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          120,
+          MAX_HEIGHT
+        );
+
+        template.print(
+          ubuntuFNT,
+          150,
+          Y,
+          {
+            text: totalPugs.toString(),
+            alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+            alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
+          },
+          50,
+          MAX_HEIGHT
+        );
+
+        Y += 25;
+      });
+
+      const imageName = Date.now();
+      template.write(`generated/${imageName}.png`);
+
+      await channel.send('', {
+        files: [`generated/${imageName}.png`],
+      });
+
+      try {
+        fs.unlinkSync(`generated/${imageName}.png`);
+      } catch (error) {
+        console.log('unlink error: ', error);
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    channel.send('Something went wrong');
+  }
+};
