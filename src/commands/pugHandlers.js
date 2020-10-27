@@ -490,8 +490,9 @@ export const joinGameTypes = async (
       );
 
     // TODO args length 0 (default join with .j)
-    if (isInvisible)
-      return channel.send(`Cannot use this command while invisible`);
+    // DIRTY FIX FOR NOW
+    // if (isInvisible)
+    //   return channel.send(`Cannot use this command while invisible`);
 
     if (!id) return channel.send('No user was mentioned');
 
